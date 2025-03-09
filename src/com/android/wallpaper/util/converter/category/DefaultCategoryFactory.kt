@@ -46,7 +46,7 @@ constructor(
             commonCategoryData = getCommonCategoryData(category),
             collectionCategoryData = (category as? WallpaperCategory)?.getCollectionsCategoryData(),
             imageCategoryData = getImageCategoryData(category),
-            thirdPartyCategoryData = getThirdPartyCategoryData(category)
+            thirdPartyCategoryData = getThirdPartyCategoryData(category),
         )
     }
 
@@ -54,7 +54,7 @@ constructor(
         return CommonCategoryData(
             title = category.title,
             collectionId = category.collectionId,
-            priority = category.priority
+            priority = category.priority,
         )
     }
 
@@ -77,7 +77,7 @@ constructor(
         return if (category is ImageCategory) {
             ImageCategoryData(
                 thumbnailAsset = category.getThumbnail(context),
-                defaultDrawable = category.getOverlayIcon(context)
+                defaultDrawable = category.getOverlayIcon(context),
             )
         } else {
             Log.w(TAG, "Passed category is not of type ImageCategory")
@@ -87,7 +87,10 @@ constructor(
 
     private fun getThirdPartyCategoryData(category: Category): ThirdPartyCategoryData? {
         return if (category is ThirdPartyAppCategory) {
-            ThirdPartyCategoryData(resolveInfo = category.resolveInfo)
+            ThirdPartyCategoryData(
+                resolveInfo = category.resolveInfo,
+                defaultDrawable = category.getOverlayIcon(context),
+            )
         } else {
             Log.w(TAG, "Passed category is not of type ThirdPartyAppCategory")
             null

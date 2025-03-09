@@ -36,6 +36,7 @@ import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils.Companion.shouldEnforceSingleEngine
 import com.android.wallpaper.util.wallpaperconnection.WallpaperEngineConnection.WallpaperEngineConnectionListener
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -54,6 +55,7 @@ object SmallWallpaperPreviewBinder {
         viewModel: WallpaperPreviewViewModel,
         displaySize: Point,
         applicationContext: Context,
+        mainScope: CoroutineScope,
         viewLifecycleOwner: LifecycleOwner,
         deviceDisplayType: DeviceDisplayType,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
@@ -69,6 +71,7 @@ object SmallWallpaperPreviewBinder {
                         viewModel = viewModel,
                         deviceDisplayType = deviceDisplayType,
                         displaySize = displaySize,
+                        mainScope = mainScope,
                         lifecycleOwner = viewLifecycleOwner,
                         wallpaperConnectionUtils = wallpaperConnectionUtils,
                         isFirstBindingDeferred,
@@ -95,6 +98,7 @@ object SmallWallpaperPreviewBinder {
         viewModel: WallpaperPreviewViewModel,
         deviceDisplayType: DeviceDisplayType,
         displaySize: Point,
+        mainScope: CoroutineScope,
         lifecycleOwner: LifecycleOwner,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
@@ -107,7 +111,8 @@ object SmallWallpaperPreviewBinder {
 
             override fun surfaceCreated(holder: SurfaceHolder) {
                 job =
-                    lifecycleOwner.lifecycleScope.launch {
+                    // Ensure the wallpaper connection is connected / disconnected in [mainScope].
+                    mainScope.launch {
                         viewModel.smallWallpaper.collect { (wallpaper, whichPreview) ->
                             if (wallpaper is WallpaperModel.LiveWallpaperModel) {
                                 wallpaperConnectionUtils.connect(

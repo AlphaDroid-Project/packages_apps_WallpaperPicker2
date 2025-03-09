@@ -61,7 +61,7 @@ interface WallpaperModelFactory {
                         else -> {
                             Log.w(
                                 TAG,
-                                "Invalid value for wallpaperManagerFlag: $wallpaperManagerFlag"
+                                "Invalid value for wallpaperManagerFlag: $wallpaperManagerFlag",
                             )
                             Destination.NOT_APPLIED
                         }
@@ -94,7 +94,7 @@ interface WallpaperModelFactory {
             return CommonWallpaperData(
                 id = wallpaperId,
                 title = getTitle(context),
-                attributions = getAttributions(context),
+                attributions = getAttributions(context).map { it ?: "" },
                 exploreActionUrl = getActionUrl(context),
                 thumbAsset = getThumbAsset(context),
                 placeholderColorInfo = colorInfoOfWallpaper,
@@ -104,7 +104,7 @@ interface WallpaperModelFactory {
 
         fun LiveWallpaperInfo.getLiveWallpaperData(
             context: Context,
-            effectsController: EffectsController? = null
+            effectsController: EffectsController? = null,
         ): LiveWallpaperData {
             val groupNameOfWallpaper = (this as? CreativeWallpaperInfo)?.groupName ?: ""
             val wallpaperManager = WallpaperManager.getInstance(context)
@@ -123,6 +123,7 @@ interface WallpaperModelFactory {
                     effectsController?.isEffectsWallpaper(info) ?: (effectNames != null),
                 effectNames = effectNames,
                 contextDescription = contextDescription,
+                description = wallpaperDescription,
             )
         }
 

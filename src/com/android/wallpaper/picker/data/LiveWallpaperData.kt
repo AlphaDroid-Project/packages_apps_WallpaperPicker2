@@ -17,6 +17,7 @@
 package com.android.wallpaper.picker.data
 
 import android.app.WallpaperInfo
+import android.app.wallpaper.WallpaperDescription
 
 /** Represents set of attributes that are specific to live wallpapers. */
 data class LiveWallpaperData(
@@ -27,4 +28,6 @@ data class LiveWallpaperData(
     val isEffectWallpaper: Boolean,
     val effectNames: String?,
     val contextDescription: CharSequence? = null,
+    val description: WallpaperDescription =
+        WallpaperDescription.Builder().setComponent(systemWallpaperInfo.component).build(),
 )

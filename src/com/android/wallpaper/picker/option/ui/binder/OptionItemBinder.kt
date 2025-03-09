@@ -81,17 +81,11 @@ object OptionItemBinder {
         val textView: TextView? = view.findViewById(R.id.text)
 
         if (textView != null && viewModel.isTextUserVisible) {
-            TextViewBinder.bind(
-                view = textView,
-                viewModel = viewModel.text,
-            )
+            TextViewBinder.bind(view = textView, viewModel = viewModel.text)
         } else {
             // Use the text as the content description of the foreground if we don't have a TextView
             // dedicated to for the text.
-            ContentDescriptionViewBinder.bind(
-                view = foregroundView,
-                viewModel = viewModel.text,
-            )
+            ContentDescriptionViewBinder.bind(view = foregroundView, viewModel = viewModel.text)
         }
         textView?.isVisible = viewModel.isTextUserVisible
 
@@ -141,10 +135,9 @@ object OptionItemBinder {
                             .flatMapLatest {
                                 // If the key changed, then it means that this binding is no longer
                                 // rendering the UI for the same option as before, we nullify the
-                                // last
-                                // selected value to "forget" that we've ever seen a value for
-                                // isSelected,
-                                // effectively starting anew so the first update doesn't animate.
+                                // last  selected value to "forget" that we've ever seen a value for
+                                // isSelected, effectively starting a new so the first update
+                                // doesn't animate.
                                 lastSelected = null
                                 viewModel.isSelected
                             }
@@ -311,10 +304,7 @@ object OptionItemBinder {
         val durationMs: Long = 333L,
     )
 
-    data class TintSpec(
-        @ColorInt val selectedColor: Int,
-        @ColorInt val unselectedColor: Int,
-    )
+    data class TintSpec(@ColorInt val selectedColor: Int, @ColorInt val unselectedColor: Int)
 
     private fun View.scale(scale: Float) {
         scaleX = scale

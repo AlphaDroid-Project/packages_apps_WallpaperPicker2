@@ -27,15 +27,13 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class DefaultCustomizationOptionsViewModel
 @AssistedInject
-constructor(
-    @Assisted viewModelScope: CoroutineScope,
-) : CustomizationOptionsViewModel {
+constructor(@Assisted viewModelScope: CoroutineScope) : CustomizationOptionsViewModel {
 
     private val _selectedOptionState =
         MutableStateFlow<CustomizationOptionUtil.CustomizationOption?>(null)
     override val selectedOption = _selectedOptionState.asStateFlow()
 
-    override fun deselectOption(): Boolean {
+    override fun handleBackPressed(): Boolean {
         return if (_selectedOptionState.value != null) {
             _selectedOptionState.value = null
             true

@@ -83,7 +83,7 @@ constructor(
         interactor.wallpapers.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(),
-            initialValue = null
+            initialValue = null,
         )
 
     val wallpapersAndWhichPreview:

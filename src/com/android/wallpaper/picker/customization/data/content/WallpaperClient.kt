@@ -37,10 +37,7 @@ import kotlinx.coroutines.flow.Flow
 interface WallpaperClient {
 
     /** Lists the most recent wallpapers. The first one is the most recent (current) wallpaper. */
-    fun recentWallpapers(
-        destination: WallpaperDestination,
-        limit: Int,
-    ): Flow<List<WallpaperModel>>
+    fun recentWallpapers(destination: WallpaperDestination, limit: Int): Flow<List<WallpaperModel>>
 
     /**
      * Asynchronously sets a static wallpaper.
@@ -101,7 +98,7 @@ interface WallpaperClient {
 
     fun getCurrentCropHints(
         displaySizes: List<Point>,
-        @WallpaperManager.SetWallpaperFlags which: Int
+        @WallpaperManager.SetWallpaperFlags which: Int,
     ): Map<Point, Rect>?
 
     /** Returns the wallpaper colors for preview a bitmap with a set of crop hints */

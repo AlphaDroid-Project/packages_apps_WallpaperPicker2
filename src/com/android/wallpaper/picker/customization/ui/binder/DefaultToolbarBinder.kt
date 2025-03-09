@@ -21,11 +21,13 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.Toolbar
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.wallpaper.R
+import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationOptionsViewModel
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -39,10 +41,40 @@ class DefaultToolbarBinder @Inject constructor() : ToolbarBinder {
         toolbar: Toolbar,
         applyButton: Button,
         viewModel: CustomizationOptionsViewModel,
+        colorUpdateViewModel: ColorUpdateViewModel,
         lifecycleOwner: LifecycleOwner,
+        onNavBack: () -> Unit,
     ) {
         val appContext = navButton.context.applicationContext
         val navButtonIcon = navButton.requireViewById<View>(R.id.nav_button_icon)
+
+        navButton.setOnClickListener { onNavBack.invoke() }
+
+        ColorUpdateBinder.bind(
+            setColor = { color -> toolbar.setTitleTextColor(color) },
+            color = colorUpdateViewModel.colorOnSurface,
+            shouldAnimate = { true },
+            lifecycleOwner = lifecycleOwner,
+        )
+
+        ColorUpdateBinder.bind(
+            setColor = { color ->
+                DrawableCompat.setTint(DrawableCompat.wrap(navButton.background), color)
+            },
+            color = colorUpdateViewModel.colorSurfaceContainerHighest,
+            shouldAnimate = { true },
+            lifecycleOwner = lifecycleOwner,
+        )
+
+        ColorUpdateBinder.bind(
+            setColor = { color ->
+                DrawableCompat.setTint(DrawableCompat.wrap(navButtonIcon.background), color)
+            },
+            color = colorUpdateViewModel.colorOnSurfaceVariant,
+            shouldAnimate = { true },
+            lifecycleOwner = lifecycleOwner,
+        )
+
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
@@ -51,12 +83,11 @@ class DefaultToolbarBinder @Inject constructor() : ToolbarBinder {
                             navButtonIcon.background =
                                 AppCompatResources.getDrawable(
                                     appContext,
-                                    R.drawable.ic_arrow_back_24dp
+                                    R.drawable.ic_arrow_back_24dp,
                                 )
                         } else {
                             navButtonIcon.background =
                                 AppCompatResources.getDrawable(appContext, R.drawable.ic_close_24dp)
-                            navButtonIcon.setOnClickListener { viewModel.deselectOption() }
                         }
                     }
                 }

@@ -263,6 +263,10 @@
     <dimen name="home_screen_overlay_top_clipping">90dp</dimen>
     <dimen name="home_screen_overlay_bottom_clipping">40dp</dimen>
 
+    <!-- Apply button -->
+    <dimen name="apply_button_corner_radius">100dp</dimen>
+    <dimen name="apply_button_width">70dp</dimen>
+
     <!-- Set wallpaper button -->
     <dimen name="set_wallpaper_button_horizontal_padding">18dp</dimen>
     <dimen name="set_wallpaper_button_vertical_padding">10dp</dimen>
@@ -411,11 +415,34 @@
     <dimen name="nav_button_start_margin">16dp</dimen>
 
     <!-- Dimensions for the floating tab toolbar -->
-    <dimen name="floating_tab_toolbar_padding">8dp</dimen>
+    <dimen name="floating_tab_toolbar_padding_vertical">8dp</dimen>
+    <dimen name="floating_tab_toolbar_padding_horizontal">12dp</dimen>
+    <dimen name="floating_tab_toolbar_tab_min_height">40dp</dimen>
     <dimen name="floating_tab_toolbar_tab_horizontal_padding">16dp</dimen>
     <dimen name="floating_tab_toolbar_tab_vertical_padding">10dp</dimen>
     <dimen name="floating_tab_toolbar_tab_icon_size">20dp</dimen>
     <dimen name="floating_tab_toolbar_tab_icon_margin_end">8dp</dimen>
     <dimen name="floating_tab_toolbar_tab_divider_width">8dp</dimen>
-    <dimen name="floating_tab_toolbar_text_max_width">140dp</dimen>
+    <dimen name="floating_tab_toolbar_tab_background_vertical_margin">4dp</dimen>
+
+    <!-- Dimensions for multi-crop handheld small preview -->
+    <dimen name="handheld_small_preview_pager_margin_top">12dp</dimen>
+    <dimen name="handheld_small_preview_pager_margin_bottom">26dp</dimen>
+    <dimen name="handheld_small_preview_action_group_margin_bottom">12dp</dimen>
+    <dimen name="handheld_small_preview_pager_margin_start">16dp</dimen>
+    <dimen name="handheld_small_preview_pager_margin_end">16dp</dimen>
+    <dimen name="handheld_small_preview_space_between_preview">16dp</dimen>
+    <dimen name="handheld_apply_wallpaper_screen_margin_horizontal">24dp</dimen>
+    <dimen name="handheld_apply_wallpaper_screen_margin_bottom">34dp</dimen>
+    <dimen name="handheld_apply_wallpaper_screen_button_space">8dp</dimen>
+    <dimen name="handheld_apply_wallpaper_screen_header_margin_vertical">16dp</dimen>
+    <dimen name="handheld_apply_wallpaper_preview_title_margin_bottom">16dp</dimen>
+    <dimen name="handheld_apply_wallpaper_preview_button_margin_bottom">28dp</dimen>
+    <dimen name="handheld_apply_wallpaper_preview_button_min_height">56dp</dimen>
+
+    <!-- Dimensions for multi-crop foldable small preview -->
+    <dimen name="foldable_small_preview_space_between_preview">8dp</dimen>
+    <dimen name="foldable_apply_wallpaper_preview_title_margin_bottom">@dimen/handheld_apply_wallpaper_preview_title_margin_bottom</dimen>
+    <dimen name="foldable_apply_wallpaper_preview_button_min_height">@dimen/handheld_apply_wallpaper_preview_button_min_height</dimen>
+    <dimen name="foldable_apply_wallpaper_preview_button_min_width">178dp</dimen>
 </resources>

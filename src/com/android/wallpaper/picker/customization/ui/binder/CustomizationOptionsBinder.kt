@@ -16,15 +16,23 @@
 
 package com.android.wallpaper.picker.customization.ui.binder
 
+import android.content.Context
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
 import com.android.customization.picker.clock.ui.view.ClockViewFactory
+import com.android.wallpaper.model.Screen
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
 
 interface CustomizationOptionsBinder {
 
+    /**
+     * @param navigateToWallpaperCategoriesScreen This is a callback that should be implemented by
+     *   the hosting Fragment or Activity. This callback should navigate to the wallpaper categories
+     *   screen. The input [Screen] of this callback indicate the entrypoint to the wallpaper
+     *   categories screen.
+     */
     fun bind(
         view: View,
         lockScreenCustomizationOptionEntries: List<Pair<CustomizationOption, View>>,
@@ -33,11 +41,14 @@ interface CustomizationOptionsBinder {
         viewModel: CustomizationPickerViewModel2,
         colorUpdateViewModel: ColorUpdateViewModel,
         lifecycleOwner: LifecycleOwner,
+        navigateToWallpaperCategoriesScreen: (screen: Screen) -> Unit,
     )
 
     fun bindClockPreview(
+        context: Context,
         clockHostView: View,
         viewModel: CustomizationPickerViewModel2,
+        colorUpdateViewModel: ColorUpdateViewModel,
         lifecycleOwner: LifecycleOwner,
         clockViewFactory: ClockViewFactory,
     )

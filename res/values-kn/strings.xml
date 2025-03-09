@@ -34,7 +34,7 @@
     <string name="home_screen_message" msgid="106444102822522813">"ಹೋಮ್ ಸ್ಕ್ರೀನ್"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"ಲಾಕ್ ಸ್ಕ್ರೀನ್"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"ಮುಖಪುಟ ಮತ್ತು ಲಾಕ್‌"</string>
-    <string name="set_wallpaper_dialog_message" msgid="2110475703996853076">"ವಾಲ್‌ಪೇಪರ್ ಅನ್ನು ಆನ್‌ಗೆ ಹೊಂದಿಸಿ"</string>
+    <string name="set_wallpaper_dialog_message" msgid="2110475703996853076">"ವಾಲ್‌ಪೇಪರ್ ಅನ್ನು ಆನ್‌ಗೆ ಸೆಟ್ ಮಾಡಿ"</string>
     <string name="set_wallpaper_home_screen_destination" msgid="7315594722013109354">"ಹೋಮ್ ಸ್ಕ್ರೀನ್"</string>
     <string name="set_wallpaper_lock_screen_destination" msgid="6224685559375417945">"ಲಾಕ್ ಸ್ಕ್ರೀನ್"</string>
     <string name="set_wallpaper_both_destination" msgid="2536004558738350775">"ಹೋಮ್ ಮತ್ತು ಲಾಕ್ ಸ್ಕ್ರೀನ್‌ಗಳು"</string>
@@ -66,7 +66,7 @@
     <string name="explore_lock_screen" msgid="268938342103703665">"ಲಾಕ್ ಪರದೆಯ ವಾಲ್‌ಪೇಪರ್ ಎಕ್ಸ್‌ಪ್ಲೋರ್ ಮಾಡಿ"</string>
     <string name="refresh_daily_wallpaper_home_content_description" msgid="2770445044556164259">"ದೈನಂದಿನ ಮುಖಪುಟ ಪರದೆಯ ವಾಲ್‌ಪೇಪರ್ ರಿಫ್ರೆಶ್ ಮಾಡಿ"</string>
     <string name="refresh_daily_wallpaper_content_description" msgid="4362142658237147583">"ದಿನನಿತ್ಯದ ವಾಲ್‌ಪೇಪರ್ ಅನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ"</string>
-    <string name="preview_screen_description" msgid="3386387053327775919">"ವಾಲ್‌ಪೇಪರ್ ಪೂರ್ವವೀಕ್ಷಣೆಯ ಪರದೆ"</string>
+    <string name="preview_screen_description" msgid="3386387053327775919">"ವಾಲ್‌ಪೇಪರ್ ಪೂರ್ವವೀಕ್ಷಣೆಯ ಸ್ಕ್ರೀನ್"</string>
     <string name="preview_screen_description_editable" msgid="506875963019888699">"ವಾಲ್‌ಪೇಪರ್ ಪೂರ್ವವೀಕ್ಷಣೆ ಸ್ಕ್ರೀನ್ %1$s. ಪ್ಯಾನ್ ಮಾಡಲು ಮತ್ತು ಜೂಮ್ ಮಾಡಲು ಎರಡು ಬೆರಳುಗಳನ್ನು ಬಳಸಿ."</string>
     <string name="folded_device_state_description" msgid="4972608448265616264">"ಫೋಲ್ಡ್ ಆಗಿದೆ"</string>
     <string name="unfolded_device_state_description" msgid="3071975681472460627">"ಅನ್‌ಫೋಲ್ಡ್ ಆಗಿದೆ"</string>
@@ -124,6 +124,7 @@
     <string name="wallpaper_picker_entry_title" msgid="5185793991582084891">"ವಾಲ್‌ಪೇಪರ್ ಬದಲಿಸಿ"</string>
     <string name="lockscreen_wallpaper_preview_card_content_description" msgid="2244890820627302245">"ಲಾಕ್‌ಸ್ಕ್ರೀನ್ ವಾಲ್‌ಪೇಪರ್ ಪೂರ್ವವೀಕ್ಷಣೆ."</string>
     <string name="apply_btn" msgid="5764555565943538528">"ಅನ್ವಯಿಸಿ"</string>
+    <string name="apply_wallpaper_title_text" msgid="2100301064316744087">"ವಾಲ್‌ಪೇಪರ್ ಅನ್ವಯಿಸಬೇಕೆ?"</string>
     <string name="accessibility_customize_hidden" msgid="6320568529768181691">"ಕಸ್ಟಮೈಸ್ ಪ್ಯಾನೆಲ್ ಅನ್ನು ಮರೆಮಾಡಲಾಗಿದೆ"</string>
     <string name="accessibility_customize_shown" msgid="590964727831547651">"ಕಸ್ಟಮೈಸ್ ಪ್ಯಾನೆಲ್ ಅನ್ನು ಪ್ರದರ್ಶಿಸಲಾಗಿದೆ"</string>
     <string name="accessibility_info_hidden" msgid="2288603712350168107">"ಮಾಹಿತಿಯನ್ನು ಮರೆಮಾಡಲಾಗಿದೆ"</string>
@@ -140,5 +141,5 @@
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"ವಾಲ್‌ಪೇಪರ್"</string>
     <string name="small_preview_tooltip" msgid="1920430079013352071">"ನಿಮ್ಮ ಫೋಟೋ ಎಡಿಟ್ ಮಾಡಲು ಟ್ಯಾಪ್ ಮಾಡಿ"</string>
-    <string name="full_preview_tooltip" msgid="4648994028015322759">"ನಿಮ್ಮ ಫೋಟೋಗಳ ಸ್ಥಾನ, ಅಳತೆ ಮತ್ತು ಕೋನವನ್ನು ಹೊಂದಿಸಿ"</string>
+    <string name="full_preview_tooltip" msgid="4648994028015322759">"ನಿಮ್ಮ ಫೋಟೋಗಳ ಸ್ಥಾನ, ಅಳತೆ ಮತ್ತು ಕೋನವನ್ನು ಅಡ್ಜಸ್ಟ್ ಮಾಡಿ"</string>
 </resources>

@@ -26,6 +26,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.android.wallpaper.R
+import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
 import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
@@ -59,6 +60,7 @@ object CustomizationPickerBinder2 {
         lifecycleOwner: LifecycleOwner,
         navigateToPrimary: () -> Unit,
         navigateToSecondary: (screen: CustomizationOption) -> Unit,
+        navigateToCategoriesScreen: (screen: Screen) -> Unit,
     ) {
         val optionContainer =
             view.requireViewById<MotionLayout>(R.id.customization_option_container)
@@ -169,6 +171,7 @@ object CustomizationPickerBinder2 {
             viewModel,
             colorUpdateViewModel,
             lifecycleOwner,
+            navigateToCategoriesScreen,
         )
     }
 }

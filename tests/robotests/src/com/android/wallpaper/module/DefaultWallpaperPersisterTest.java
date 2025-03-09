@@ -22,7 +22,10 @@ import static com.android.wallpaper.module.WallpaperPersister.DEST_BOTH;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static kotlinx.coroutines.test.TestCoroutineDispatchersKt.StandardTestDispatcher;
+
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
@@ -38,15 +41,26 @@ import com.android.wallpaper.model.WallpaperInfo;
 import com.android.wallpaper.module.DefaultWallpaperPersisterTest.TestSetWallpaperCallback.SetWallpaperStatus;
 import com.android.wallpaper.module.WallpaperPersister.SetWallpaperCallback;
 import com.android.wallpaper.module.logging.TestUserEventLogger;
+import com.android.wallpaper.network.Requester;
+import com.android.wallpaper.picker.category.wrapper.WallpaperCategoryWrapper;
+import com.android.wallpaper.picker.customization.data.repository.WallpaperRepository;
+import com.android.wallpaper.picker.customization.domain.interactor.WallpaperInteractor;
 import com.android.wallpaper.testing.FakeDisplaysProvider;
+import com.android.wallpaper.testing.FakeWallpaperClient;
 import com.android.wallpaper.testing.TestAsset;
 import com.android.wallpaper.testing.TestBitmapCropper;
 import com.android.wallpaper.testing.TestCurrentWallpaperInfoFactory;
 import com.android.wallpaper.testing.TestInjector;
+import com.android.wallpaper.testing.TestPackageStatusNotifier;
 import com.android.wallpaper.testing.TestStaticWallpaperInfo;
 import com.android.wallpaper.testing.TestWallpaperPreferences;
 import com.android.wallpaper.testing.TestWallpaperStatusChecker;
 import com.android.wallpaper.util.DisplayUtils;
+import com.android.wallpaper.util.DisplaysProvider;
+
+import kotlinx.coroutines.test.TestDispatcher;
+import kotlinx.coroutines.test.TestScope;
+import kotlinx.coroutines.test.TestScopeKt;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -57,6 +71,7 @@ import org.robolectric.shadows.ShadowPausedAsyncTask;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 @RunWith(RobolectricTestRunner.class)
 public class DefaultWallpaperPersisterTest {
@@ -73,16 +88,44 @@ public class DefaultWallpaperPersisterTest {
     /** Executor to use for AsyncTask */
     private final PausedExecutorService mPausedExecutor = new PausedExecutorService();
 
+    private TestPackageStatusNotifier mTestPackageStatusNotifier;
+
     @Before
     public void setUp() {
-        InjectorProvider.setInjector(new TestInjector(new TestUserEventLogger()));
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+
         mManager = spy(WallpaperManager.getInstance(mContext));
         mPrefs = new TestWallpaperPreferences();
         WallpaperChangedNotifier changedNotifier = spy(WallpaperChangedNotifier.getInstance());
         DisplayUtils displayUtils = new DisplayUtils(mContext, new FakeDisplaysProvider(mContext));
         TestBitmapCropper cropper = new TestBitmapCropper();
         TestWallpaperStatusChecker statusChecker = new TestWallpaperStatusChecker();
+        TestDispatcher testDispatcher = StandardTestDispatcher(null, null);
+        TestScope testScope = TestScopeKt.TestScope(testDispatcher);
+        mTestPackageStatusNotifier = new TestPackageStatusNotifier();
+        WallpaperInteractor wallpaperInteractor =
+                new WallpaperInteractor(
+                        new WallpaperRepository(
+                                testScope.getBackgroundScope(),
+                                new FakeWallpaperClient(),
+                                new TestWallpaperPreferences(),
+                                testDispatcher
+                        )
+                );
+
+        InjectorProvider.setInjector(new TestInjector(
+                new TestUserEventLogger(),
+                new DisplayUtils(mContext, mock(DisplaysProvider.class)),
+                mock(Requester.class),
+                mock(NetworkStatusNotifier.class),
+                mock(PartnerProvider.class),
+                new FakeWallpaperClient(),
+                wallpaperInteractor,
+                mock(WallpaperPreferences.class),
+                mock(WallpaperCategoryWrapper.class),
+                mTestPackageStatusNotifier
+        ));
+
         TestCurrentWallpaperInfoFactory wallpaperInfoFactory =
                 new TestCurrentWallpaperInfoFactory(mContext);
 

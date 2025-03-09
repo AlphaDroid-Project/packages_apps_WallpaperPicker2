@@ -72,8 +72,20 @@ import kotlinx.coroutines.Dispatchers
 
 /** Test implementation of [Injector] */
 @Singleton
-open class TestInjector @Inject constructor(private val userEventLogger: UserEventLogger) :
-    Injector {
+open class TestInjector
+@Inject
+constructor(
+    private val userEventLogger: UserEventLogger,
+    private val displayUtils: DisplayUtils,
+    private val requester: Requester,
+    private val networkStatusNotifier: NetworkStatusNotifier,
+    private val partnerProvider: PartnerProvider,
+    private val wallpaperClient: FakeWallpaperClient,
+    private val injectedWallpaperInteractor: WallpaperInteractor,
+    private val prefs: WallpaperPreferences,
+    private val fakeWallpaperCategoryWrapper: WallpaperCategoryWrapper,
+    private val testStatusNotifier: TestPackageStatusNotifier,
+) : Injector {
     private var appScope: CoroutineScope? = null
     private var alarmManagerWrapper: AlarmManagerWrapper? = null
     private var bitmapCropper: BitmapCropper? = null
@@ -82,7 +94,6 @@ open class TestInjector @Inject constructor(private val userEventLogger: UserEve
     private var customizationSections: CustomizationSections? = null
     private var drawableLayerResolver: DrawableLayerResolver? = null
     private var exploreIntentChecker: ExploreIntentChecker? = null
-    private var packageStatusNotifier: PackageStatusNotifier? = null
     private var performanceMonitor: PerformanceMonitor? = null
     private var systemFeatureChecker: SystemFeatureChecker? = null
     private var wallpaperPersister: WallpaperPersister? = null
@@ -97,14 +108,6 @@ open class TestInjector @Inject constructor(private val userEventLogger: UserEve
     private var viewOnlyPreviewActivityIntentFactory: InlinePreviewIntentFactory? = null
 
     // Injected objects, sorted by alphabetical order of the type of object
-    @Inject lateinit var displayUtils: DisplayUtils
-    @Inject lateinit var requester: Requester
-    @Inject lateinit var networkStatusNotifier: NetworkStatusNotifier
-    @Inject lateinit var partnerProvider: PartnerProvider
-    @Inject lateinit var wallpaperClient: FakeWallpaperClient
-    @Inject lateinit var injectedWallpaperInteractor: WallpaperInteractor
-    @Inject lateinit var prefs: WallpaperPreferences
-    @Inject lateinit var fakeWallpaperCategoryWrapper: WallpaperCategoryWrapper
 
     override fun getWallpaperCategoryWrapper(): WallpaperCategoryWrapper {
         return fakeWallpaperCategoryWrapper
@@ -179,8 +182,7 @@ open class TestInjector @Inject constructor(private val userEventLogger: UserEve
     }
 
     override fun getPackageStatusNotifier(context: Context): PackageStatusNotifier {
-        return packageStatusNotifier
-            ?: TestPackageStatusNotifier().also { packageStatusNotifier = it }
+        return testStatusNotifier
     }
 
     override fun getPartnerProvider(context: Context): PartnerProvider {

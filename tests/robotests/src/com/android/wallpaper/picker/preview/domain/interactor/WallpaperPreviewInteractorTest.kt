@@ -157,7 +157,7 @@ class WallpaperPreviewInteractorTest {
                     serviceInfo.splitName = "wallpaper_cities_ny"
                     serviceInfo.name = "NewYorkWallpaper"
                     serviceInfo.flags = PackageManager.GET_META_DATA
-                }
+                },
             )
         val wallpaperModel =
             WallpaperModelUtils.getLiveWallpaperModel(

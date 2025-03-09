@@ -19,6 +19,7 @@ import android.view.View
 import androidx.annotation.ColorInt
 import androidx.lifecycle.LifecycleOwner
 import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.clocks.ClockFontAxisSetting
 
 interface ClockViewFactory {
 
@@ -36,12 +37,11 @@ interface ClockViewFactory {
      */
     fun getSmallView(clockId: String): View
 
-    /** Enables or disables the reactive swipe interaction */
-    fun setReactiveTouchInteractionEnabled(clockId: String, enable: Boolean)
-
     fun updateColorForAllClocks(@ColorInt seedColor: Int?)
 
     fun updateColor(clockId: String, @ColorInt seedColor: Int?)
+
+    fun updateFontAxes(clockId: String, settings: List<ClockFontAxisSetting>)
 
     fun updateRegionDarkness()
 

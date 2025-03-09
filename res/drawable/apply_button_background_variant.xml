@@ -19,15 +19,10 @@
 
     <item android:id="@android:id/mask">
         <shape android:shape="rectangle">
-            <corners android:radius="@dimen/set_wallpaper_button_corner_radius" />
-            <padding
-                android:left="@dimen/set_wallpaper_button_horizontal_padding"
-                android:top="@dimen/set_wallpaper_button_vertical_padding"
-                android:right="@dimen/set_wallpaper_button_horizontal_padding"
-                android:bottom="@dimen/set_wallpaper_button_vertical_padding" />
+            <corners android:radius="@dimen/apply_button_corner_radius" />
             <solid android:color="?android:colorControlHighlight" />
         </shape>
     </item>
 
-    <item android:drawable="@drawable/set_wallpaper_button_background_variant_base" />
+    <item android:drawable="@drawable/apply_button_background_variant_base" />
 </ripple>

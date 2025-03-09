@@ -27,6 +27,7 @@ import android.os.Build.VERSION_CODES;
 import android.service.wallpaper.WallpaperService;
 import android.util.Log;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
@@ -143,6 +144,12 @@ public class WallpaperPickerDelegate implements MyPhotosStarter {
         showCustomPhotoPicker();
     }
 
+    @Override
+    public void requestCustomPhotoPicker(PermissionChangedListener listener, Activity activity,
+            ActivityResultLauncher<Intent> photoPickerLauncher) {
+        requestCustomPhotoPicker(listener);
+    }
+
     /**
      * Requests to show the Android custom photo picker for the sake of picking a
      * photo to set as the device's wallpaper.
@@ -165,10 +172,10 @@ public class WallpaperPickerDelegate implements MyPhotosStarter {
 
     private void showCustomPhotoPicker() {
         try {
-            Intent intent = mMyPhotosIntentProvider.getMyPhotosIntent(mActivity);
+            Intent intent = mMyPhotosIntentProvider.getMyPhotosIntent();
             mActivity.startActivityForResult(intent, SHOW_CATEGORY_REQUEST_CODE);
         } catch (ActivityNotFoundException e) {
-            Intent fallback = mMyPhotosIntentProvider.getFallbackIntent(mActivity);
+            Intent fallback = mMyPhotosIntentProvider.getFallbackIntent();
             if (fallback != null) {
                 Log.i(TAG, "Couldn't launch photo picker with main intent, trying with fallback");
                 mActivity.startActivityForResult(fallback, SHOW_CATEGORY_REQUEST_CODE);

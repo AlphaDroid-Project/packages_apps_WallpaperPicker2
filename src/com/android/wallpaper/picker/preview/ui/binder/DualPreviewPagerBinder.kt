@@ -18,7 +18,6 @@ package com.android.wallpaper.picker.preview.ui.binder
 import android.content.Context
 import android.view.View
 import android.view.View.OVER_SCROLL_NEVER
-import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -37,6 +36,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewMod
 import com.android.wallpaper.util.RtlUtils
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.launch
 
@@ -46,10 +46,9 @@ object DualPreviewPagerBinder {
     fun bind(
         dualPreviewView: DualPreviewViewPager,
         wallpaperPreviewViewModel: WallpaperPreviewViewModel,
-        motionLayout: MotionLayout?,
         applicationContext: Context,
+        mainScope: CoroutineScope,
         viewLifecycleOwner: LifecycleOwner,
-        currentNavDestId: Int,
         transition: Transition?,
         transitionConfig: FullPreviewConfigViewModel?,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
@@ -126,13 +125,13 @@ object DualPreviewPagerBinder {
                     SmallPreviewBinder.bind(
                         applicationContext = applicationContext,
                         view = dualDisplayAspectRatioLayout.requireViewById(display.getViewId()),
-                        motionLayout = motionLayout,
                         viewModel = wallpaperPreviewViewModel,
+                        mainScope = mainScope,
                         viewLifecycleOwner = viewLifecycleOwner,
                         screen = wallpaperPreviewViewModel.smallPreviewTabs[positionLTR],
                         displaySize = it,
                         deviceDisplayType = display,
-                        currentNavDestId = currentNavDestId,
+                        currentNavDestId = R.id.smallPreviewFragment,
                         transition = transition,
                         transitionConfig = transitionConfig,
                         wallpaperConnectionUtils = wallpaperConnectionUtils,

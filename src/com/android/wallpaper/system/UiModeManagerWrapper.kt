@@ -27,5 +27,7 @@ interface UiModeManagerWrapper {
 
     fun getContrast(): Float?
 
+    fun getIsNightModeActivated(): Boolean
+
     fun setNightModeActivated(isActive: Boolean)
 }

@@ -52,11 +52,7 @@ class FloatingToolbarTabAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TabViewHolder {
         val view =
             LayoutInflater.from(parent.context)
-                .inflate(
-                    R.layout.floating_toolbar_tab,
-                    parent,
-                    false,
-                )
+                .inflate(R.layout.floating_toolbar_tab, parent, false)
         val tabViewHolder = TabViewHolder(view)
         return tabViewHolder
     }
@@ -90,7 +86,7 @@ class FloatingToolbarTabAdapter(
         colorUpdateViewModel.get()?.let {
             ColorUpdateBinder.bind(
                 setColor = { color ->
-                    holder.itemView.background.colorFilter =
+                    holder.container.background.colorFilter =
                         BlendModeColorFilter(color, BlendMode.SRC_ATOP)
                 },
                 color = it.colorSecondaryContainer,
@@ -181,14 +177,14 @@ class FloatingToolbarTabAdapter(
 
         override fun areItemsTheSame(
             oldItem: FloatingToolbarTabViewModel,
-            newItem: FloatingToolbarTabViewModel
+            newItem: FloatingToolbarTabViewModel,
         ): Boolean {
             return oldItem.text == newItem.text
         }
 
         override fun areContentsTheSame(
             oldItem: FloatingToolbarTabViewModel,
-            newItem: FloatingToolbarTabViewModel
+            newItem: FloatingToolbarTabViewModel,
         ): Boolean {
             return oldItem.text == newItem.text &&
                 oldItem.isSelected == newItem.isSelected &&
@@ -197,7 +193,7 @@ class FloatingToolbarTabAdapter(
 
         override fun getChangePayload(
             oldItem: FloatingToolbarTabViewModel,
-            newItem: FloatingToolbarTabViewModel
+            newItem: FloatingToolbarTabViewModel,
         ): Any? {
             return when {
                 !oldItem.isSelected && newItem.isSelected -> SELECT_ITEM

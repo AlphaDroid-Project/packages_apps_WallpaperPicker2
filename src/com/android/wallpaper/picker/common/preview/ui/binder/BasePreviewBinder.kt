@@ -19,13 +19,24 @@ package com.android.wallpaper.picker.common.preview.ui.binder
 import android.content.Context
 import android.graphics.Point
 import android.view.View
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.android.customization.picker.clock.ui.view.ClockViewFactory
 import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
+import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
+import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
+import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 /**
  * Common base preview binder that is only responsible for binding the workspace and wallpaper, and
@@ -40,17 +51,37 @@ object BasePreviewBinder {
         applicationContext: Context,
         view: View,
         viewModel: CustomizationPickerViewModel2,
+        colorUpdateViewModel: ColorUpdateViewModel,
         workspaceCallbackBinder: WorkspaceCallbackBinder,
         screen: Screen,
         deviceDisplayType: DeviceDisplayType,
         displaySize: Point,
+        mainScope: CoroutineScope,
         lifecycleOwner: LifecycleOwner,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
-        onClick: (() -> Unit)? = null,
+        onLaunchPreview: ((WallpaperModel) -> Unit)? = null,
+        clockViewFactory: ClockViewFactory,
     ) {
-        view.isClickable = (onClick != null)
-        onClick?.let { view.setOnClickListener { it() } }
+        if (onLaunchPreview != null) {
+            lifecycleOwner.lifecycleScope.launch {
+                lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    launch { viewModel.isPreviewClickable.collect { view.isClickable = it } }
+
+                    launch {
+                        viewModel.basePreviewViewModel.wallpapers
+                            .filterNotNull()
+                            .map {
+                                if (screen == HOME_SCREEN) it.homeWallpaper
+                                else it.lockWallpaper ?: it.homeWallpaper
+                            }
+                            .collect { wallpaper ->
+                                view.setOnClickListener { onLaunchPreview.invoke(wallpaper) }
+                            }
+                    }
+                }
+            }
+        }
 
         WallpaperPreviewBinder.bind(
             applicationContext = applicationContext,
@@ -59,6 +90,7 @@ object BasePreviewBinder {
             screen = screen,
             displaySize = displaySize,
             deviceDisplayType = deviceDisplayType,
+            mainScope = mainScope,
             viewLifecycleOwner = lifecycleOwner,
             wallpaperConnectionUtils = wallpaperConnectionUtils,
             isFirstBindingDeferred = isFirstBindingDeferred,
@@ -67,10 +99,12 @@ object BasePreviewBinder {
         WorkspacePreviewBinder.bind(
             surfaceView = view.requireViewById(R.id.workspace_surface),
             viewModel = viewModel,
+            colorUpdateViewModel = colorUpdateViewModel,
             workspaceCallbackBinder = workspaceCallbackBinder,
             screen = screen,
             deviceDisplayType = deviceDisplayType,
             lifecycleOwner = lifecycleOwner,
+            clockViewFactory = clockViewFactory,
         )
     }
 }

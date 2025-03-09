@@ -448,11 +448,12 @@ public class CategorySelectorFragment extends AppbarFragment {
                 com.google.android.material.R.id.snackbar_text);
         layout.setBackgroundResource(R.drawable.snackbar_background);
         TypedArray typedArray = getContext().obtainStyledAttributes(
-                new int[]{android.R.attr.textColorPrimary,
-                        com.android.internal.R.attr.materialColorPrimaryContainer});
+                new int[]{android.R.attr.textColorPrimary});
         textView.setTextColor(typedArray.getColor(0, Color.TRANSPARENT));
-        snackbar.setActionTextColor(typedArray.getColor(1, Color.TRANSPARENT));
         typedArray.recycle();
+
+        snackbar.setActionTextColor(
+                getContext().getColor(com.android.internal.R.color.materialColorPrimaryContainer));
 
         snackbar.setAction(getContext().getString(R.string.settings_snackbar_enable),
                 new View.OnClickListener() {

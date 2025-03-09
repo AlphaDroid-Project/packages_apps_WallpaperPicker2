@@ -25,10 +25,12 @@ interface CustomizationOptionsViewModel {
     val selectedOption: StateFlow<CustomizationOptionUtil.CustomizationOption?>
 
     /**
-     * Deselect the selected option and return true. If no option is selected, do nothing and return
-     * false.
+     * Handle back pressed. [CustomizationOptionsViewModel] should deselect the selected option and
+     * return true. If no option is selected, do nothing and return false.
+     *
+     * @return True if back pressed is handled by [CustomizationOptionsViewModel]
      */
-    fun deselectOption(): Boolean
+    fun handleBackPressed(): Boolean
 }
 
 interface CustomizationOptionsViewModelFactory {

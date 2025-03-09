@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.picker.category.ui.view
 
+import android.Manifest
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Intent
@@ -27,23 +28,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.android.wallpaper.R
+import com.android.wallpaper.model.ImageWallpaperInfo
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.picker.AppbarFragment
-import com.android.wallpaper.picker.CategorySelectorFragment.CategorySelectorFragmentHost
 import com.android.wallpaper.picker.MyPhotosStarter.PermissionChangedListener
-import com.android.wallpaper.picker.WallpaperPickerDelegate.PREVIEW_LIVE_WALLPAPER_REQUEST_CODE
+import com.android.wallpaper.picker.WallpaperPickerDelegate.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE
 import com.android.wallpaper.picker.category.ui.binder.CategoriesBinder
 import com.android.wallpaper.picker.category.ui.view.providers.IndividualPickerFactory
 import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
+import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.SizeCalculator
+import com.android.wallpaper.util.converter.WallpaperModelFactory
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -55,9 +60,31 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
     @Inject lateinit var individualPickerFactory: IndividualPickerFactory
     @Inject lateinit var persistentWallpaperModelRepository: PersistentWallpaperModelRepository
     @Inject lateinit var multiPanesChecker: MultiPanesChecker
+    @Inject lateinit var myPhotosStarterImpl: MyPhotosStarterImpl
+    @Inject lateinit var wallpaperModelFactory: WallpaperModelFactory
+
+    private lateinit var photoPickerLauncher: ActivityResultLauncher<Intent>
 
     // TODO: this may need to be scoped to fragment if the architecture changes
     private val categoriesViewModel by activityViewModels<CategoriesViewModel>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        photoPickerLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode != Activity.RESULT_OK) {
+                    return@registerForActivityResult
+                }
+
+                val data: Intent? = result.data
+                val imageUri: Uri = data?.data ?: return@registerForActivityResult
+                val imageWallpaperInfo = ImageWallpaperInfo(imageUri)
+                val context = context ?: return@registerForActivityResult
+                val wallpaperModel =
+                    wallpaperModelFactory.getWallpaperModel(context, imageWallpaperInfo)
+                startWallpaperPreviewActivity(wallpaperModel, false)
+            }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,10 +94,8 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         val view =
             inflater.inflate(R.layout.categories_fragment, container, /* attachToRoot= */ false)
 
-        getCategorySelectorFragmentHost()?.let { fragmentHost ->
-            setUpToolbar(view)
-            setTitle(getText(R.string.wallpaper_title))
-        }
+        setUpToolbar(view)
+        setTitle(getText(R.string.wallpaper_title))
 
         CategoriesBinder.bind(
             categoriesPage = view.requireViewById<RecyclerView>(R.id.content_parent),
@@ -87,22 +112,23 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                         )
                     )
                 }
-                CategoriesViewModel.NavigationEvent.NavigateToPhotosPicker -> {
+                is CategoriesViewModel.NavigationEvent.NavigateToPhotosPicker -> {
                     // make call to permission handler to grab photos and pass callback
-                    getCategorySelectorFragmentHost()
-                        ?.requestCustomPhotoPicker(
-                            object : PermissionChangedListener {
-                                override fun onPermissionsGranted() {
-                                    callback?.invoke()
-                                }
+                    myPhotosStarterImpl.requestCustomPhotoPicker(
+                        object : PermissionChangedListener {
+                            override fun onPermissionsGranted() {
+                                callback?.invoke()
+                            }
 
-                                override fun onPermissionsDenied(dontAskAgain: Boolean) {
-                                    if (dontAskAgain) {
-                                        showPermissionSnackbar()
-                                    }
+                            override fun onPermissionsDenied(dontAskAgain: Boolean) {
+                                if (dontAskAgain) {
+                                    showPermissionSnackbar()
                                 }
                             }
-                        )
+                        },
+                        requireActivity(),
+                        photoPickerLauncher,
+                    )
                 }
                 is CategoriesViewModel.NavigationEvent.NavigateToThirdParty -> {
                     startThirdPartyCategoryActivity(
@@ -112,25 +138,10 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                     )
                 }
                 is CategoriesViewModel.NavigationEvent.NavigateToPreviewScreen -> {
-                    val appContext = requireContext().applicationContext
-                    persistentWallpaperModelRepository.setWallpaperModel(
-                        navigationEvent.wallpaperModel
-                    )
-                    val isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext)
-                    val previewIntent =
-                        WallpaperPreviewActivity.newIntent(
-                            context = appContext,
-                            isAssetIdPresent = true,
-                            isViewAsHome = true,
-                            isNewTask = isMultiPanel,
-                            shouldCategoryRefresh =
-                                (navigationEvent.categoryType ==
-                                    CategoriesViewModel.CategoryType.CreativeCategories),
-                        )
-                    ActivityUtils.startActivityForResultSafely(
-                        requireActivity(),
-                        previewIntent,
-                        PREVIEW_LIVE_WALLPAPER_REQUEST_CODE, // TODO: provide correct request code
+                    startWallpaperPreviewActivity(
+                        navigationEvent.wallpaperModel,
+                        navigationEvent.categoryType ==
+                            CategoriesViewModel.CategoryType.CreativeCategories,
                     )
                 }
             }
@@ -138,9 +149,27 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         return view
     }
 
-    private fun getCategorySelectorFragmentHost(): CategorySelectorFragmentHost? {
-        return parentFragment as CategorySelectorFragmentHost?
-            ?: activity as CategorySelectorFragmentHost?
+    private fun startWallpaperPreviewActivity(
+        wallpaperModel: WallpaperModel,
+        isCreativeCategories: Boolean,
+    ) {
+        val appContext = requireContext()
+        val activity = requireActivity()
+        persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
+        val isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext)
+        val previewIntent =
+            WallpaperPreviewActivity.newIntent(
+                context = appContext,
+                isAssetIdPresent = true,
+                isViewAsHome = true,
+                isNewTask = isMultiPanel,
+                shouldCategoryRefresh = isCreativeCategories,
+            )
+        ActivityUtils.startActivityForResultSafely(
+            activity,
+            previewIntent,
+            VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE, // TODO: provide correct request code
+        )
     }
 
     private fun showPermissionSnackbar() {
@@ -197,5 +226,6 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
     companion object {
         const val SHOW_CATEGORY_REQUEST_CODE = 0
         const val SETTINGS_APP_INFO_REQUEST_CODE = 1
+        const val READ_IMAGE_PERMISSION: String = Manifest.permission.READ_MEDIA_IMAGES
     }
 }

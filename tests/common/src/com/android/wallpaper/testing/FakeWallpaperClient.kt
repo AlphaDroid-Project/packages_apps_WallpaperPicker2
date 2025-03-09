@@ -59,7 +59,7 @@ class FakeWallpaperClient @Inject constructor() : WallpaperClient {
     private var deferred = mutableListOf<(suspend () -> Unit)>()
 
     fun setRecentWallpapers(
-        recentWallpapersByDestination: Map<WallpaperDestination, List<WallpaperModel>>,
+        recentWallpapersByDestination: Map<WallpaperDestination, List<WallpaperModel>>
     ) {
         _recentWallpapers.value = recentWallpapersByDestination
     }
@@ -89,9 +89,7 @@ class FakeWallpaperClient @Inject constructor() : WallpaperClient {
         }
     }
 
-    fun getCurrentWallpaper(
-        destination: WallpaperDestination,
-    ): WallpaperModel {
+    fun getCurrentWallpaper(destination: WallpaperDestination): WallpaperModel {
         return _recentWallpapers.value[destination]?.get(0)
             ?: error("No wallpapers for screen $destination")
     }
@@ -118,7 +116,7 @@ class FakeWallpaperClient @Inject constructor() : WallpaperClient {
 
     private fun addToWallpapersSet(
         wallpaperModel: com.android.wallpaper.picker.data.WallpaperModel,
-        destination: WallpaperDestination
+        destination: WallpaperDestination,
     ) {
         wallpapersSet[destination] = wallpaperModel
     }
@@ -127,7 +125,7 @@ class FakeWallpaperClient @Inject constructor() : WallpaperClient {
         @SetWallpaperEntryPoint setWallpaperEntryPoint: Int,
         destination: WallpaperDestination,
         wallpaperId: String,
-        onDone: () -> Unit
+        onDone: () -> Unit,
     ) {
         if (isPaused) {
             deferred.add {
@@ -147,7 +145,7 @@ class FakeWallpaperClient @Inject constructor() : WallpaperClient {
 
     override suspend fun loadThumbnail(
         wallpaperId: String,
-        destination: WallpaperDestination
+        destination: WallpaperDestination,
     ): Bitmap? {
         return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
     }
@@ -166,7 +164,7 @@ class FakeWallpaperClient @Inject constructor() : WallpaperClient {
 
     override suspend fun getWallpaperColors(
         bitmap: Bitmap,
-        cropHints: Map<Point, Rect>?
+        cropHints: Map<Point, Rect>?,
     ): WallpaperColors? {
         return wallpaperColors
     }
@@ -177,7 +175,7 @@ class FakeWallpaperClient @Inject constructor() : WallpaperClient {
 
     fun setCurrentWallpaperModels(
         homeWallpaper: com.android.wallpaper.picker.data.WallpaperModel,
-        lockWallpaper: com.android.wallpaper.picker.data.WallpaperModel?
+        lockWallpaper: com.android.wallpaper.picker.data.WallpaperModel?,
     ) {
         wallpapersSet[WallpaperDestination.HOME] = homeWallpaper
         wallpapersSet[WallpaperDestination.LOCK] = lockWallpaper
@@ -192,7 +190,7 @@ class FakeWallpaperClient @Inject constructor() : WallpaperClient {
                         collectionId = "defaultCollection",
                     )
                     .also { wallpapersSet[WallpaperDestination.HOME] = it }),
-            wallpapersSet[WallpaperDestination.LOCK]
+            wallpapersSet[WallpaperDestination.LOCK],
         )
     }
 

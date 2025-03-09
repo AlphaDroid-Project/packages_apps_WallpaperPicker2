@@ -409,7 +409,7 @@ class IndividualPickerFragment2 :
                         return
                     }
 
-                    if (fetchedCategory == null) {
+                    if (fetchedCategory == null && !parentFragmentManager.isStateSaved) {
                         // The absence of this category in the CategoryProvider indicates a broken
                         // state, see b/38030129. Hence, finish the activity and return.
                         parentFragmentManager.popBackStack()

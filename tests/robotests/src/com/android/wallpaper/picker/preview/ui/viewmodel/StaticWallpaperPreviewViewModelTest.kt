@@ -44,7 +44,12 @@ import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.TestWallpaperPreferences
 import com.android.wallpaper.testing.WallpaperModelUtils
 import com.android.wallpaper.testing.collectLastValue
+import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import com.google.common.truth.Truth.assertThat
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.components.ActivityComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -106,7 +111,15 @@ class StaticWallpaperPreviewViewModelTest {
         scenario.onActivity { setEverything(it) }
     }
 
+    @EntryPoint
+    @InstallIn(ActivityComponent::class)
+    interface ActivityScopeEntryPoint {
+        fun connectionUtils(): WallpaperConnectionUtils
+    }
+
     private fun setEverything(activity: PreviewTestActivity) {
+        val activityScopeEntryPoint =
+            EntryPointAccessors.fromActivity(activity, ActivityScopeEntryPoint::class.java)
         wallpaperRepository =
             WallpaperRepository(
                 testScope.backgroundScope,
@@ -115,7 +128,13 @@ class StaticWallpaperPreviewViewModelTest {
                 testDispatcher,
             )
         wallpaperPreviewRepository = WallpaperPreviewRepository(wallpaperPreferences)
-        interactor = WallpaperPreviewInteractor(wallpaperPreviewRepository, wallpaperRepository)
+        interactor =
+            WallpaperPreviewInteractor(
+                appContext,
+                wallpaperPreviewRepository,
+                wallpaperRepository,
+                activityScopeEntryPoint.connectionUtils(),
+            )
         viewModel =
             StaticWallpaperPreviewViewModel(
                 interactor,

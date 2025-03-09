@@ -61,7 +61,21 @@ import kotlinx.coroutines.CoroutineScope
 @Singleton
 open class WallpaperPicker2Injector
 @Inject
-constructor(@MainDispatcher private val mainScope: CoroutineScope) : Injector {
+constructor(
+    @MainDispatcher private val mainScope: CoroutineScope,
+    private val displayUtils: Lazy<DisplayUtils>,
+    private val requester: Lazy<Requester>,
+    private val networkStatusNotifier: Lazy<NetworkStatusNotifier>,
+    private val partnerProvider: Lazy<PartnerProvider>,
+    private val uiModeManager: Lazy<UiModeManagerWrapper>,
+    private val userEventLogger: Lazy<UserEventLogger>,
+    private val injectedWallpaperClient: Lazy<WallpaperClient>,
+    private val injectedWallpaperInteractor: Lazy<WallpaperInteractor>,
+    private val prefs: Lazy<WallpaperPreferences>,
+    private val wallpaperColorsRepository: Lazy<WallpaperColorsRepository>,
+    private val defaultWallpaperCategoryWrapper: Lazy<WallpaperCategoryWrapper>,
+    private val packageNotifier: Lazy<PackageStatusNotifier>,
+) : Injector {
     private var alarmManagerWrapper: AlarmManagerWrapper? = null
     private var bitmapCropper: BitmapCropper? = null
     private var categoryProvider: CategoryProvider? = null
@@ -70,7 +84,6 @@ constructor(@MainDispatcher private val mainScope: CoroutineScope) : Injector {
     private var drawableLayerResolver: DrawableLayerResolver? = null
     private var exploreIntentChecker: ExploreIntentChecker? = null
     private var liveWallpaperInfoFactory: LiveWallpaperInfoFactory? = null
-    private var packageStatusNotifier: PackageStatusNotifier? = null
     private var performanceMonitor: PerformanceMonitor? = null
     private var systemFeatureChecker: SystemFeatureChecker? = null
     private var wallpaperPersister: WallpaperPersister? = null
@@ -84,20 +97,6 @@ constructor(@MainDispatcher private val mainScope: CoroutineScope) : Injector {
 
     private var previewActivityIntentFactory: InlinePreviewIntentFactory? = null
     private var viewOnlyPreviewActivityIntentFactory: InlinePreviewIntentFactory? = null
-
-    // Injected objects, sorted by alphabetical order on the type of object
-    @Inject lateinit var displayUtils: Lazy<DisplayUtils>
-    @Inject lateinit var requester: Lazy<Requester>
-    @Inject lateinit var networkStatusNotifier: Lazy<NetworkStatusNotifier>
-    @Inject lateinit var partnerProvider: Lazy<PartnerProvider>
-    @Inject lateinit var uiModeManager: Lazy<UiModeManagerWrapper>
-    @Inject lateinit var userEventLogger: Lazy<UserEventLogger>
-    @Inject lateinit var injectedWallpaperClient: Lazy<WallpaperClient>
-    @Inject lateinit var injectedWallpaperInteractor: Lazy<WallpaperInteractor>
-    @Inject lateinit var prefs: Lazy<WallpaperPreferences>
-    @Inject lateinit var wallpaperColorsRepository: Lazy<WallpaperColorsRepository>
-
-    @Inject lateinit var defaultWallpaperCategoryWrapper: Lazy<WallpaperCategoryWrapper>
 
     override fun getApplicationCoroutineScope(): CoroutineScope {
         return mainScope
@@ -189,10 +188,7 @@ constructor(@MainDispatcher private val mainScope: CoroutineScope) : Injector {
 
     @Synchronized
     override fun getPackageStatusNotifier(context: Context): PackageStatusNotifier {
-        return packageStatusNotifier
-            ?: DefaultPackageStatusNotifier(context.applicationContext).also {
-                packageStatusNotifier = it
-            }
+        return packageNotifier.get()
     }
 
     @Synchronized

@@ -17,7 +17,7 @@ package com.android.wallpaper.model
 
 /** Metadata for the static image wallpaper to be saved to the system preferences. */
 data class StaticWallpaperPrefMetadata(
-    val attributions: List<String?>?,
+    val attributions: List<String>?,
     val actionUrl: String?,
     val collectionId: String?,
     val hashCode: Long?,

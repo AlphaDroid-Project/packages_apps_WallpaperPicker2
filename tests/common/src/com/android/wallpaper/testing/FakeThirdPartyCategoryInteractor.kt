@@ -35,15 +35,19 @@ class FakeThirdPartyCategoryInteractor @Inject constructor() : ThirdPartyCategor
         val categoryModels =
             generateCategoryData().map { pair ->
                 CategoryModel(
-                    pair.first,
-                    pair.second,
-                    null,
-                    null,
+                    /* commonCategoryData = */ pair.first,
+                    /* thirdPartyCategoryData = */ pair.second,
+                    /* imageCategoryData = */ null,
+                    /* collectionCategoryData = */ null,
                 )
             }
 
         // Emit the list of categories
         emit(categoryModels)
+    }
+
+    override fun refreshThirdPartyAppCategories() {
+        TODO("Not yet implemented")
     }
 
     private fun generateCategoryData(): List<Pair<CommonCategoryData, ThirdPartyCategoryData>> {
@@ -71,11 +75,17 @@ class FakeThirdPartyCategoryInteractor @Inject constructor() : ThirdPartyCategor
             listOf(
                 Pair(
                     CommonCategoryData("Biktok", "biktok", 1),
-                    ThirdPartyCategoryData(biktokResolveInfo)
+                    ThirdPartyCategoryData(
+                        /* resolveInfo = */ biktokResolveInfo,
+                        /* defaultDrawable = */ null,
+                    ),
                 ),
                 Pair(
                     CommonCategoryData("Binstagram", "binstagram", 2),
-                    ThirdPartyCategoryData(binstragramResolveInfo)
+                    ThirdPartyCategoryData(
+                        /* resolveInfo = */ binstragramResolveInfo,
+                        /* defaultDrawable = */ null,
+                    ),
                 ),
             )
         return dataList

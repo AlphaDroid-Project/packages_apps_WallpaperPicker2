@@ -45,4 +45,16 @@ interface WallpaperCategoryRepository {
     suspend fun fetchMyPhotosCategory()
 
     suspend fun refreshNetworkCategories()
+
+    /**
+     * ThirdPartyAppCategories represent third-party apps that offer static wallpapers which users
+     * can set as their wallpapers.
+     */
+    suspend fun refreshThirdPartyAppCategories()
+
+    /**
+     * ThirdPartyLiveWallpaperCategories represent third-party apps that offer live wallpapers which
+     * users can set as their wallpapers.
+     */
+    suspend fun refreshThirdPartyLiveWallpaperCategories()
 }

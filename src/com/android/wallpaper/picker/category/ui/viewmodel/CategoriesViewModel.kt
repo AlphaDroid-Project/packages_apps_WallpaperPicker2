@@ -17,10 +17,14 @@
 package com.android.wallpaper.picker.category.ui.viewmodel
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ResolveInfo
+import android.service.wallpaper.WallpaperService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.wallpaper.R
+import com.android.wallpaper.module.PackageStatusNotifier
+import com.android.wallpaper.module.PackageStatusNotifier.PackageStatus
 import com.android.wallpaper.picker.category.domain.interactor.CategoriesLoadingStatusInteractor
 import com.android.wallpaper.picker.category.domain.interactor.CategoryInteractor
 import com.android.wallpaper.picker.category.domain.interactor.CreativeCategoryInteractor
@@ -52,11 +56,56 @@ constructor(
     private val thirdPartyCategoryInteractor: ThirdPartyCategoryInteractor,
     private val loadindStatusInteractor: CategoriesLoadingStatusInteractor,
     private val networkStatusInteractor: NetworkStatusInteractor,
+    private val packageStatusNotifier: PackageStatusNotifier,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
     val navigationEvents = _navigationEvents.asSharedFlow()
+
+    init {
+        registerLiveWallpaperReceiver()
+        registerThirdPartyWallpaperCategories()
+    }
+
+    // TODO: b/379138560: Add tests for this method and method below
+    private fun registerLiveWallpaperReceiver() {
+        packageStatusNotifier.addListener(
+            { packageName, status ->
+                if (packageName != null) {
+                    updateLiveWallpapersCategories(packageName, status)
+                }
+            },
+            WallpaperService.SERVICE_INTERFACE,
+        )
+    }
+
+    private fun registerThirdPartyWallpaperCategories() {
+        packageStatusNotifier.addListener(
+            { packageName, status ->
+                if (packageName != null) {
+                    updateThirdPartyAppCategories(packageName, status)
+                }
+            },
+            Intent.ACTION_SET_WALLPAPER,
+        )
+    }
+
+    private fun updateLiveWallpapersCategories(packageName: String, @PackageStatus status: Int) {
+        refreshThirdPartyLiveWallpaperCategories()
+    }
+
+    private fun updateThirdPartyAppCategories(packageName: String, @PackageStatus status: Int) {
+        refreshThirdPartyCategories()
+    }
+
+    private fun refreshThirdPartyLiveWallpaperCategories() {
+        singleCategoryInteractor.refreshThirdPartyLiveWallpaperCategories()
+    }
+
+    private fun refreshThirdPartyCategories() {
+        thirdPartyCategoryInteractor.refreshThirdPartyAppCategories()
+    }
 
     private fun navigateToWallpaperCollection(collectionId: String, categoryType: CategoryType) {
         viewModelScope.launch {
@@ -68,7 +117,7 @@ constructor(
 
     private fun navigateToPreviewScreen(
         wallpaperModel: WallpaperModel,
-        categoryType: CategoryType
+        categoryType: CategoryType,
     ) {
         viewModelScope.launch {
             _navigationEvents.emit(
@@ -77,8 +126,10 @@ constructor(
         }
     }
 
-    private fun navigateToPhotosPicker() {
-        viewModelScope.launch { _navigationEvents.emit(NavigationEvent.NavigateToPhotosPicker) }
+    private fun navigateToPhotosPicker(wallpaperModel: WallpaperModel?) {
+        viewModelScope.launch {
+            _navigationEvents.emit(NavigationEvent.NavigateToPhotosPicker(wallpaperModel))
+        }
     }
 
     private fun navigateToThirdPartyApp(resolveInfo: ResolveInfo) {
@@ -96,6 +147,10 @@ constructor(
             }
         }
 
+    /**
+     * This section is only for third party category apps, and not third party live wallpaper
+     * category apps which are handled as part of default category sections.
+     */
     private val thirdPartyCategorySections: Flow<List<SectionViewModel>> =
         thirdPartyCategoryInteractor.categories
             .distinctUntilChanged { old, new -> categoryModelListDifferentiator(old, new) }
@@ -104,14 +159,19 @@ constructor(
                     SectionViewModel(
                         tileViewModels =
                             listOf(
-                                TileViewModel(null, null, category.commonCategoryData.title) {
+                                TileViewModel(
+                                    /* defaultDrawable = */ category.thirdPartyCategoryData
+                                        ?.defaultDrawable,
+                                    /* thumbnailAsset = */ null,
+                                    /* text = */ category.commonCategoryData.title,
+                                ) {
                                     category.thirdPartyCategoryData?.resolveInfo?.let {
                                         navigateToThirdPartyApp(it)
                                     }
                                 }
                             ),
                         columnCount = 1,
-                        sectionTitle = null
+                        sectionTitle = null,
                     )
                 }
             }
@@ -135,18 +195,18 @@ constructor(
                                     ) {
                                         navigateToPreviewScreen(
                                             category.collectionCategoryData.wallpaperModels[0],
-                                            CategoryType.DefaultCategories
+                                            CategoryType.DefaultCategories,
                                         )
                                     } else {
                                         navigateToWallpaperCollection(
                                             category.commonCategoryData.collectionId,
-                                            CategoryType.DefaultCategories
+                                            CategoryType.DefaultCategories,
                                         )
                                     }
                                 }
                             ),
                         columnCount = 1,
-                        sectionTitle = null
+                        sectionTitle = null,
                     )
                 }
             }
@@ -173,12 +233,12 @@ constructor(
                             ) {
                                 navigateToPreviewScreen(
                                     category.collectionCategoryData.wallpaperModels[0],
-                                    CategoryType.CreativeCategories
+                                    CategoryType.CreativeCategories,
                                 )
                             } else {
                                 navigateToWallpaperCollection(
                                     category.commonCategoryData.collectionId,
-                                    CategoryType.CreativeCategories
+                                    CategoryType.CreativeCategories,
                                 )
                             }
                         }
@@ -186,7 +246,7 @@ constructor(
                 return@map SectionViewModel(
                     tileViewModels = tiles,
                     columnCount = 3,
-                    sectionTitle = context.getString(R.string.creative_wallpaper_title)
+                    sectionTitle = context.getString(R.string.creative_wallpaper_title),
                 )
             }
 
@@ -202,11 +262,11 @@ constructor(
                             maxCategoriesInRow = SectionCardinality.Single,
                         ) {
                             // TODO(b/352081782): trigger the effect with effect controller
-                            navigateToPhotosPicker()
+                            navigateToPhotosPicker(null)
                         }
                     ),
                 columnCount = 3,
-                sectionTitle = context.getString(R.string.choose_a_wallpaper_section_title)
+                sectionTitle = context.getString(R.string.choose_a_wallpaper_section_title),
             )
         }
 
@@ -248,21 +308,21 @@ constructor(
         DefaultCategories,
         CreativeCategories,
         MyPhotosCategories,
-        Default
+        Default,
     }
 
     sealed class NavigationEvent {
         data class NavigateToWallpaperCollection(
             val categoryId: String,
-            val categoryType: CategoryType
+            val categoryType: CategoryType,
         ) : NavigationEvent()
 
         data class NavigateToPreviewScreen(
             val wallpaperModel: WallpaperModel,
-            val categoryType: CategoryType
+            val categoryType: CategoryType,
         ) : NavigationEvent()
 
-        object NavigateToPhotosPicker : NavigationEvent()
+        data class NavigateToPhotosPicker(val wallpaperModel: WallpaperModel?) : NavigationEvent()
 
         data class NavigateToThirdParty(val resolveInfo: ResolveInfo) : NavigationEvent()
     }

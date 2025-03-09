@@ -125,4 +125,12 @@ class FakeDefaultWallpaperCategoryRepository @Inject constructor() : WallpaperCa
     override suspend fun refreshNetworkCategories() {
         // empty
     }
+
+    override suspend fun refreshThirdPartyAppCategories() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun refreshThirdPartyLiveWallpaperCategories() {
+        TODO("Not yet implemented")
+    }
 }

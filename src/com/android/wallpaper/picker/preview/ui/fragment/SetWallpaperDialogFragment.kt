@@ -84,18 +84,17 @@ class SetWallpaperDialogFragment : Hilt_SetWallpaperDialogFragment() {
          */
         val activityReference = activity
         SetWallpaperDialogBinder.bind(
-            layout,
-            wallpaperPreviewViewModel,
-            displayUtils.hasMultiInternalDisplays(),
-            displayUtils.getRealSize(displayUtils.getWallpaperDisplay()),
+            dialogContent = layout,
+            wallpaperPreviewViewModel = wallpaperPreviewViewModel,
+            isFoldable = displayUtils.hasMultiInternalDisplays(),
+            handheldDisplaySize = displayUtils.getRealSize(displayUtils.getWallpaperDisplay()),
             lifecycleOwner = this,
-            mainScope,
-            checkNotNull(findNavController().currentDestination?.id),
+            mainScope = mainScope,
             onFinishActivity = {
                 Toast.makeText(
                         context,
                         R.string.wallpaper_set_successfully_message,
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT,
                     )
                     .show()
                 if (activityReference != null) {
@@ -108,12 +107,12 @@ class SetWallpaperDialogFragment : Hilt_SetWallpaperDialogFragment() {
                         intent.putExtra(
                             WALLPAPER_LAUNCH_SOURCE,
                             if (wallpaperPreviewViewModel.isViewAsHome) LAUNCH_SOURCE_LAUNCHER
-                            else LAUNCH_SOURCE_SETTINGS_HOMEPAGE
+                            else LAUNCH_SOURCE_SETTINGS_HOMEPAGE,
                         )
                         activityReference.startActivity(
                             intent,
                             ActivityOptions.makeSceneTransitionAnimation(activityReference)
-                                .toBundle()
+                                .toBundle(),
                         )
                     } else {
                         activityReference.setResult(Activity.RESULT_OK)
@@ -133,5 +132,9 @@ class SetWallpaperDialogFragment : Hilt_SetWallpaperDialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
         wallpaperPreviewViewModel.dismissSetWallpaperDialog()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
     }
 }

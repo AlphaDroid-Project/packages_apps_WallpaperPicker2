@@ -15,12 +15,15 @@
  */
 package com.android.wallpaper.module;
 
+import static android.app.Flags.liveWallpaperContentHandling;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
 
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.app.WallpaperInfo;
 import android.app.WallpaperManager;
+import android.app.wallpaper.WallpaperInstance;
 import android.content.ContentProviderClient;
 import android.content.Context;
 import android.database.Cursor;
@@ -122,8 +125,9 @@ public class DefaultWallpaperRefresher implements WallpaperRefresher {
         @Override
         protected List<WallpaperMetadata> doInBackground(Void... unused) {
             List<WallpaperMetadata> wallpaperMetadatas = new ArrayList<>();
+            WallpaperInfo homeInfo = mWallpaperManager.getWallpaperInfo(FLAG_SYSTEM);
 
-            boolean isHomeScreenStatic = mWallpaperManager.getWallpaperInfo(FLAG_SYSTEM) == null;
+            boolean isHomeScreenStatic = (homeInfo == null);
             if (!isHomeScreenMetadataCurrent() || (isHomeScreenStatic
                     && isHomeScreenAttributionsEmpty())) {
                 mWallpaperPreferences.clearHomeWallpaperMetadata();
@@ -133,7 +137,7 @@ public class DefaultWallpaperRefresher implements WallpaperRefresher {
             boolean isLockScreenWallpaperCurrentlySet =
                     mWallpaperStatusChecker.isLockWallpaperSet();
 
-            if (mWallpaperManager.getWallpaperInfo() == null) {
+            if (isHomeScreenStatic) {
                 wallpaperMetadatas.add(new WallpaperMetadata(
                         mWallpaperPreferences.getHomeWallpaperAttributions(),
                         mWallpaperPreferences.getHomeWallpaperActionUrl(),
@@ -141,10 +145,16 @@ public class DefaultWallpaperRefresher implements WallpaperRefresher {
                         /* wallpaperComponent= */ null,
                         getCurrentWallpaperCropHints(FLAG_SYSTEM)));
             } else {
-                android.app.WallpaperInfo info = mWallpaperManager.getWallpaperInfo();
-                Uri previewUri = getCreativePreviewUri(mAppContext, info,
-                        WallpaperDestination.HOME);
-                wallpaperMetadatas.add(new LiveWallpaperMetadata(info, previewUri));
+                if (liveWallpaperContentHandling()) {
+                    WallpaperInstance instance = mWallpaperManager.getWallpaperInstance(
+                            FLAG_SYSTEM);
+                    wallpaperMetadatas.add(
+                            new LiveWallpaperMetadata(homeInfo, null, instance.getDescription()));
+                } else {
+                    Uri previewUri = getCreativePreviewUri(mAppContext, homeInfo,
+                            WallpaperDestination.HOME);
+                    wallpaperMetadatas.add(new LiveWallpaperMetadata(homeInfo, previewUri));
+                }
             }
 
             // Return only home metadata if pre-N device or lock screen wallpaper is not explicitly
@@ -153,7 +163,9 @@ public class DefaultWallpaperRefresher implements WallpaperRefresher {
                 return wallpaperMetadatas;
             }
 
-            boolean isLockScreenStatic = mWallpaperManager.getWallpaperInfo(FLAG_LOCK) == null;
+            WallpaperInfo lockInfo = mWallpaperManager.getWallpaperInfo(FLAG_LOCK);
+
+            boolean isLockScreenStatic = (lockInfo == null);
             if (!isLockScreenMetadataCurrent() || (isLockScreenStatic
                     && isLockScreenAttributionsEmpty())) {
                 mWallpaperPreferences.clearLockWallpaperMetadata();
@@ -168,10 +180,15 @@ public class DefaultWallpaperRefresher implements WallpaperRefresher {
                         /* wallpaperComponent= */ null,
                         getCurrentWallpaperCropHints(FLAG_LOCK)));
             } else {
-                android.app.WallpaperInfo info = mWallpaperManager.getWallpaperInfo(FLAG_LOCK);
-                Uri previewUri = getCreativePreviewUri(mAppContext, info,
-                        WallpaperDestination.LOCK);
-                wallpaperMetadatas.add(new LiveWallpaperMetadata(info, previewUri));
+                if (liveWallpaperContentHandling()) {
+                    WallpaperInstance instance = mWallpaperManager.getWallpaperInstance(FLAG_LOCK);
+                    wallpaperMetadatas.add(
+                            new LiveWallpaperMetadata(lockInfo, null, instance.getDescription()));
+                } else {
+                    Uri previewUri = getCreativePreviewUri(mAppContext, lockInfo,
+                            WallpaperDestination.LOCK);
+                    wallpaperMetadatas.add(new LiveWallpaperMetadata(lockInfo, previewUri));
+                }
             }
 
             return wallpaperMetadatas;

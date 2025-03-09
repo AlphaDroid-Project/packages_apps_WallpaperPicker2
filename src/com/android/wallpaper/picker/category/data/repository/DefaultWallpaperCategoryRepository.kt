@@ -150,6 +150,18 @@ constructor(
 
     override suspend fun refreshNetworkCategories() {}
 
+    override suspend fun refreshThirdPartyAppCategories() {
+        _isDefaultCategoriesFetched.value = false
+        fetchThirdPartyAppCategory()
+        _isDefaultCategoriesFetched.value = true
+    }
+
+    override suspend fun refreshThirdPartyLiveWallpaperCategories() {
+        _isDefaultCategoriesFetched.value = false
+        fetchThirdPartyLiveWallpaperCategory()
+        _isDefaultCategoriesFetched.value = true
+    }
+
     private suspend fun fetchOnDeviceCategory() {
         try {
             onDeviceFetchedCategory =

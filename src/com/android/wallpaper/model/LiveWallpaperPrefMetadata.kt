@@ -17,7 +17,7 @@ package com.android.wallpaper.model
 
 /** Metadata for the live wallpaper to be saved to the system preferences. */
 data class LiveWallpaperPrefMetadata(
-    val attributions: List<String?>?,
+    val attributions: List<String>?,
     val serviceName: String,
     val effectName: String?,
     val collectionId: String?,

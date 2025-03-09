@@ -13,33 +13,46 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/tab_container"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:minHeight="@dimen/accessibility_min_height"
-    android:background="@drawable/floating_tab_toolbar_tab_background"
-    android:gravity="center_vertical"
-    android:paddingVertical="@dimen/floating_tab_toolbar_tab_vertical_padding"
-    android:paddingHorizontal="@dimen/floating_tab_toolbar_tab_horizontal_padding">
+    android:minHeight="@dimen/accessibility_min_height">
 
-    <ImageView
-        android:id="@+id/tab_icon"
-        android:layout_width="@dimen/floating_tab_toolbar_tab_icon_size"
-        android:layout_height="@dimen/floating_tab_toolbar_tab_icon_size"
-        android:layout_marginEnd="@dimen/floating_tab_toolbar_tab_icon_margin_end"
-        app:tint="@color/system_on_surface"
-        tools:src="@drawable/ic_delete" />
 
-    <TextView
-        android:id="@+id/label_text"
+    <!-- We intentionally wrap this linear layout with a frame layout to implement a shorter visual
+       height while maintaining a larger tap area height of at least 48 dp for a11y -->
+    <LinearLayout
+        android:id="@+id/tab_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/WallpaperPicker.Preview.TextAppearance.NoAllCaps"
-        android:textColor="@color/text_color_primary"
-        android:gravity="center"
-        android:lines="1"
-        tools:text="Tab Primary"/>
-</LinearLayout>
+        android:minHeight="@dimen/floating_tab_toolbar_tab_min_height"
+        android:background="@drawable/floating_tab_toolbar_tab_background"
+        android:layout_gravity="center"
+        android:gravity="center_vertical"
+        android:paddingVertical="@dimen/floating_tab_toolbar_tab_vertical_padding"
+        android:paddingHorizontal="@dimen/floating_tab_toolbar_tab_horizontal_padding"
+        tools:ignore="UselessParent">
+
+        <ImageView
+            android:id="@+id/tab_icon"
+            android:layout_width="@dimen/floating_tab_toolbar_tab_icon_size"
+            android:layout_height="@dimen/floating_tab_toolbar_tab_icon_size"
+            android:layout_marginEnd="@dimen/floating_tab_toolbar_tab_icon_margin_end"
+            app:tint="@color/system_on_surface"
+            android:src="@drawable/ic_delete"
+            android:importantForAccessibility="no" />
+
+        <TextView
+            android:id="@+id/label_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/WallpaperPicker.Preview.TextAppearance.NoAllCaps"
+            android:textColor="@color/text_color_primary"
+            android:gravity="center"
+            android:lines="1"
+            android:text="@string/tab_placeholder_text"/>
+
+    </LinearLayout>
+</FrameLayout>

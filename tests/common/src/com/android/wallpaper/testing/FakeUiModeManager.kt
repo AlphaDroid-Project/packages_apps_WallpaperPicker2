@@ -25,7 +25,8 @@ import javax.inject.Singleton
 @Singleton
 class FakeUiModeManager @Inject constructor() : UiModeManagerWrapper {
     val listeners = mutableListOf<ContrastChangeListener>()
-    private var _contrast: Float? = 0.0f
+    private var contrast: Float? = 0.0f
+    private var isNightModeActivated: Boolean = false
 
     override fun addContrastChangeListener(executor: Executor, listener: ContrastChangeListener) {
         listeners.add(listener)
@@ -36,15 +37,19 @@ class FakeUiModeManager @Inject constructor() : UiModeManagerWrapper {
     }
 
     override fun getContrast(): Float? {
-        return _contrast
+        return contrast
     }
 
     fun setContrast(contrast: Float?) {
-        _contrast = contrast
+        this.contrast = contrast
         contrast?.let { v -> listeners.forEach { it.onContrastChanged(v) } }
     }
 
+    override fun getIsNightModeActivated(): Boolean {
+        return isNightModeActivated
+    }
+
     override fun setNightModeActivated(isActive: Boolean) {
-        // no-op
+        isNightModeActivated = isActive
     }
 }

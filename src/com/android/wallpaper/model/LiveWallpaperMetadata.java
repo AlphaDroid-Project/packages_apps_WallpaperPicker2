@@ -16,10 +16,12 @@
 package com.android.wallpaper.model;
 
 import android.app.WallpaperInfo;
+import android.app.wallpaper.WallpaperDescription;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.List;
@@ -30,11 +32,20 @@ import java.util.Map;
  */
 public class LiveWallpaperMetadata extends WallpaperMetadata {
     @Nullable private final Uri mPreviewUri;
+    @NonNull private final WallpaperDescription mDescription;
 
     public LiveWallpaperMetadata(android.app.WallpaperInfo wallpaperComponent,
             @Nullable Uri previewUri) {
+        this(wallpaperComponent, previewUri,
+                new WallpaperDescription.Builder().setComponent(
+                        wallpaperComponent.getComponent()).build());
+    }
+
+    public LiveWallpaperMetadata(android.app.WallpaperInfo wallpaperComponent,
+            @Nullable Uri previewUri, @NonNull WallpaperDescription description) {
         super(null, null, null, wallpaperComponent, null);
         mPreviewUri = previewUri;
+        mDescription = description;
     }
 
     @Override
@@ -66,5 +77,10 @@ public class LiveWallpaperMetadata extends WallpaperMetadata {
     @Nullable
     public Uri getPreviewUri() {
         return mPreviewUri;
+    }
+
+    @NonNull
+    public WallpaperDescription getDescription() {
+        return mDescription;
     }
 }

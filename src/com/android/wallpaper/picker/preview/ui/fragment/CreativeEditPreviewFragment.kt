@@ -16,6 +16,8 @@
 package com.android.wallpaper.picker.preview.ui.fragment
 
 import android.app.Activity.RESULT_OK
+import android.app.Flags.liveWallpaperContentHandling
+import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -31,7 +33,12 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.android.wallpaper.R
+import com.android.wallpaper.model.WallpaperInfoContract
 import com.android.wallpaper.picker.AppbarFragment
+import com.android.wallpaper.picker.data.LiveWallpaperData
+import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
+import com.android.wallpaper.picker.di.modules.MainDispatcher
+import com.android.wallpaper.picker.preview.data.repository.WallpaperPreviewRepository
 import com.android.wallpaper.picker.preview.ui.binder.FullWallpaperPreviewBinder
 import com.android.wallpaper.picker.preview.ui.fragment.SmallPreviewFragment.Companion.ARG_EDIT_INTENT
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel
@@ -42,13 +49,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 
 /** Shows full preview with an edit activity overlay. */
 @AndroidEntryPoint(AppbarFragment::class)
 class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
 
     @Inject @ApplicationContext lateinit var appContext: Context
+    @Inject @MainDispatcher lateinit var mainScope: CoroutineScope
     @Inject lateinit var displayUtils: DisplayUtils
+    @Inject lateinit var previewRepository: WallpaperPreviewRepository
     @Inject lateinit var wallpaperConnectionUtils: WallpaperConnectionUtils
 
     private lateinit var currentView: View
@@ -58,13 +69,13 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         currentView = inflater.inflate(R.layout.fragment_full_preview, container, false)
         setUpToolbar(currentView, true, true)
 
         wallpaperPreviewViewModel.setDefaultFullPreviewConfigViewModel(
-            deviceDisplayType = displayUtils.getCurrentDisplayType(requireActivity()),
+            deviceDisplayType = displayUtils.getCurrentDisplayType(requireActivity())
         )
 
         currentView.requireViewById<Toolbar>(R.id.toolbar).isVisible = false
@@ -82,7 +93,7 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
             if (isCreateNew) {
                 requireActivity().activityResultRegistry.register(
                     CREATIVE_RESULT_REGISTRY,
-                    ActivityResultContracts.StartActivityForResult()
+                    ActivityResultContracts.StartActivityForResult(),
                 ) {
                     // Reset full preview view model to disable full to small preview transition
                     wallpaperPreviewViewModel.resetFullPreviewConfigViewModel()
@@ -91,6 +102,9 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
                     // RESULT_OK means the user clicked on the check button; RESULT_CANCELED
                     // otherwise.
                     if (it.resultCode == RESULT_OK) {
+                        if (liveWallpaperContentHandling()) {
+                            updatePreview(it.resultCode, it.data)
+                        }
                         // When clicking on the check button, navigate to the small preview
                         // fragment.
                         findNavController()
@@ -111,6 +125,9 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
 
                         override fun parseResult(resultCode: Int, intent: Intent?): Int {
                             wallpaperPreviewViewModel.isCurrentlyEditingCreativeWallpaper = false
+                            if (liveWallpaperContentHandling()) {
+                                updatePreview(resultCode, intent)
+                            }
                             return resultCode
                         }
                     },
@@ -129,6 +146,57 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
         return currentView
     }
 
+    // Updates the current preview using the WallpaperDescription returned with the Intent if any
+    private fun updatePreview(resultCode: Int, intent: Intent?) {
+        if (!liveWallpaperContentHandling()) return
+        if (resultCode == RESULT_OK) {
+            val component =
+                (previewRepository.wallpaperModel.value as LiveWallpaperModel)
+                    .liveWallpaperData
+                    .systemWallpaperInfo
+                    .component
+            intent
+                ?.extras
+                ?.getParcelable(
+                    WallpaperInfoContract.WALLPAPER_DESCRIPTION_CONTENT_HANDLING,
+                    WallpaperDescription::class.java,
+                )
+                ?.let {
+                    if (it.component != null) {
+                        it
+                    } else {
+                        // Live wallpaper services can't provide their component name, so
+                        // set it here
+                        it.toBuilder().setComponent(component).build()
+                    }
+                }
+                ?.let { description ->
+                    (previewRepository.wallpaperModel.value as LiveWallpaperModel).let {
+                        val sourceLiveData = it.liveWallpaperData
+                        val updatedLiveData =
+                            LiveWallpaperData(
+                                sourceLiveData.groupName,
+                                sourceLiveData.systemWallpaperInfo,
+                                sourceLiveData.isTitleVisible,
+                                sourceLiveData.isApplied,
+                                sourceLiveData.isEffectWallpaper,
+                                sourceLiveData.effectNames,
+                                sourceLiveData.contextDescription,
+                                description,
+                            )
+                        val updatedWallpaper =
+                            LiveWallpaperModel(
+                                it.commonWallpaperData,
+                                updatedLiveData,
+                                it.creativeWallpaperData,
+                                it.internalLiveWallpaperData,
+                            )
+                        runBlocking { previewRepository.setWallpaperModel(updatedWallpaper) }
+                    }
+                }
+        }
+    }
+
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
 
@@ -138,10 +206,11 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
             viewModel = wallpaperPreviewViewModel,
             transition = null,
             displayUtils = displayUtils,
+            mainScope = mainScope,
             lifecycleOwner = viewLifecycleOwner,
             savedInstanceState = savedInstanceState,
             wallpaperConnectionUtils = wallpaperConnectionUtils,
-            isFirstBindingDeferred = CompletableDeferred(savedInstanceState == null)
+            isFirstBindingDeferred = CompletableDeferred(savedInstanceState == null),
         )
     }
 

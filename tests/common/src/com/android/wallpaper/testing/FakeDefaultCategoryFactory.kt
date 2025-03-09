@@ -57,7 +57,7 @@ class FakeDefaultCategoryFactory @Inject constructor() : CategoryFactory {
             commonCategoryData = createCommonCategoryData(category),
             collectionCategoryData = createCollectionsCategoryData(category),
             imageCategoryData = createImageCategoryData(category),
-            thirdPartyCategoryData = createThirdPartyCategoryData(category)
+            thirdPartyCategoryData = createThirdPartyCategoryData(category),
         )
     }
 
@@ -65,19 +65,17 @@ class FakeDefaultCategoryFactory @Inject constructor() : CategoryFactory {
         return CommonCategoryData(
             title = category.title,
             collectionId = category.collectionId,
-            priority = category.priority
+            priority = category.priority,
         )
     }
 
-    private fun createCollectionsCategoryData(
-        category: Category,
-    ): CollectionCategoryData? {
+    private fun createCollectionsCategoryData(category: Category): CollectionCategoryData? {
         return if (category is WallpaperCategory) {
             CollectionCategoryData(
                 wallpaperModels = wallpaperModels,
                 thumbAsset = fakeAsset,
                 featuredThumbnailIndex = category.featuredThumbnailIndex,
-                isSingleWallpaperCategory = category.isSingleWallpaperCategory
+                isSingleWallpaperCategory = category.isSingleWallpaperCategory,
             )
         } else {
             null
@@ -94,7 +92,7 @@ class FakeDefaultCategoryFactory @Inject constructor() : CategoryFactory {
 
     private fun createThirdPartyCategoryData(category: Category): ThirdPartyCategoryData? {
         return if (category is ThirdPartyAppCategory) {
-            resolveInfo?.let { ThirdPartyCategoryData(resolveInfo = it) }
+            resolveInfo?.let { ThirdPartyCategoryData(resolveInfo = it, defaultDrawable = null) }
         } else {
             null
         }

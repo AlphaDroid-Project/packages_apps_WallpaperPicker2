@@ -143,7 +143,8 @@ constructor(
                 val thirdPartyLiveWallpaperCategory = ThirdPartyLiveWallpaperCategory(
                     context.getString(R.string.live_wallpapers_category_title),
                     context.getString(R.string.live_wallpaper_collection_id), liveWallpapers,
-                    PRIORITY_LIVE, getExcludedLiveWallpaperPackageNames())
+                    PRIORITY_LIVE,
+                    getExcludedLiveWallpaperPackageNames() + excludedPackageNames)
                 return listOf(thirdPartyLiveWallpaperCategory)
             }
         }

@@ -69,9 +69,7 @@ constructor(
             .shareIn(scope = scope, started = SharingStarted.WhileSubscribed(), replay = 1)
 
     /** The ID of the currently-selected wallpaper. */
-    fun selectedWallpaperId(
-        destination: WallpaperDestination,
-    ): StateFlow<String> {
+    fun selectedWallpaperId(destination: WallpaperDestination): StateFlow<String> {
         return client
             .recentWallpapers(destination = destination, limit = 1)
             .map { previews -> currentWallpaperKey(destination, previews) }
@@ -79,7 +77,7 @@ constructor(
             .stateIn(
                 scope = scope,
                 started = SharingStarted.WhileSubscribed(),
-                initialValue = currentWallpaperKey(destination, null)
+                initialValue = currentWallpaperKey(destination, null),
             )
     }
 
@@ -121,7 +119,7 @@ constructor(
     suspend fun loadThumbnail(
         wallpaperId: String,
         lastUpdatedTimestamp: Long,
-        destination: WallpaperDestination
+        destination: WallpaperDestination,
     ): Bitmap? {
         val cacheKey = "$wallpaperId-$lastUpdatedTimestamp"
         return thumbnailCache[cacheKey]
@@ -163,11 +161,7 @@ constructor(
         wallpaperModel: LiveWallpaperModel,
     ) {
         withContext(backgroundDispatcher) {
-            client.setLiveWallpaper(
-                setWallpaperEntryPoint,
-                destination,
-                wallpaperModel,
-            )
+            client.setLiveWallpaper(setWallpaperEntryPoint, destination, wallpaperModel)
         }
     }
 

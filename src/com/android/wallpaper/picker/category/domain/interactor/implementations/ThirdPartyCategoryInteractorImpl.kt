@@ -19,15 +19,25 @@ package com.android.wallpaper.picker.category.domain.interactor.implementations
 import com.android.wallpaper.picker.category.data.repository.WallpaperCategoryRepository
 import com.android.wallpaper.picker.category.domain.interactor.ThirdPartyCategoryInteractor
 import com.android.wallpaper.picker.data.category.CategoryModel
+import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 @Singleton
 class ThirdPartyCategoryInteractorImpl
 @Inject
-constructor(wallpaperCategoryRepository: WallpaperCategoryRepository) :
-    ThirdPartyCategoryInteractor {
+constructor(
+    private val wallpaperCategoryRepository: WallpaperCategoryRepository,
+    @BackgroundDispatcher private val backgroundScope: CoroutineScope,
+) : ThirdPartyCategoryInteractor {
+
     override val categories: Flow<List<CategoryModel>> =
         wallpaperCategoryRepository.thirdPartyAppCategory
+
+    override fun refreshThirdPartyAppCategories() {
+        backgroundScope.launch { wallpaperCategoryRepository.refreshThirdPartyAppCategories() }
+    }
 }

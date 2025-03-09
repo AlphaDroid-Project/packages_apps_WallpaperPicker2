@@ -25,4 +25,6 @@ import kotlinx.coroutines.flow.Flow
  */
 interface ThirdPartyCategoryInteractor {
     val categories: Flow<List<CategoryModel>>
+
+    fun refreshThirdPartyAppCategories()
 }

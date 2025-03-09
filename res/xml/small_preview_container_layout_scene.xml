@@ -15,19 +15,20 @@
   -->
 
 <MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:motion="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Transition
         android:id="@+id/show_floating_sheet"
-        motion:constraintSetStart="@id/floating_sheet_gone"
-        motion:constraintSetEnd="@id/floating_sheet_visible" />
+        app:constraintSetStart="@id/floating_sheet_gone"
+        app:constraintSetEnd="@id/floating_sheet_visible" />
 
     <ConstraintSet android:id="@+id/floating_sheet_gone">
         <Constraint
-            android:id="@+id/pager_previews"
+            android:id="@+id/preview_pager"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_marginTop="@dimen/handheld_small_preview_pager_margin_top"
+            android:layout_marginBottom="@dimen/handheld_small_preview_pager_margin_bottom"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -38,7 +39,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:alpha="1"
-            app:layout_constraintTop_toBottomOf="@+id/pager_previews"
+            android:layout_marginBottom="@dimen/handheld_small_preview_action_group_margin_bottom"
+            app:layout_constraintTop_toBottomOf="@+id/preview_pager"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
@@ -47,6 +49,7 @@
             android:id="@+id/floating_sheet"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/handheld_small_preview_action_group_margin_bottom"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="parent" />
@@ -54,9 +57,11 @@
 
     <ConstraintSet android:id="@+id/floating_sheet_visible">
         <Constraint
-            android:id="@+id/pager_previews"
+            android:id="@+id/preview_pager"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_marginTop="@dimen/handheld_small_preview_pager_margin_top"
+            android:layout_marginBottom="@dimen/handheld_small_preview_pager_margin_bottom"
             app:layout_constraintBottom_toTopOf="@+id/floating_sheet"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -67,7 +72,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:alpha="0"
-            app:layout_constraintTop_toBottomOf="@+id/pager_previews"
+            android:layout_marginBottom="@dimen/handheld_small_preview_action_group_margin_bottom"
+            app:layout_constraintTop_toBottomOf="@+id/preview_pager"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
@@ -76,8 +82,39 @@
             android:id="@+id/floating_sheet"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/handheld_small_preview_action_group_margin_bottom"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/show_apply_wallpaper">
+        <Constraint
+            android:id="@+id/preview_pager"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/preview_action_group_container" />
+
+        <Constraint
+            android:id="@+id/preview_action_group_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@+id/preview_pager"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <Constraint
+            android:id="@+id/floating_sheet"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="parent" />
     </ConstraintSet>
 </MotionScene>

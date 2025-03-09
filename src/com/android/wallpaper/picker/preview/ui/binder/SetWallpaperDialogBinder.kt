@@ -41,7 +41,7 @@ object SetWallpaperDialogBinder {
     private val PreviewScreenIds =
         mapOf(
             Screen.LOCK_SCREEN to R.id.lock_preview_selector,
-            Screen.HOME_SCREEN to R.id.home_preview_selector
+            Screen.HOME_SCREEN to R.id.home_preview_selector,
         )
 
     fun bind(
@@ -51,7 +51,6 @@ object SetWallpaperDialogBinder {
         handheldDisplaySize: Point,
         lifecycleOwner: LifecycleOwner,
         mainScope: CoroutineScope,
-        currentNavDestId: Int,
         onFinishActivity: () -> Unit,
         onDismissDialog: () -> Unit,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
@@ -65,8 +64,8 @@ object SetWallpaperDialogBinder {
             bindFoldablePreview(
                 previewLayout,
                 wallpaperPreviewViewModel,
+                mainScope,
                 lifecycleOwner,
-                currentNavDestId,
                 wallpaperConnectionUtils,
                 isFirstBinding,
                 navigate,
@@ -76,8 +75,8 @@ object SetWallpaperDialogBinder {
                 previewLayout,
                 wallpaperPreviewViewModel,
                 handheldDisplaySize,
+                mainScope,
                 lifecycleOwner,
-                currentNavDestId,
                 wallpaperConnectionUtils,
                 isFirstBinding,
                 navigate,
@@ -130,8 +129,8 @@ object SetWallpaperDialogBinder {
     private fun bindFoldablePreview(
         previewLayout: View,
         wallpaperPreviewViewModel: WallpaperPreviewViewModel,
+        mainScope: CoroutineScope,
         lifecycleOwner: LifecycleOwner,
-        currentNavDestId: Int,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBinding: Boolean,
         navigate: ((View) -> Unit)?,
@@ -158,11 +157,12 @@ object SetWallpaperDialogBinder {
                         applicationContext = previewLayout.context.applicationContext,
                         view = view,
                         viewModel = wallpaperPreviewViewModel,
+                        mainScope = mainScope,
                         viewLifecycleOwner = lifecycleOwner,
                         screen = screenId.key,
                         displaySize = it,
                         deviceDisplayType = display,
-                        currentNavDestId = currentNavDestId,
+                        currentNavDestId = R.id.setWallpaperDialog,
                         wallpaperConnectionUtils = wallpaperConnectionUtils,
                         isFirstBindingDeferred = CompletableDeferred(isFirstBinding),
                         navigate = navigate,
@@ -176,8 +176,8 @@ object SetWallpaperDialogBinder {
         previewLayout: View,
         wallpaperPreviewViewModel: WallpaperPreviewViewModel,
         displaySize: Point,
+        mainScope: CoroutineScope,
         lifecycleOwner: LifecycleOwner,
-        currentNavDestId: Int,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBinding: Boolean,
         navigate: ((View) -> Unit)?,
@@ -195,8 +195,9 @@ object SetWallpaperDialogBinder {
                 screen = screenId.key,
                 displaySize = displaySize,
                 deviceDisplayType = DeviceDisplayType.SINGLE,
+                mainScope = mainScope,
                 viewLifecycleOwner = lifecycleOwner,
-                currentNavDestId = currentNavDestId,
+                currentNavDestId = R.id.setWallpaperDialog,
                 isFirstBindingDeferred = CompletableDeferred(isFirstBinding),
                 wallpaperConnectionUtils = wallpaperConnectionUtils,
                 navigate = navigate,

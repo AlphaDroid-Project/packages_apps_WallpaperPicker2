@@ -21,6 +21,7 @@ import android.stats.style.StyleEnums
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.BasePreviewActivity.EXTRA_VIEW_AS_HOME
@@ -52,6 +53,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
@@ -97,11 +99,33 @@ constructor(
     // On orientation change, the fragment's onCreateView will be called again.
     var isCurrentlyEditingCreativeWallpaper = false
 
+    private val _currentPreviewScreen = MutableStateFlow(PreviewScreen.SMALL_PREVIEW)
+    val currentPreviewScreen = _currentPreviewScreen.asStateFlow()
+
+    val shouldEnableClickOnPager: Flow<Boolean> =
+        _currentPreviewScreen.map { it != PreviewScreen.FULL_PREVIEW }
+
     val smallPreviewTabs = Screen.entries.toList()
 
     private val _smallPreviewSelectedTab = MutableStateFlow(getWallpaperPreviewSource())
     val smallPreviewSelectedTab = _smallPreviewSelectedTab.asStateFlow()
+
     val smallPreviewSelectedTabIndex = smallPreviewSelectedTab.map { smallPreviewTabs.indexOf(it) }
+
+    /**
+     * Returns true if back pressed is handled due to conditions like users at a secondary screen.
+     */
+    fun handleBackPressed(): Boolean {
+        if (_currentPreviewScreen.value == PreviewScreen.APPLY_WALLPAPER) {
+            _currentPreviewScreen.value = PreviewScreen.SMALL_PREVIEW
+            return true
+        } else if (_currentPreviewScreen.value == PreviewScreen.FULL_PREVIEW) {
+            _currentPreviewScreen.value = PreviewScreen.SMALL_PREVIEW
+            // TODO(b/367374790): Returns true when shared element transition is removed
+            return false
+        }
+        return false
+    }
 
     fun getSmallPreviewTabIndex(): Int {
         return smallPreviewTabs.indexOf(smallPreviewSelectedTab.value)
@@ -164,10 +188,7 @@ constructor(
             if (model is StaticWallpaperModel && !model.isDownloadableWallpaper()) {
                 staticWallpaperPreviewViewModel.updateCropHintsInfo(
                     cropHints.mapValues {
-                        FullPreviewCropModel(
-                            cropHint = it.value,
-                            cropSizeModel = null,
-                        )
+                        FullPreviewCropModel(cropHint = it.value, cropSizeModel = null)
                     }
                 )
             }
@@ -230,11 +251,7 @@ constructor(
                 }
             FullWallpaperPreviewViewModel(
                 wallpaper = wallpaper,
-                config =
-                    FullPreviewConfigViewModel(
-                        config.screen,
-                        config.deviceDisplayType,
-                    ),
+                config = FullPreviewConfigViewModel(config.screen, config.deviceDisplayType),
                 displaySize = displaySize,
                 allowUserCropping =
                     wallpaper is StaticWallpaperModel && !wallpaper.isDownloadableWallpaper(),
@@ -292,6 +309,17 @@ constructor(
             } else null
         }
 
+    val onNextButtonClicked: Flow<(() -> Unit)?> =
+        isSetWallpaperButtonEnabled.map {
+            if (it) {
+                { _currentPreviewScreen.value = PreviewScreen.APPLY_WALLPAPER }
+            } else null
+        }
+
+    val onCancelButtonClicked: Flow<() -> Unit> = flowOf {
+        _currentPreviewScreen.value = PreviewScreen.SMALL_PREVIEW
+    }
+
     private val _showSetWallpaperDialog = MutableStateFlow(false)
     val showSetWallpaperDialog = _showSetWallpaperDialog.asStateFlow()
 
@@ -300,10 +328,30 @@ constructor(
     val setWallpaperDialogSelectedScreens: StateFlow<Set<Screen>> =
         _setWallpaperDialogSelectedScreens.asStateFlow()
 
+    val isApplyButtonEnabled: Flow<Boolean> =
+        setWallpaperDialogSelectedScreens.map { it.isNotEmpty() }
+
+    val isHomeCheckBoxChecked: Flow<Boolean> =
+        setWallpaperDialogSelectedScreens.map { it.contains(Screen.HOME_SCREEN) }
+
+    val isLockCheckBoxChecked: Flow<Boolean> =
+        setWallpaperDialogSelectedScreens.map { it.contains(Screen.LOCK_SCREEN) }
+
+    val onHomeCheckBoxChecked: Flow<() -> Unit> = flowOf {
+        onSetWallpaperDialogScreenSelected(Screen.HOME_SCREEN)
+    }
+
+    val onLockCheckBoxChecked: Flow<() -> Unit> = flowOf {
+        onSetWallpaperDialogScreenSelected(Screen.LOCK_SCREEN)
+    }
+
     fun onSetWallpaperDialogScreenSelected(screen: Screen) {
         val previousSelection = _setWallpaperDialogSelectedScreens.value
         _setWallpaperDialogSelectedScreens.value =
-            if (previousSelection.contains(screen) && previousSelection.size > 1) {
+            if (
+                previousSelection.contains(screen) &&
+                    (previousSelection.size > 1 || BaseFlags.get().isNewPickerUi())
+            ) {
                 previousSelection.minus(screen)
             } else {
                 previousSelection.plus(screen)
@@ -440,14 +488,9 @@ constructor(
             }
         }
 
-    fun setDefaultFullPreviewConfigViewModel(
-        deviceDisplayType: DeviceDisplayType,
-    ) {
+    fun setDefaultFullPreviewConfigViewModel(deviceDisplayType: DeviceDisplayType) {
         _fullPreviewConfigViewModel.value =
-            FullPreviewConfigViewModel(
-                Screen.HOME_SCREEN,
-                deviceDisplayType,
-            )
+            FullPreviewConfigViewModel(Screen.HOME_SCREEN, deviceDisplayType)
     }
 
     fun resetFullPreviewConfigViewModel() {
@@ -457,6 +500,13 @@ constructor(
     companion object {
         private fun WallpaperModel.isDownloadableWallpaper(): Boolean {
             return this is StaticWallpaperModel && downloadableWallpaperData != null
+        }
+
+        /** The current preview screen or the screen being transition to. */
+        enum class PreviewScreen {
+            SMALL_PREVIEW,
+            FULL_PREVIEW,
+            APPLY_WALLPAPER,
         }
     }
 }

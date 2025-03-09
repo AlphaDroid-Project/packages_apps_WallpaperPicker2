@@ -17,9 +17,10 @@
 package com.android.wallpaper.picker.data.category
 
 import android.content.pm.ResolveInfo
+import android.graphics.drawable.Drawable
 
 /**
  * Represents set of attributes required for displaying a 3rd party wallpaper app installed on
  * device.
  */
-data class ThirdPartyCategoryData(val resolveInfo: ResolveInfo)
+data class ThirdPartyCategoryData(val resolveInfo: ResolveInfo, val defaultDrawable: Drawable?)

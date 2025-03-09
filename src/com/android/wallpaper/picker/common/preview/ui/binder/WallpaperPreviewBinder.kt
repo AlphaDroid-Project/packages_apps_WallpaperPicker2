@@ -38,6 +38,7 @@ import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils.Companion.shouldEnforceSingleEngine
 import com.android.wallpaper.util.wallpaperconnection.WallpaperEngineConnection
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -59,6 +60,7 @@ object WallpaperPreviewBinder {
         screen: Screen,
         displaySize: Point,
         deviceDisplayType: DeviceDisplayType,
+        mainScope: CoroutineScope,
         viewLifecycleOwner: LifecycleOwner,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
@@ -74,6 +76,7 @@ object WallpaperPreviewBinder {
                         screen = screen,
                         deviceDisplayType = deviceDisplayType,
                         displaySize = displaySize,
+                        mainScope = mainScope,
                         lifecycleOwner = viewLifecycleOwner,
                         wallpaperConnectionUtils = wallpaperConnectionUtils,
                         isFirstBindingDeferred = isFirstBindingDeferred,
@@ -101,6 +104,7 @@ object WallpaperPreviewBinder {
         screen: Screen,
         deviceDisplayType: DeviceDisplayType,
         displaySize: Point,
+        mainScope: CoroutineScope,
         lifecycleOwner: LifecycleOwner,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
@@ -112,7 +116,8 @@ object WallpaperPreviewBinder {
 
             override fun surfaceCreated(holder: SurfaceHolder) {
                 job =
-                    lifecycleOwner.lifecycleScope.launch {
+                    // Ensure the wallpaper connection is connected / disconnected in [mainScope].
+                    mainScope.launch {
                         viewModel.wallpapersAndWhichPreview.collect { (wallpapers, whichPreview) ->
                             val wallpaper =
                                 if (screen == Screen.HOME_SCREEN) wallpapers.homeWallpaper

@@ -752,7 +752,9 @@ public class DefaultWallpaperPersister implements WallpaperPersister {
             saveStaticWallpaperToPreferences(
                     destination,
                     new StaticWallpaperPrefMetadata(
-                            mWallpaper.getAttributions(mAppContext),
+                            mWallpaper.getAttributions(mAppContext).stream()
+                                    .map((entry) -> (entry != null) ? entry : "")
+                                    .toList(),
                             mWallpaper.getActionUrl(mAppContext),
                             mWallpaper.getCollectionId(mAppContext),
                             bitmapHash,

@@ -52,5 +52,14 @@ enum class WallpaperDestination {
                 LOCK -> DEST_LOCK_SCREEN
             }
         }
+
+        @SetWallpaperFlags
+        fun WallpaperDestination.toSetWallpaperFlags(): Int {
+            return when (this) {
+                BOTH -> FLAG_LOCK or FLAG_SYSTEM
+                HOME -> FLAG_SYSTEM
+                LOCK -> FLAG_LOCK
+            }
+        }
     }
 }

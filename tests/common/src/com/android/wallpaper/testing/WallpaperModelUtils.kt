@@ -18,6 +18,7 @@ package com.android.wallpaper.testing
 
 import android.app.WallpaperColors
 import android.app.WallpaperInfo
+import android.app.wallpaper.WallpaperDescription
 import android.content.ComponentName
 import android.graphics.Color
 import android.graphics.Point
@@ -46,7 +47,7 @@ class WallpaperModelUtils {
             WallpaperColors(
                 Color.valueOf(Color.RED),
                 Color.valueOf(Color.GREEN),
-                Color.valueOf(Color.BLUE)
+                Color.valueOf(Color.BLUE),
             )
         val DEFAULT_ASSET = TestAsset(TestStaticWallpaperInfo.COLOR_DEFAULT, false)
         const val DEFAULT_GROUP_NAME = "group name"
@@ -70,7 +71,7 @@ class WallpaperModelUtils {
                             WallpaperId(
                                 ComponentName(
                                     WallpaperModelFactory.STATIC_WALLPAPER_PACKAGE,
-                                    WallpaperModelFactory.STATIC_WALLPAPER_CLASS
+                                    WallpaperModelFactory.STATIC_WALLPAPER_CLASS,
                                 ),
                                 wallpaperId,
                                 collectionId,
@@ -79,18 +80,10 @@ class WallpaperModelUtils {
                         attributions = attribution,
                         exploreActionUrl = actionUrl,
                         thumbAsset = asset,
-                        placeholderColorInfo =
-                            ColorInfo(
-                                colors,
-                                placeholderColor,
-                            ),
+                        placeholderColorInfo = ColorInfo(colors, placeholderColor),
                         destination = Destination.NOT_APPLIED,
                     ),
-                staticWallpaperData =
-                    StaticWallpaperData(
-                        asset,
-                        cropHints,
-                    ),
+                staticWallpaperData = StaticWallpaperData(asset, cropHints),
                 imageWallpaperData = ImageWallpaperData(imageWallpaperUri),
                 networkWallpaperData = null,
                 downloadableWallpaperData = downloadableWallpaperData,
@@ -111,35 +104,29 @@ class WallpaperModelUtils {
             isApplied: Boolean = true,
             effectNames: String? = null,
             creativeWallpaperData: CreativeWallpaperData? = null,
+            description: WallpaperDescription =
+                WallpaperDescription.Builder().setComponent(systemWallpaperInfo.component).build(),
         ): WallpaperModel.LiveWallpaperModel {
             return WallpaperModel.LiveWallpaperModel(
                 commonWallpaperData =
                     CommonWallpaperData(
-                        id =
-                            WallpaperId(
-                                systemWallpaperInfo.component,
-                                wallpaperId,
-                                collectionId,
-                            ),
+                        id = WallpaperId(systemWallpaperInfo.component, wallpaperId, collectionId),
                         title = SAMPLE_TITLE2,
                         attributions = attribution,
                         exploreActionUrl = actionUrl,
                         thumbAsset = asset,
-                        placeholderColorInfo =
-                            ColorInfo(
-                                colors,
-                                placeholderColor,
-                            ),
+                        placeholderColorInfo = ColorInfo(colors, placeholderColor),
                         destination = Destination.NOT_APPLIED,
                     ),
                 liveWallpaperData =
                     LiveWallpaperData(
-                        groupName,
-                        systemWallpaperInfo,
-                        isTitleVisible,
-                        isApplied,
-                        effectNames != null,
-                        effectNames
+                        groupName = groupName,
+                        systemWallpaperInfo = systemWallpaperInfo,
+                        isTitleVisible = isTitleVisible,
+                        isApplied = isApplied,
+                        isEffectWallpaper = effectNames != null,
+                        effectNames = effectNames,
+                        description = description,
                     ),
                 creativeWallpaperData = creativeWallpaperData,
                 internalLiveWallpaperData = null,

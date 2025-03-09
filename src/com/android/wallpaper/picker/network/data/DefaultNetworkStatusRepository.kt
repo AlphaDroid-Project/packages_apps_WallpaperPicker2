@@ -46,14 +46,9 @@ constructor(
     override fun networkStateFlow(): Flow<Boolean> = callbackFlow {
         val listener =
             NetworkStatusNotifier.Listener { status: Int ->
-                Log.i(DefaultNetworkStatusRepository.TAG, "Network status changes: " + status)
-                if (_networkStatus.value != NETWORK_CONNECTED && status == NETWORK_CONNECTED) {
-                    // Emit true value when network is available and it was previously unavailable
-                    trySend(true)
-                } else {
-                    trySend(false)
-                }
-
+                Log.i(TAG, "Network status changes: $status")
+                val isConnected = (status == NETWORK_CONNECTED)
+                trySend(isConnected)
                 _networkStatus.value = networkStatusNotifier.networkStatus
             }
 

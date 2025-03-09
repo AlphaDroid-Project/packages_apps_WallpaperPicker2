@@ -20,6 +20,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.Toolbar
 import androidx.lifecycle.LifecycleOwner
+import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationOptionsViewModel
 
 interface ToolbarBinder {
@@ -29,6 +30,8 @@ interface ToolbarBinder {
         toolbar: Toolbar,
         applyButton: Button,
         viewModel: CustomizationOptionsViewModel,
+        colorUpdateViewModel: ColorUpdateViewModel,
         lifecycleOwner: LifecycleOwner,
+        onNavBack: () -> Unit,
     )
 }

@@ -34,7 +34,7 @@ class TabItemAnimator : DefaultItemAnimator() {
         state: State,
         viewHolder: ViewHolder,
         changeFlags: Int,
-        payloads: MutableList<Any>
+        payloads: MutableList<Any>,
     ): ItemHolderInfo {
         if (changeFlags == FLAG_CHANGED && payloads.isNotEmpty()) {
             return when (payloads[0] as? Int) {

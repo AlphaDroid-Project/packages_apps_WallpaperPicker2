@@ -223,7 +223,7 @@ object StaticWallpaperPreviewBinder {
         preview.layout(0, 0, width, height)
 
         fullResView.setSurfaceSize(Point(width, height))
-        surfaceView.attachView(fullResView, width, height)
+        surfaceView.attachView(preview, width, height)
     }
 
     private const val TAG = "StaticWallpaperPreviewBinder"

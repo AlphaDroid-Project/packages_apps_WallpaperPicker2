@@ -27,4 +27,6 @@ interface CategoryInteractor {
     val categories: Flow<List<CategoryModel>>
 
     fun refreshNetworkCategories()
+
+    fun refreshThirdPartyLiveWallpaperCategories()
 }

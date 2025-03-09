@@ -22,9 +22,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
-import com.android.systemui.dagger.qualifiers.Main
 import com.android.wallpaper.picker.di.modules.SharedAppModule.Companion.BroadcastRunning
-import java.util.concurrent.Executor
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.channels.awaitClose
@@ -47,10 +46,8 @@ import kotlinx.coroutines.flow.callbackFlow
 open class BroadcastDispatcher
 @Inject
 constructor(
-    private val context: Context,
-    @Main private val mainExecutor: Executor,
+    @ApplicationContext private val context: Context,
     @BroadcastRunning private val broadcastLooper: Looper,
-    @BroadcastRunning private val broadcastExecutor: Executor,
 ) {
     /**
      * Register a receiver for broadcast with the dispatcher
@@ -70,12 +67,17 @@ constructor(
     open fun registerReceiver(
         receiver: BroadcastReceiver,
         filter: IntentFilter,
-        executor: Executor = mainExecutor,
         @Context.RegisterReceiverFlags flags: Int = Context.RECEIVER_EXPORTED,
-        permission: String? = null
+        permission: String? = null,
     ) {
         checkFilter(filter)
-        context.registerReceiver(receiver, filter, permission, Handler(broadcastLooper), flags)
+        context.registerReceiver(
+            receiver,
+            filter,
+            permission,
+            Handler(Looper.getMainLooper()),
+            flags,
+        )
     }
 
     /**
@@ -99,13 +101,7 @@ constructor(
                 }
             }
 
-        registerReceiver(
-            receiver,
-            filter,
-            broadcastExecutor,
-            flags,
-            permission,
-        )
+        registerReceiver(receiver, filter, flags, permission)
 
         awaitClose { unregisterReceiver(receiver) }
     }

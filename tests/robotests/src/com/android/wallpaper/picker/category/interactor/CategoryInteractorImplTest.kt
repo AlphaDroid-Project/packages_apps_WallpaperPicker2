@@ -20,12 +20,14 @@ import android.content.Context
 import com.android.wallpaper.picker.category.domain.interactor.implementations.CategoryInteractorImpl
 import com.android.wallpaper.picker.data.category.CategoryModel
 import com.android.wallpaper.picker.data.category.CommonCategoryData
+import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import com.android.wallpaper.testing.FakeDefaultWallpaperCategoryRepository
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -43,11 +45,13 @@ class CategoryInteractorImplTest {
     @Inject
     lateinit var fakeDefaultWallpaperCategoryRepository: FakeDefaultWallpaperCategoryRepository
     private lateinit var categoryInteractorImpl: CategoryInteractorImpl
+    @Inject @BackgroundDispatcher lateinit var backgroundScope: CoroutineScope
 
     @Before
     fun setup() {
         hiltRule.inject()
-        categoryInteractorImpl = CategoryInteractorImpl(fakeDefaultWallpaperCategoryRepository)
+        categoryInteractorImpl =
+            CategoryInteractorImpl(fakeDefaultWallpaperCategoryRepository, backgroundScope)
     }
 
     @Test
@@ -65,7 +69,7 @@ class CategoryInteractorImplTest {
                         CommonCategoryData("ThirdPartyLiveWallpaper-1", "on_device_live_id", 2),
                     thirdPartyCategoryData = null,
                     imageCategoryData = null,
-                    collectionCategoryData = null
+                    collectionCategoryData = null,
                 )
             )
         )
@@ -77,13 +81,13 @@ class CategoryInteractorImplTest {
                     commonCategoryData = CommonCategoryData("ThirdParty-2", "downloads_id", 3),
                     thirdPartyCategoryData = null,
                     imageCategoryData = null,
-                    collectionCategoryData = null
+                    collectionCategoryData = null,
                 )
             )
         )
     }
 
     companion object {
-        private const val NUMBER_OF_FAKE_CATEGORIES_EXCEPT_MY_PHOTOS = 5
+        private const val NUMBER_OF_FAKE_CATEGORIES_EXCEPT_MY_PHOTOS = 2
     }
 }

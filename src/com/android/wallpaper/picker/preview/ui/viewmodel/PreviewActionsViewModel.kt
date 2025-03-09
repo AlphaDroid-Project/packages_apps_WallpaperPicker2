@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.picker.preview.ui.viewmodel
 
+import android.app.Flags.liveWallpaperContentHandling
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ComponentName
@@ -74,7 +75,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 /** View model for the preview action buttons */
@@ -99,15 +99,19 @@ constructor(
                 null
             } else {
                 InformationFloatingSheetViewModel(
-                    wallpaperModel.commonWallpaperData.attributions,
-                    if (wallpaperModel.commonWallpaperData.exploreActionUrl.isNullOrEmpty()) {
-                        null
-                    } else {
-                        wallpaperModel.commonWallpaperData.exploreActionUrl
-                    },
-                    (wallpaperModel as? LiveWallpaperModel)?.let { liveWallpaperModel ->
-                        liveWallpaperModel.liveWallpaperData.contextDescription?.let { it }
-                    },
+                    description =
+                        (wallpaperModel as? LiveWallpaperModel)?.liveWallpaperData?.description,
+                    attributions = wallpaperModel.commonWallpaperData.attributions,
+                    actionUrl =
+                        if (wallpaperModel.commonWallpaperData.exploreActionUrl.isNullOrEmpty()) {
+                            null
+                        } else {
+                            wallpaperModel.commonWallpaperData.exploreActionUrl
+                        },
+                    actionButtonTitle =
+                        (wallpaperModel as? LiveWallpaperModel)
+                            ?.liveWallpaperData
+                            ?.contextDescription,
                 )
             }
         }
@@ -302,7 +306,9 @@ constructor(
                     title = it.title,
                     subtitle = it.subtitle,
                     wallpaperActions = it.actions,
-                    wallpaperEffectSwitchListener = { interactor.turnOnCreativeEffect(it) },
+                    wallpaperEffectSwitchListener = { actionPosition ->
+                        interactor.turnOnCreativeEffect(actionPosition)
+                    },
                 )
             }
         }
@@ -547,6 +553,26 @@ constructor(
             _isCustomizeChecked.value ||
             _isEffectsChecked.value
 
+    val isActionChecked: Flow<Boolean> =
+        combine(
+            isInformationChecked,
+            isDeleteChecked,
+            isEditChecked,
+            isCustomizeChecked,
+            isEffectsChecked,
+        ) {
+            isInformationChecked,
+            isDeleteChecked,
+            isEditChecked,
+            isCustomizeChecked,
+            isEffectsChecked ->
+            isInformationChecked ||
+                isDeleteChecked ||
+                isEditChecked ||
+                isCustomizeChecked ||
+                isEffectsChecked
+        }
+
     private fun uncheckAllOthersExcept(action: Action) {
         if (action != INFORMATION) {
             _isInformationChecked.value = false
@@ -567,6 +593,7 @@ constructor(
 
     companion object {
         const val EXTRA_KEY_IS_CREATE_NEW = "is_create_new"
+        const val EXTRA_WALLPAPER_DESCRIPTION = "wp_description"
 
         private fun WallpaperModel.shouldShowInformationFloatingSheet(): Boolean {
             if (
@@ -578,11 +605,19 @@ constructor(
                 return false
             }
             val attributions = commonWallpaperData.attributions
+            val description = (this as? LiveWallpaperModel)?.liveWallpaperData?.description
+            val hasDescription =
+                liveWallpaperContentHandling() &&
+                    description != null &&
+                    (description.description.isNotEmpty() ||
+                        !description.title.isNullOrEmpty() ||
+                        description.contextUri != null)
             // Show information floating sheet when any of the following contents exists
-            // 1. Attributions: Any of the list values is not null nor empty
+            // 1. Attributions/Description: Any of the list values is not null nor empty
             // 2. Explore action URL
-            return (!attributions.isNullOrEmpty() && attributions.any { !it.isNullOrEmpty() }) ||
-                !commonWallpaperData.exploreActionUrl.isNullOrEmpty()
+            return (!attributions.isNullOrEmpty() && attributions.any { it.isNotEmpty() }) ||
+                !commonWallpaperData.exploreActionUrl.isNullOrEmpty() ||
+                hasDescription
         }
 
         private fun CreativeWallpaperData.getShareIntent(): Intent {
@@ -618,6 +653,7 @@ constructor(
                     component = ComponentName(systemWallpaperInfo.packageName, settingsActivity)
                     putExtra(WallpaperSettingsActivity.EXTRA_PREVIEW_MODE, true)
                     putExtra(EXTRA_KEY_IS_CREATE_NEW, isCreateNew)
+                    description.content.let { putExtra(EXTRA_WALLPAPER_DESCRIPTION, it) }
                 }
             return intent
         }

@@ -143,7 +143,7 @@ open class ScreenPreviewSectionController(
                             )
                         }
                     }
-                }
+                },
             )
     }
 

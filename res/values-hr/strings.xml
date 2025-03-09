@@ -124,6 +124,7 @@
     <string name="wallpaper_picker_entry_title" msgid="5185793991582084891">"Promijenite pozadinu"</string>
     <string name="lockscreen_wallpaper_preview_card_content_description" msgid="2244890820627302245">"Pregled pozadine zaključanog zaslona"</string>
     <string name="apply_btn" msgid="5764555565943538528">"Primijeni"</string>
+    <string name="apply_wallpaper_title_text" msgid="2100301064316744087">"Želite li primijeniti pozadinu?"</string>
     <string name="accessibility_customize_hidden" msgid="6320568529768181691">"Ploča Prilagodi je skrivena"</string>
     <string name="accessibility_customize_shown" msgid="590964727831547651">"Ploča Prilagodi je prikazana"</string>
     <string name="accessibility_info_hidden" msgid="2288603712350168107">"Informacije su skrivene"</string>

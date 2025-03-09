@@ -31,12 +31,7 @@ class FakeCategoryInteractor @Inject constructor() : CategoryInteractor {
         // stubbing the list of single section categories
         val categoryModels =
             generateCategoryData().map { commonCategoryData ->
-                CategoryModel(
-                    commonCategoryData,
-                    null,
-                    null,
-                    null,
-                )
+                CategoryModel(commonCategoryData, null, null, null)
             }
 
         // Emit the list of categories
@@ -45,6 +40,10 @@ class FakeCategoryInteractor @Inject constructor() : CategoryInteractor {
 
     override fun refreshNetworkCategories() {
         // empty
+    }
+
+    override fun refreshThirdPartyLiveWallpaperCategories() {
+        TODO("Not yet implemented")
     }
 
     private fun generateCategoryData(): List<CommonCategoryData> {
@@ -66,7 +65,7 @@ class FakeCategoryInteractor @Inject constructor() : CategoryInteractor {
                 CommonCategoryData("Pastel Dreams", "pastel_dreams", 14),
                 CommonCategoryData("Polygonal Paradise", "polygonal_paradise", 15),
                 CommonCategoryData("Oceanic Depths", "oceanic_depths", 16),
-                CommonCategoryData("Fractal Fantasia", "fractal_fantasia", 17)
+                CommonCategoryData("Fractal Fantasia", "fractal_fantasia", 17),
             )
         return dataList
     }

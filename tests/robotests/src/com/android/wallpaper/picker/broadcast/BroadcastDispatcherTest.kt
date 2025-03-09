@@ -62,8 +62,7 @@ class BroadcastDispatcherTest {
             object : BroadcastReceiver() {
                 override fun onReceive(context: Context?, intent: Intent?) {}
             }
-        broadcastDispatcher =
-            BroadcastDispatcher(mContext, mainExecutor, backgroundRunningLooper, mainExecutor)
+        broadcastDispatcher = BroadcastDispatcher(mContext, backgroundRunningLooper)
     }
 
     @Test
@@ -140,10 +139,7 @@ class BroadcastDispatcherTest {
     }
 
     private fun provideBroadcastRunningLooper(): Looper {
-        return HandlerThread(
-                "BroadcastRunning",
-                Process.THREAD_PRIORITY_BACKGROUND,
-            )
+        return HandlerThread("BroadcastRunning", Process.THREAD_PRIORITY_BACKGROUND)
             .apply {
                 start()
                 looper.setSlowLogThresholdMs(

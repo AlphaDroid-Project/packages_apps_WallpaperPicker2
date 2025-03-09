@@ -158,7 +158,7 @@ class CategoriesViewModelTest {
                     .isEqualTo(
                         CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection(
                             CATEGORY_ID_CELESTIAL_DREAMSCAPES,
-                            CategoriesViewModel.CategoryType.DefaultCategories
+                            CategoriesViewModel.CategoryType.DefaultCategories,
                         )
                     )
 
@@ -181,7 +181,7 @@ class CategoriesViewModelTest {
                     .isEqualTo(
                         CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection(
                             CATEGORY_ID_CYBERPUNK_CITYSCAPE,
-                            CategoriesViewModel.CategoryType.DefaultCategories
+                            CategoriesViewModel.CategoryType.DefaultCategories,
                         )
                     )
                 job.cancelAndJoin()
@@ -201,7 +201,7 @@ class CategoriesViewModelTest {
                     .isEqualTo(
                         CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection(
                             CATEGORY_ID_COSMIC_NEBULA,
-                            CategoriesViewModel.CategoryType.DefaultCategories
+                            CategoriesViewModel.CategoryType.DefaultCategories,
                         )
                     )
                 job.cancelAndJoin()
@@ -224,8 +224,9 @@ class CategoriesViewModelTest {
 
             onClick()
             testDispatcher.scheduler.advanceUntilIdle()
-            assertThat(collectedValues[0])
-                .isEqualTo(CategoriesViewModel.NavigationEvent.NavigateToPhotosPicker)
+            val navigateToPhotosPicker =
+                CategoriesViewModel.NavigationEvent.NavigateToPhotosPicker(null)
+            assertThat(collectedValues[0]).isEqualTo(navigateToPhotosPicker)
             job.cancelAndJoin()
         }
     }

@@ -25,11 +25,14 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.os.Process
 import com.android.wallpaper.module.DefaultNetworkStatusNotifier
+import com.android.wallpaper.module.DefaultPackageStatusNotifier
 import com.android.wallpaper.module.LargeScreenMultiPanesChecker
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.NetworkStatusNotifier
+import com.android.wallpaper.module.PackageStatusNotifier
 import com.android.wallpaper.network.Requester
 import com.android.wallpaper.network.WallpaperRequester
+import com.android.wallpaper.picker.MyPhotosStarter
 import com.android.wallpaper.picker.category.client.DefaultWallpaperCategoryClient
 import com.android.wallpaper.picker.category.client.DefaultWallpaperCategoryClientImpl
 import com.android.wallpaper.picker.category.client.LiveWallpapersClient
@@ -37,15 +40,16 @@ import com.android.wallpaper.picker.category.client.LiveWallpapersClientImpl
 import com.android.wallpaper.picker.category.data.repository.DefaultWallpaperCategoryRepository
 import com.android.wallpaper.picker.category.data.repository.WallpaperCategoryRepository
 import com.android.wallpaper.picker.category.domain.interactor.MyPhotosInteractor
-import com.android.wallpaper.picker.category.domain.interactor.ThirdPartyCategoryInteractor
 import com.android.wallpaper.picker.category.domain.interactor.implementations.MyPhotosInteractorImpl
-import com.android.wallpaper.picker.category.domain.interactor.implementations.ThirdPartyCategoryInteractorImpl
+import com.android.wallpaper.picker.category.ui.view.MyPhotosStarterImpl
 import com.android.wallpaper.picker.customization.data.content.WallpaperClient
 import com.android.wallpaper.picker.customization.data.content.WallpaperClientImpl
 import com.android.wallpaper.picker.network.data.DefaultNetworkStatusRepository
 import com.android.wallpaper.picker.network.data.NetworkStatusRepository
 import com.android.wallpaper.picker.network.domain.DefaultNetworkStatusInteractor
 import com.android.wallpaper.picker.network.domain.NetworkStatusInteractor
+import com.android.wallpaper.system.PowerManagerImpl
+import com.android.wallpaper.system.PowerManagerWrapper
 import com.android.wallpaper.system.UiModeManagerImpl
 import com.android.wallpaper.system.UiModeManagerWrapper
 import com.android.wallpaper.util.WallpaperParser
@@ -109,19 +113,21 @@ abstract class SharedAppModule {
 
     @Binds
     @Singleton
-    abstract fun bindThirdPartyCategoryInteractor(
-        impl: ThirdPartyCategoryInteractorImpl,
-    ): ThirdPartyCategoryInteractor
+    abstract fun bindUiModeManagerWrapper(impl: UiModeManagerImpl): UiModeManagerWrapper
 
     @Binds
     @Singleton
-    abstract fun bindUiModeManagerWrapper(impl: UiModeManagerImpl): UiModeManagerWrapper
+    abstract fun bindPowerManagerWrapper(impl: PowerManagerImpl): PowerManagerWrapper
 
     @Binds
     @Singleton
     abstract fun bindWallpaperCategoryClient(
         impl: DefaultWallpaperCategoryClientImpl
     ): DefaultWallpaperCategoryClient
+
+    @Binds
+    @Singleton
+    abstract fun bindPackageNotifier(impl: DefaultPackageStatusNotifier): PackageStatusNotifier
 
     @Binds
     @Singleton
@@ -132,6 +138,10 @@ abstract class SharedAppModule {
     @Binds @Singleton abstract fun bindWallpaperClient(impl: WallpaperClientImpl): WallpaperClient
 
     @Binds @Singleton abstract fun bindWallpaperParser(impl: WallpaperParserImpl): WallpaperParser
+
+    @Binds
+    @Singleton
+    abstract fun bindWallpaperPickerDelegate2(impl: MyPhotosStarterImpl): MyPhotosStarter
 
     companion object {
 
@@ -164,10 +174,7 @@ abstract class SharedAppModule {
         @Singleton
         @BroadcastRunning
         fun provideBroadcastRunningLooper(): Looper {
-            return HandlerThread(
-                    "BroadcastRunning",
-                    Process.THREAD_PRIORITY_BACKGROUND,
-                )
+            return HandlerThread("BroadcastRunning", Process.THREAD_PRIORITY_BACKGROUND)
                 .apply {
                     start()
                     looper.setSlowLogThresholdMs(

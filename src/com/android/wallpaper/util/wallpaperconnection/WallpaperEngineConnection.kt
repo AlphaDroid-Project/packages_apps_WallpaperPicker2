@@ -1,6 +1,9 @@
 package com.android.wallpaper.util.wallpaperconnection
 
+import android.app.Flags.liveWallpaperContentHandling
 import android.app.WallpaperColors
+import android.app.WallpaperInfo
+import android.app.wallpaper.WallpaperDescription
 import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.RectF
@@ -17,7 +20,6 @@ import android.view.WindowManager
 import com.android.wallpaper.util.WallpaperConnection
 import com.android.wallpaper.util.WallpaperConnection.WhichPreview
 import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.Method
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -34,6 +36,7 @@ class WallpaperEngineConnection(
         wallpaperService: IWallpaperService,
         destinationFlag: Int,
         surfaceView: SurfaceView,
+        description: WallpaperDescription,
     ): IWallpaperEngine {
         return engine
             ?: suspendCancellableCoroutine { k: CancellableContinuation<IWallpaperEngine> ->
@@ -43,6 +46,7 @@ class WallpaperEngineConnection(
                     wallpaperService = wallpaperService,
                     destinationFlag = destinationFlag,
                     surfaceView = surfaceView,
+                    description = description,
                 )
             }
     }
@@ -81,7 +85,7 @@ class WallpaperEngineConnection(
     override fun onLocalWallpaperColorsChanged(
         area: RectF?,
         colors: WallpaperColors?,
-        displayId: Int
+        displayId: Int,
     ) {
         // Do nothing intended.
     }
@@ -108,19 +112,18 @@ class WallpaperEngineConnection(
         const val COMMAND_PREVIEW_INFO = "android.wallpaper.previewinfo"
         const val WHICH_PREVIEW = "which_preview"
 
-        /**
-         * Before Android U, [IWallpaperService.attach] has no input of destinationFlag. We do
-         * method reflection to probe if the service from the external app is using a pre-U API;
-         * otherwise, we use the new one.
+        /*
+         * Tries to call the attach method used in Android 14(U) and earlier, returning true on
+         * success otherwise false.
          */
-        private fun attachEngineConnection(
+        private fun tryPreUAttach(
             wallpaperEngineConnection: WallpaperEngineConnection,
             wallpaperService: IWallpaperService,
             destinationFlag: Int,
             surfaceView: SurfaceView,
-        ) {
+        ): Boolean {
             try {
-                val preUMethod: Method =
+                val method =
                     wallpaperService.javaClass.getMethod(
                         "attach",
                         IWallpaperConnection::class.java,
@@ -130,9 +133,10 @@ class WallpaperEngineConnection(
                         Int::class.javaPrimitiveType,
                         Int::class.javaPrimitiveType,
                         Rect::class.java,
-                        Int::class.javaPrimitiveType
+                        Int::class.javaPrimitiveType,
+                        Int::class.javaPrimitiveType,
                     )
-                preUMethod.invoke(
+                method.invoke(
                     wallpaperService,
                     wallpaperEngineConnection,
                     surfaceView.windowToken,
@@ -141,28 +145,133 @@ class WallpaperEngineConnection(
                     surfaceView.width,
                     surfaceView.height,
                     Rect(0, 0, 0, 0),
-                    surfaceView.display.displayId
+                    surfaceView.display.displayId,
+                    destinationFlag,
                 )
+                return true
             } catch (e: Exception) {
                 when (e) {
                     is NoSuchMethodException,
                     is InvocationTargetException,
-                    is IllegalAccessException ->
-                        wallpaperService.attach(
-                            wallpaperEngineConnection,
-                            surfaceView.windowToken,
-                            WindowManager.LayoutParams.TYPE_APPLICATION_MEDIA,
-                            true,
-                            surfaceView.width,
-                            surfaceView.height,
-                            Rect(0, 0, 0, 0),
-                            surfaceView.display.displayId,
-                            destinationFlag,
-                            null,
-                        )
+                    is IllegalAccessException -> {
+                        if (liveWallpaperContentHandling()) {
+                            Log.w(
+                                TAG,
+                                "live wallpaper content handling enabled, but pre-U attach method called",
+                            )
+                        }
+                        return false
+                    }
+
                     else -> throw e
                 }
             }
+        }
+
+        /*
+         * Tries to call the attach method used in Android 16(B) and earlier, returning true on
+         * success otherwise false.
+         */
+        private fun tryPreBAttach(
+            wallpaperEngineConnection: WallpaperEngineConnection,
+            wallpaperService: IWallpaperService,
+            destinationFlag: Int,
+            surfaceView: SurfaceView,
+        ): Boolean {
+            try {
+                val method =
+                    wallpaperService.javaClass.getMethod(
+                        "attach",
+                        IWallpaperConnection::class.java,
+                        IBinder::class.java,
+                        Int::class.javaPrimitiveType,
+                        Boolean::class.javaPrimitiveType,
+                        Int::class.javaPrimitiveType,
+                        Int::class.javaPrimitiveType,
+                        Rect::class.java,
+                        Int::class.javaPrimitiveType,
+                        Int::class.javaPrimitiveType,
+                        WallpaperInfo::class.java,
+                    )
+                method.invoke(
+                    wallpaperService,
+                    wallpaperEngineConnection,
+                    surfaceView.windowToken,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_MEDIA,
+                    true,
+                    surfaceView.width,
+                    surfaceView.height,
+                    Rect(0, 0, 0, 0),
+                    surfaceView.display.displayId,
+                    destinationFlag,
+                    null,
+                )
+                return true
+            } catch (e: Exception) {
+                when (e) {
+                    is NoSuchMethodException,
+                    is InvocationTargetException,
+                    is IllegalAccessException -> {
+                        if (liveWallpaperContentHandling()) {
+                            Log.w(
+                                TAG,
+                                "live wallpaper content handling enabled, but pre-B attach method called",
+                            )
+                        }
+                        return false
+                    }
+
+                    else -> throw e
+                }
+            }
+        }
+
+        /*
+         * This method tries to call historical versions of IWallpaperService#attach since this code
+         * may be running against older versions of Android. We have no control over what versions
+         * of Android third party users of this code will be running.
+         */
+        private fun attachEngineConnection(
+            wallpaperEngineConnection: WallpaperEngineConnection,
+            wallpaperService: IWallpaperService,
+            destinationFlag: Int,
+            surfaceView: SurfaceView,
+            description: WallpaperDescription,
+        ) {
+            if (
+                tryPreUAttach(
+                    wallpaperEngineConnection,
+                    wallpaperService,
+                    destinationFlag,
+                    surfaceView,
+                )
+            ) {
+                return
+            }
+            if (
+                tryPreBAttach(
+                    wallpaperEngineConnection,
+                    wallpaperService,
+                    destinationFlag,
+                    surfaceView,
+                )
+            ) {
+                return
+            }
+
+            wallpaperService.attach(
+                wallpaperEngineConnection,
+                surfaceView.windowToken,
+                WindowManager.LayoutParams.TYPE_APPLICATION_MEDIA,
+                true,
+                surfaceView.width,
+                surfaceView.height,
+                Rect(0, 0, 0, 0),
+                surfaceView.display.displayId,
+                destinationFlag,
+                null,
+                description,
+            )
         }
     }
 

@@ -20,17 +20,15 @@ import android.graphics.Point
 import android.util.AttributeSet
 import android.widget.LinearLayout
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
-import kotlin.math.max
 
 /**
  * This LinearLayout view group implements the dual preview view for the small preview screen for
  * foldable devices.
  */
-class DualDisplayAspectRatioLayout(
-    context: Context,
-    attrs: AttributeSet?,
-) : LinearLayout(context, attrs) {
+class DualDisplayAspectRatioLayout(context: Context, attrs: AttributeSet?) :
+    LinearLayout(context, attrs) {
 
     private var previewDisplaySizes: Map<DeviceDisplayType, Point>? = null
 
@@ -65,35 +63,27 @@ class DualDisplayAspectRatioLayout(
         // calculate the aspect ratio of the unfolded display
         val largeDisplayAR = largeDisplaySize.x.toFloat() / largeDisplaySize.y
 
-        val sizeMultiplier = parentWidth / (largeDisplayAR + smallDisplayAR)
-        val widthFolded = (sizeMultiplier * smallDisplayAR).toInt()
-        val heightFolded = (widthFolded / smallDisplayAR).toInt()
+        // Width based calculation
+        var newHeight = parentWidth / (largeDisplayAR + smallDisplayAR)
+        if (newHeight > this.measuredHeight && BaseFlags.get().isNewPickerUi()) {
+            // If new height derived from width is larger than original height, use height based
+            // calculation.
+            newHeight = this.measuredHeight.toFloat()
+        }
 
-        val widthUnfolded = (sizeMultiplier * largeDisplayAR).toInt()
-        val heightUnfolded = (widthUnfolded / largeDisplayAR).toInt()
+        val widthFolded = newHeight * smallDisplayAR
+        val widthUnfolded = newHeight * largeDisplayAR
 
         val foldedView = getChildAt(0)
         foldedView.measure(
-            MeasureSpec.makeMeasureSpec(
-                widthFolded,
-                MeasureSpec.EXACTLY,
-            ),
-            MeasureSpec.makeMeasureSpec(
-                heightFolded,
-                MeasureSpec.EXACTLY,
-            ),
+            MeasureSpec.makeMeasureSpec(widthFolded.toInt(), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(newHeight.toInt(), MeasureSpec.EXACTLY),
         )
 
         val unfoldedView = getChildAt(1)
         unfoldedView.measure(
-            MeasureSpec.makeMeasureSpec(
-                widthUnfolded,
-                MeasureSpec.EXACTLY,
-            ),
-            MeasureSpec.makeMeasureSpec(
-                heightUnfolded,
-                MeasureSpec.EXACTLY,
-            ),
+            MeasureSpec.makeMeasureSpec(widthUnfolded.toInt(), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(newHeight.toInt(), MeasureSpec.EXACTLY),
         )
 
         val marginPixels =
@@ -101,13 +91,10 @@ class DualDisplayAspectRatioLayout(
 
         setMeasuredDimension(
             MeasureSpec.makeMeasureSpec(
-                widthFolded + widthUnfolded + 2 * marginPixels,
+                (widthFolded + widthUnfolded + 2 * marginPixels).toInt(),
                 MeasureSpec.EXACTLY,
             ),
-            MeasureSpec.makeMeasureSpec(
-                max(heightFolded, heightUnfolded),
-                MeasureSpec.EXACTLY,
-            )
+            MeasureSpec.makeMeasureSpec(newHeight.toInt(), MeasureSpec.EXACTLY),
         )
     }
 
@@ -130,7 +117,7 @@ class DualDisplayAspectRatioLayout(
             foldedViewWidth + 2 * marginPixels,
             0,
             unfoldedViewWidth + foldedViewWidth + 2 * marginPixels,
-            unfoldedViewHeight
+            unfoldedViewHeight,
         )
     }
 

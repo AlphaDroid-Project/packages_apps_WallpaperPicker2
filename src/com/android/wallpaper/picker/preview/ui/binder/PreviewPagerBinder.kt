@@ -19,7 +19,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Point
 import android.view.View
-import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.core.view.doOnLayout
 import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.Lifecycle
@@ -39,6 +38,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.FullPreviewConfigViewMo
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /** Binds single preview home screen and lock screen tabs view pager. */
@@ -47,12 +47,11 @@ object PreviewPagerBinder {
     @SuppressLint("WrongConstant")
     fun bind(
         applicationContext: Context,
+        mainScope: CoroutineScope,
         viewLifecycleOwner: LifecycleOwner,
-        motionLayout: MotionLayout?,
         previewsViewPager: ViewPager2,
         wallpaperPreviewViewModel: WallpaperPreviewViewModel,
         previewDisplaySize: Point,
-        currentNavDestId: Int,
         transition: Transition?,
         transitionConfig: FullPreviewConfigViewModel?,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
@@ -71,13 +70,13 @@ object PreviewPagerBinder {
                 SmallPreviewBinder.bind(
                     applicationContext = applicationContext,
                     view = viewHolder.itemView.requireViewById(R.id.preview),
-                    motionLayout = motionLayout,
                     viewModel = wallpaperPreviewViewModel,
                     screen = wallpaperPreviewViewModel.smallPreviewTabs[position],
                     displaySize = previewDisplaySize,
                     deviceDisplayType = DeviceDisplayType.SINGLE,
+                    mainScope = mainScope,
                     viewLifecycleOwner = viewLifecycleOwner,
-                    currentNavDestId = currentNavDestId,
+                    currentNavDestId = R.id.smallPreviewFragment,
                     transition = transition,
                     transitionConfig = transitionConfig,
                     isFirstBindingDeferred = isFirstBindingDeferred,

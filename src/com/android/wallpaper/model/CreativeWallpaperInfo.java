@@ -15,10 +15,13 @@
  */
 package com.android.wallpaper.model;
 
+import static android.app.Flags.liveWallpaperContentHandling;
+
 import static com.android.wallpaper.model.CreativeCategory.KEY_WALLPAPER_SAVE_CREATIVE_CATEGORY_WALLPAPER;
 
 import android.annotation.Nullable;
 import android.app.WallpaperInfo;
+import android.app.wallpaper.WallpaperDescription;
 import android.content.ClipData;
 import android.content.ContentProviderClient;
 import android.content.ContentValues;
@@ -83,8 +86,8 @@ public class CreativeWallpaperInfo extends LiveWallpaperInfo {
     public CreativeWallpaperInfo(WallpaperInfo info, String title, @Nullable String author,
             @Nullable String description, String contentDescription, Uri configPreviewUri,
             Uri cleanPreviewUri, Uri deleteUri, Uri thumbnailUri, Uri shareUri, String groupName,
-            boolean isCurrent) {
-        this(info, /* visibleTitle= */ false, /* collectionId= */ null);
+            boolean isCurrent, @NonNull WallpaperDescription wallpaperDescription) {
+        this(info, /* visibleTitle= */ false, info.getPackageName());
         mTitle = title;
         mAuthor = author;
         mDescription = description;
@@ -96,10 +99,11 @@ public class CreativeWallpaperInfo extends LiveWallpaperInfo {
         mShareUri = shareUri;
         mIsCurrent = isCurrent;
         mGroupName = groupName;
+        mWallpaperDescription = wallpaperDescription;
     }
 
     public CreativeWallpaperInfo(WallpaperInfo info, boolean isCurrent) {
-        this(info, false, null);
+        this(info, false, info.getPackageName());
         mIsCurrent = isCurrent;
     }
 
@@ -444,11 +448,36 @@ public class CreativeWallpaperInfo extends LiveWallpaperInfo {
                 cursor.getColumnIndex(WallpaperInfoContract.WALLPAPER_GROUP_NAME));
         int isCurrentApplied = cursor.getInt(
                 cursor.getColumnIndex(WallpaperInfoContract.WALLPAPER_IS_APPLIED));
+        WallpaperDescription descriptionContentHandling =
+                new WallpaperDescription.Builder().setComponent(
+                        wallpaperInfo.getComponent()).build();
+        if (liveWallpaperContentHandling()) {
+            int descriptionContentHandlingIndex = cursor.getColumnIndex(
+                    WallpaperInfoContract.WALLPAPER_DESCRIPTION_CONTENT_HANDLING);
+            if (descriptionContentHandlingIndex >= 0) {
+                descriptionContentHandling = descriptionFromBytes(
+                    cursor.getBlob(descriptionContentHandlingIndex));
+                if (descriptionContentHandling.getComponent() == null) {
+                    descriptionContentHandling =
+                        descriptionContentHandling.toBuilder().setComponent(
+                            wallpaperInfo.getComponent()).build();
+                }
+            }
+        }
 
         return new CreativeWallpaperInfo(wallpaperInfo, wallpaperTitle, wallpaperAuthor,
                 wallpaperDescription, wallpaperContentDescription, configPreviewUri,
                 cleanPreviewUri, deleteUri, thumbnailUri, shareUri, groupName, /* isCurrent= */
-                (isCurrentApplied == 1));
+                (isCurrentApplied == 1), descriptionContentHandling);
+    }
+
+    private static WallpaperDescription descriptionFromBytes(byte[] bytes) {
+        Parcel parcel = Parcel.obtain();
+        parcel.unmarshall(bytes, 0, bytes.length);
+        parcel.setDataPosition(0);
+        WallpaperDescription desc = WallpaperDescription.CREATOR.createFromParcel(parcel);
+        parcel.recycle();
+        return desc;
     }
 
     /**

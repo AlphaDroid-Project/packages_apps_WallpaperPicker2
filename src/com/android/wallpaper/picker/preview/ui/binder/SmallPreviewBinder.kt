@@ -20,7 +20,6 @@ import android.graphics.Point
 import android.view.SurfaceView
 import android.view.View
 import androidx.cardview.widget.CardView
-import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -30,16 +29,18 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.transition.Transition
 import androidx.transition.TransitionListenerAdapter
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
-import com.android.wallpaper.picker.common.preview.ui.view.CustomizationSurfaceView
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
 import com.android.wallpaper.picker.preview.ui.fragment.SmallPreviewFragment
 import com.android.wallpaper.picker.preview.ui.viewmodel.FullPreviewConfigViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.Companion.PreviewScreen
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DisposableHandle
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 object SmallPreviewBinder {
@@ -47,11 +48,11 @@ object SmallPreviewBinder {
     fun bind(
         applicationContext: Context,
         view: View,
-        motionLayout: MotionLayout? = null,
         viewModel: WallpaperPreviewViewModel,
         screen: Screen,
         displaySize: Point,
         deviceDisplayType: DeviceDisplayType,
+        mainScope: CoroutineScope,
         viewLifecycleOwner: LifecycleOwner,
         currentNavDestId: Int,
         navigate: ((View) -> Unit)? = null,
@@ -75,26 +76,15 @@ object SmallPreviewBinder {
                 R.string.wallpaper_preview_card_content_description_editable,
                 foldedStateDescription,
             )
-        val wallpaperSurface =
-            view.requireViewById<SurfaceView>(R.id.wallpaper_surface).apply {
-                // When putting the surface on top for full transition, the card view is behind the
-                // surface view so we need to apply radius on surface view instead
-                cornerRadius = previewCard.radius
-            }
-        val workspaceSurface: SurfaceView = view.requireViewById(R.id.workspace_surface)
+        val wallpaperSurface = view.requireViewById<SurfaceView>(R.id.wallpaper_surface)
 
-        motionLayout?.addTransitionListener(
-            object : CustomizationPickerActivity2.EmptyTransitionListener {
-                override fun onTransitionStarted(
-                    motionLayout: MotionLayout?,
-                    startId: Int,
-                    endId: Int,
-                ) {
-                    (wallpaperSurface as CustomizationSurfaceView).setTransitioning()
-                    (workspaceSurface as CustomizationSurfaceView).setTransitioning()
-                }
-            }
-        )
+        // Don't set radius for set wallpaper dialog
+        if (!viewModel.showSetWallpaperDialog.value) {
+            // When putting the surface on top for full transition, the card view is behind the
+            // surface view so we need to apply radius on surface view instead
+            wallpaperSurface.cornerRadius = previewCard.radius
+        }
+        val workspaceSurface: SurfaceView = view.requireViewById(R.id.workspace_surface)
 
         // Set transition names to enable the small to full preview enter and return shared
         // element transitions.
@@ -183,15 +173,24 @@ object SmallPreviewBinder {
                 }
 
                 if (R.id.smallPreviewFragment == currentNavDestId) {
-                    viewModel
-                        .onSmallPreviewClicked(screen, deviceDisplayType) {
-                            navigate?.invoke(previewCard)
+                    combine(
+                            viewModel.onSmallPreviewClicked(screen, deviceDisplayType) {
+                                navigate?.invoke(previewCard)
+                            },
+                            viewModel.currentPreviewScreen,
+                            viewModel.smallPreviewSelectedTab,
+                        ) { onClick, previewScreen, tab ->
+                            Triple(onClick, previewScreen, tab)
                         }
-                        .collect { onClick ->
-                            if (onClick != null) {
-                                view.setOnClickListener { onClick() }
-                            } else {
+                        .collect { (onClick, previewScreen, tab) ->
+                            if (
+                                BaseFlags.get().isNewPickerUi() &&
+                                    previewScreen != PreviewScreen.SMALL_PREVIEW
+                            ) {
                                 view.setOnClickListener(null)
+                            } else {
+                                onClick?.let { view.setOnClickListener { it() } }
+                                    ?: view.setOnClickListener(null)
                             }
                         }
                 } else if (R.id.setWallpaperDialog == currentNavDestId) {
@@ -216,6 +215,7 @@ object SmallPreviewBinder {
             viewModel = viewModel,
             displaySize = displaySize,
             applicationContext = applicationContext,
+            mainScope = mainScope,
             viewLifecycleOwner = viewLifecycleOwner,
             deviceDisplayType = deviceDisplayType,
             wallpaperConnectionUtils = wallpaperConnectionUtils,

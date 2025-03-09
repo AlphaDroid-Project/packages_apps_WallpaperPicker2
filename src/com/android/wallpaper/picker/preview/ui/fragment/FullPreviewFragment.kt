@@ -31,6 +31,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.transition.Transition
 import com.android.wallpaper.R
 import com.android.wallpaper.picker.AppbarFragment
+import com.android.wallpaper.picker.di.modules.MainDispatcher
 import com.android.wallpaper.picker.preview.ui.binder.CropWallpaperButtonBinder
 import com.android.wallpaper.picker.preview.ui.binder.FullWallpaperPreviewBinder
 import com.android.wallpaper.picker.preview.ui.binder.PreviewTooltipBinder
@@ -44,12 +45,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 
 /** Shows full preview of user selected wallpaper for cropping, zooming and positioning. */
 @AndroidEntryPoint(AppbarFragment::class)
 class FullPreviewFragment : Hilt_FullPreviewFragment() {
 
     @Inject @ApplicationContext lateinit var appContext: Context
+    @Inject @MainDispatcher lateinit var mainScope: CoroutineScope
     @Inject lateinit var displayUtils: DisplayUtils
     @Inject lateinit var wallpaperConnectionUtils: WallpaperConnectionUtils
 
@@ -58,7 +61,7 @@ class FullPreviewFragment : Hilt_FullPreviewFragment() {
     private val wallpaperPreviewViewModel by activityViewModels<WallpaperPreviewViewModel>()
     private val isFirstBindingDeferred = CompletableDeferred<Boolean>()
 
-    private var useLightToolbar = false
+    private var useLightToolbarOverride = false
     private var navigateUpListener: NavController.OnDestinationChangedListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,6 +81,7 @@ class FullPreviewFragment : Hilt_FullPreviewFragment() {
         navigateUpListener =
             NavController.OnDestinationChangedListener { _, destination, _ ->
                 if (destination.id == R.id.smallPreviewFragment) {
+                    wallpaperPreviewViewModel.handleBackPressed()
                     currentView.findViewById<View>(R.id.crop_wallpaper_button)?.isVisible = false
                     currentView.findViewById<View>(R.id.full_preview_tooltip_stub)?.isVisible =
                         false
@@ -108,12 +112,13 @@ class FullPreviewFragment : Hilt_FullPreviewFragment() {
             viewModel = wallpaperPreviewViewModel,
             transition = sharedElementEnterTransition as? Transition,
             displayUtils = displayUtils,
+            mainScope = mainScope,
             lifecycleOwner = viewLifecycleOwner,
             savedInstanceState = savedInstanceState,
             wallpaperConnectionUtils = wallpaperConnectionUtils,
             isFirstBindingDeferred = isFirstBindingDeferred,
         ) { isFullScreen ->
-            useLightToolbar = isFullScreen
+            useLightToolbarOverride = isFullScreen
             setUpToolbar(view)
         }
 
@@ -122,6 +127,7 @@ class FullPreviewFragment : Hilt_FullPreviewFragment() {
             viewModel = wallpaperPreviewViewModel,
             lifecycleOwner = viewLifecycleOwner,
         ) {
+            wallpaperPreviewViewModel.handleBackPressed()
             findNavController().popBackStack()
         }
 
@@ -147,7 +153,6 @@ class FullPreviewFragment : Hilt_FullPreviewFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-
         navigateUpListener?.let { findNavController().removeOnDestinationChangedListener(it) }
     }
 
@@ -157,7 +162,7 @@ class FullPreviewFragment : Hilt_FullPreviewFragment() {
     }
 
     override fun getToolbarTextColor(): Int {
-        return if (useLightToolbar) {
+        return if (useLightToolbarOverride) {
             ContextCompat.getColor(requireContext(), android.R.color.system_on_primary_light)
         } else {
             ContextCompat.getColor(requireContext(), R.color.system_on_surface)
@@ -166,6 +171,6 @@ class FullPreviewFragment : Hilt_FullPreviewFragment() {
 
     override fun isStatusBarLightText(): Boolean {
         return requireContext().resources.getBoolean(R.bool.isFragmentStatusBarLightText) or
-            useLightToolbar
+            useLightToolbarOverride
     }
 }

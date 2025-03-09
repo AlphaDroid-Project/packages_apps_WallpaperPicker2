@@ -15,13 +15,16 @@
  */
 package com.android.wallpaper.util;
 
+import static android.app.Flags.liveWallpaperContentHandling;
 import static android.graphics.Matrix.MSCALE_X;
 import static android.graphics.Matrix.MSCALE_Y;
 import static android.graphics.Matrix.MSKEW_X;
 import static android.graphics.Matrix.MSKEW_Y;
 
 import android.app.WallpaperColors;
+import android.app.WallpaperInfo;
 import android.app.WallpaperManager;
+import android.app.wallpaper.WallpaperDescription;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -120,6 +123,7 @@ public class WallpaperConnection extends IWallpaperConnection.Stub implements Se
     private boolean mDestroyed;
     private int mDestinationFlag;
     private WhichPreview mWhichPreview;
+    @NonNull private final WallpaperDescription mDescription;
     private IBinder mToken;
 
     /**
@@ -132,7 +136,7 @@ public class WallpaperConnection extends IWallpaperConnection.Stub implements Se
             @Nullable WallpaperConnectionListener listener, @NonNull SurfaceView containerView,
             WhichPreview preview) {
         this(intent, context, listener, containerView, null, null,
-                preview);
+                preview, new WallpaperDescription.Builder().build());
     }
 
     /**
@@ -145,12 +149,15 @@ public class WallpaperConnection extends IWallpaperConnection.Stub implements Se
      * @param destinationFlag one of WallpaperManager.FLAG_SYSTEM, WallpaperManager.FLAG_LOCK
      *                        indicating for which screen we're previewing the wallpaper, or null if
      *                        unknown
+     * @param preview describes type of preview being shown
+     * @param description optional content to pass to wallpaper engine
+     *
      */
     public WallpaperConnection(Intent intent, Context context,
             @Nullable WallpaperConnectionListener listener, @NonNull SurfaceView containerView,
             @Nullable SurfaceView secondaryContainerView,
             @Nullable @WallpaperManager.SetWallpaperFlags Integer destinationFlag,
-            WhichPreview preview) {
+            WhichPreview preview, @NonNull WallpaperDescription description) {
         mContext = context.getApplicationContext();
         mIntent = intent;
         mListener = listener;
@@ -158,6 +165,7 @@ public class WallpaperConnection extends IWallpaperConnection.Stub implements Se
         mSecondContainerView = secondaryContainerView;
         mDestinationFlag = destinationFlag == null ? WallpaperManager.FLAG_SYSTEM : destinationFlag;
         mWhichPreview = preview;
+        mDescription = description;
     }
 
     /**
@@ -412,24 +420,68 @@ public class WallpaperConnection extends IWallpaperConnection.Stub implements Se
         }
     }
 
+    /*
+     * Tries to call the attach method used in Android 14(U) and earlier, returning true on success
+     * otherwise false.
+     */
+    private boolean tryPreUAttach(int displayId) {
+        try {
+            Method preUMethod = mService.getClass().getMethod("attach",
+                    IWallpaperConnection.class, IBinder.class, int.class, boolean.class,
+                    int.class, int.class, Rect.class, int.class);
+            preUMethod.invoke(mService, this, mToken, LayoutParams.TYPE_APPLICATION_MEDIA, true,
+                    mContainerView.getWidth(), mContainerView.getHeight(), new Rect(0, 0, 0, 0),
+                    displayId);
+            Log.d(TAG, "Using pre-U version of IWallpaperService#attach");
+            if (liveWallpaperContentHandling()) {
+                Log.w(TAG,
+                        "live wallpaper content handling enabled, but pre-U attach method called");
+            }
+            return true;
+        } catch (NoSuchMethodException | NoSuchMethodError | InvocationTargetException
+                 | IllegalAccessException e) {
+            return false;
+        }
+    }
+
+    /*
+     * Tries to call the attach method used in Android 16(B) and earlier, returning true on success
+     * otherwise false.
+     */
+    private boolean tryPreBAttach(int displayId) {
+        try {
+            Method preBMethod = mService.getClass().getMethod("attach",
+                    IWallpaperConnection.class, IBinder.class, int.class, boolean.class,
+                    int.class, int.class, Rect.class, int.class, WallpaperInfo.class);
+            preBMethod.invoke(mService, this, mToken, LayoutParams.TYPE_APPLICATION_MEDIA, true,
+                    mContainerView.getWidth(), mContainerView.getHeight(), new Rect(0, 0, 0, 0),
+                    displayId, mDestinationFlag, null);
+            if (liveWallpaperContentHandling()) {
+                Log.w(TAG,
+                        "live wallpaper content handling enabled, but pre-B attach method called");
+            }
+            return true;
+        } catch (NoSuchMethodException | NoSuchMethodError | InvocationTargetException
+                 | IllegalAccessException e) {
+            return false;
+        }
+    }
+
+    /*
+     * This method tries to call historical versions of IWallpaperService#attach since this code
+     * may be running against older versions of Android. We have no control over what versions of
+     * Android third party users of this code will be running.
+     */
     private void attachConnection(int displayId) {
         mToken = mContainerView.getWindowToken();
+
         try {
-            try {
-                Method preUMethod = mService.getClass().getMethod("attach",
-                        IWallpaperConnection.class, IBinder.class, int.class, boolean.class,
-                        int.class, int.class, Rect.class, int.class);
-                preUMethod.invoke(mService, this, mToken, LayoutParams.TYPE_APPLICATION_MEDIA, true,
-                        mContainerView.getWidth(), mContainerView.getHeight(), new Rect(0, 0, 0, 0),
-                        displayId);
-            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-                Log.d(TAG, "IWallpaperService#attach method without which argument not available, "
-                        + "will use newer version");
-                // Let's try the new attach method that takes "which" argument
-                mService.attach(this, mToken, LayoutParams.TYPE_APPLICATION_MEDIA, true,
-                        mContainerView.getWidth(), mContainerView.getHeight(), new Rect(0, 0, 0, 0),
-                        displayId, mDestinationFlag, null);
-            }
+            if (tryPreUAttach(displayId)) return;
+            if (tryPreBAttach(displayId)) return;
+
+            mService.attach(this, mToken, LayoutParams.TYPE_APPLICATION_MEDIA, true,
+                    mContainerView.getWidth(), mContainerView.getHeight(), new Rect(0, 0, 0, 0),
+                    displayId, mDestinationFlag, null, mDescription);
         } catch (RemoteException e) {
             Log.w(TAG, "Failed attaching wallpaper; clearing", e);
         }

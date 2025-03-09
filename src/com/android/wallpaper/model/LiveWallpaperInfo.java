@@ -17,6 +17,7 @@ package com.android.wallpaper.model;
 
 import android.app.Activity;
 import android.app.WallpaperManager;
+import android.app.wallpaper.WallpaperDescription;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -30,6 +31,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.wallpaper.R;
@@ -159,6 +161,7 @@ public class LiveWallpaperInfo extends WallpaperInfo {
     protected LiveWallpaperThumbAsset mThumbAsset;
     protected boolean mVisibleTitle;
     @Nullable private final String mCollectionId;
+    @NonNull protected WallpaperDescription mWallpaperDescription;
 
     /**
      * Constructs a LiveWallpaperInfo wrapping the given system WallpaperInfo object, representing
@@ -176,9 +179,18 @@ public class LiveWallpaperInfo extends WallpaperInfo {
      */
     public LiveWallpaperInfo(android.app.WallpaperInfo info, boolean visibleTitle,
             @Nullable String collectionId) {
+        // TODO (b/373890500) Make info @NonNull and remove null info logic below
+        this(info, visibleTitle, collectionId,
+            new WallpaperDescription.Builder().setComponent(
+                (info != null) ? info.getComponent() : null).build());
+    }
+
+    public LiveWallpaperInfo(android.app.WallpaperInfo info, boolean visibleTitle,
+            @Nullable String collectionId, @NonNull WallpaperDescription description) {
         mInfo = info;
         mVisibleTitle = visibleTitle;
         mCollectionId = collectionId;
+        mWallpaperDescription = description;
     }
 
     protected LiveWallpaperInfo(Parcel in) {
@@ -186,6 +198,8 @@ public class LiveWallpaperInfo extends WallpaperInfo {
         mInfo = in.readParcelable(android.app.WallpaperInfo.class.getClassLoader());
         mVisibleTitle = in.readInt() == 1;
         mCollectionId = in.readString();
+        mWallpaperDescription = in.readParcelable(WallpaperDescription.class.getClassLoader(),
+                WallpaperDescription.class);
     }
 
     /**
@@ -458,6 +472,7 @@ public class LiveWallpaperInfo extends WallpaperInfo {
         parcel.writeParcelable(mInfo, 0 /* flags */);
         parcel.writeInt(mVisibleTitle ? 1 : 0);
         parcel.writeString(mCollectionId);
+        parcel.writeParcelable(mWallpaperDescription, 0 /* flags */);
     }
 
     @Override
@@ -492,6 +507,15 @@ public class LiveWallpaperInfo extends WallpaperInfo {
         boolean isAppliedToLock = currentLockWallpaper != null
                 && TextUtils.equals(currentLockWallpaper.getServiceName(), serviceName);
         return isAppliedToHome || isAppliedToLock;
+    }
+
+    @NonNull
+    public WallpaperDescription getWallpaperDescription() {
+        return mWallpaperDescription;
+    }
+
+    public void setWallpaperDescription(@NonNull WallpaperDescription description) {
+        mWallpaperDescription = description;
     }
 
     /**

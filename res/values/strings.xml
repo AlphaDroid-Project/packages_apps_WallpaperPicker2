@@ -447,6 +447,9 @@
     <!-- Label for a button / menu item that allows the user to apply the currently selected customization option. [CHAR LIMIT=20] -->
     <string name="apply_btn" msgid="7965877231041987336">Apply</string>
 
+    <!-- The title of a wallpaper picker screen letting user to apply a new wallpaper -->
+    <string name="apply_wallpaper_title_text">Apply wallpaper\?</string>
+
     <!-- Content description for customize panel is hidden. [CHAR_LIMIT=50] -->
     <string name="accessibility_customize_hidden">Customize hidden</string>
 

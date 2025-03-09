@@ -20,7 +20,8 @@
     android:layout_height="wrap_content"
     android:background="@drawable/floating_tab_toolbar_background"
     tools:ignore="contentDescription"
-    android:padding="@dimen/floating_tab_toolbar_padding">
+    android:paddingVertical="@dimen/floating_tab_toolbar_padding_vertical"
+    android:paddingHorizontal="@dimen/floating_tab_toolbar_padding_horizontal">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tab_list"
@@ -30,7 +31,7 @@
         app:layoutManager="LinearLayoutManager"  />
 
     <include
-        layout="@layout/floating_toolbar_tab_placeholder"
+        layout="@layout/floating_toolbar_tab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="invisible" />

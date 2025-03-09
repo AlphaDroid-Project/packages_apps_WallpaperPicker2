@@ -15,6 +15,8 @@
  */
 package com.android.wallpaper.picker.preview.ui.view
 
+import android.app.Flags.liveWallpaperContentHandling
+import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import android.net.Uri
 import android.util.AttributeSet
@@ -85,12 +87,7 @@ class PreviewActionFloatingSheet(context: Context, attrs: AttributeSet?) :
         view.setCollapseFloatingSheetListener(collapseFloatingSheetListener)
         view.addEffectSwitchListener(effectSwitchListener)
         view.setEffectDownloadClickListener(effectDownloadClickListener)
-        view.updateEffectStatus(
-            effect,
-            status,
-            resultCode,
-            errorMessage,
-        )
+        view.updateEffectStatus(effect, status, resultCode, errorMessage)
         view.updateEffectTitle(title)
         floatingSheetView.removeAllViews()
         floatingSheetView.addView(view)
@@ -122,7 +119,8 @@ class PreviewActionFloatingSheet(context: Context, attrs: AttributeSet?) :
     }
 
     fun setInformationContent(
-        attributions: List<String?>?,
+        description: WallpaperDescription?,
+        attributions: List<String>?,
         onExploreButtonClickListener: OnClickListener?,
         actionButtonTitle: CharSequence?,
     ) {
@@ -131,32 +129,48 @@ class PreviewActionFloatingSheet(context: Context, attrs: AttributeSet?) :
         val subtitle1: TextView = view.requireViewById(R.id.wallpaper_info_subtitle1)
         val subtitle2: TextView = view.requireViewById(R.id.wallpaper_info_subtitle2)
         val exploreButton: Button = view.requireViewById(R.id.wallpaper_info_explore_button)
-        attributions?.forEachIndexed { index, text ->
+
+        val combinedAttributions = attributions?.toMutableList() ?: mutableListOf()
+        if (liveWallpaperContentHandling() && description != null) {
+            description.title.let {
+                if (!it.isNullOrEmpty()) {
+                    combinedAttributions[0] = it.toString()
+                }
+            }
+            description.description.forEachIndexed { index, char ->
+                if (!char.isNullOrEmpty()) {
+                    combinedAttributions[index + 1] = char.toString()
+                }
+            }
+        }
+
+        combinedAttributions.forEachIndexed { index, text ->
             when (index) {
                 0 -> {
-                    if (!text.isNullOrEmpty()) {
+                    if (text.isNotEmpty()) {
                         title.text = text
                         title.isVisible = true
                     }
                 }
                 1 -> {
-                    if (!text.isNullOrEmpty()) {
+                    if (text.isNotEmpty()) {
                         subtitle1.text = text
                         subtitle1.isVisible = true
                     }
                 }
                 2 -> {
-                    if (!text.isNullOrEmpty()) {
+                    if (text.isNotEmpty()) {
                         subtitle2.text = text
                         subtitle2.isVisible = true
                     }
                 }
             }
-
-            exploreButton.isVisible = onExploreButtonClickListener != null
-            actionButtonTitle?.let { exploreButton.text = it }
-            exploreButton.setOnClickListener(onExploreButtonClickListener)
         }
+
+        exploreButton.isVisible = onExploreButtonClickListener != null
+        actionButtonTitle?.let { exploreButton.text = it }
+        exploreButton.setOnClickListener(onExploreButtonClickListener)
+
         floatingSheetView.removeAllViews()
         floatingSheetView.addView(view)
     }

@@ -36,18 +36,12 @@ import com.android.wallpaper.R
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class PreviewTabs(
-    context: Context,
-    attrs: AttributeSet?,
-) :
-    FrameLayout(
-        context,
-        attrs,
-    ) {
+class PreviewTabs(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
 
     private val argbEvaluator = ArgbEvaluator()
     private val selectedTextColor = ContextCompat.getColor(context, R.color.system_on_primary)
     private val unSelectedTextColor = ContextCompat.getColor(context, R.color.system_secondary)
+    private val viewConfiguration = ViewConfiguration.get(context)
 
     private val motionLayout: MotionLayout
     private val primaryTabText: TextView
@@ -70,7 +64,7 @@ class PreviewTabs(
                 override fun onTransitionStarted(
                     motionLayout: MotionLayout?,
                     startId: Int,
-                    endId: Int
+                    endId: Int,
                 ) {
                     // Do nothing intended
                 }
@@ -79,7 +73,7 @@ class PreviewTabs(
                     motionLayout: MotionLayout?,
                     startId: Int,
                     endId: Int,
-                    progress: Float
+                    progress: Float,
                 ) {
                     updateTabText(progress)
                 }
@@ -102,7 +96,7 @@ class PreviewTabs(
                     motionLayout: MotionLayout?,
                     triggerId: Int,
                     positive: Boolean,
-                    progress: Float
+                    progress: Float,
                 ) {
                     // Do nothing intended
                 }
@@ -119,7 +113,7 @@ class PreviewTabs(
         // We have to use this method to manually intercept a click event, rather than setting the
         // onClickListener to the individual tabs. This is because, when setting the onClickListener
         // to the individual tabs, the swipe gesture of the tabs will be overridden.
-        if (isClick(event, downX, downY)) {
+        if (isClick(viewConfiguration, event, downX, downY)) {
             val primaryTabRect = requireViewById<FrameLayout>(R.id.primary_tab).getViewRect()
             val secondaryTabRect = requireViewById<FrameLayout>(R.id.secondary_tab).getViewRect()
             if (primaryTabRect.contains(downX.toInt(), downY.toInt())) {
@@ -200,7 +194,7 @@ class PreviewTabs(
             object : AccessibilityDelegateCompat() {
                 override fun onInitializeAccessibilityNodeInfo(
                     host: View,
-                    info: AccessibilityNodeInfoCompat
+                    info: AccessibilityNodeInfoCompat,
                 ) {
                     super.onInitializeAccessibilityNodeInfo(host, info)
                     info.addAction(
@@ -211,7 +205,7 @@ class PreviewTabs(
                 override fun performAccessibilityAction(
                     host: View,
                     action: Int,
-                    args: Bundle?
+                    args: Bundle?,
                 ): Boolean {
                     if (
                         action ==
@@ -222,7 +216,7 @@ class PreviewTabs(
                     }
                     return super.performAccessibilityAction(host, action, args)
                 }
-            }
+            },
         )
 
         ViewCompat.setAccessibilityDelegate(
@@ -230,7 +224,7 @@ class PreviewTabs(
             object : AccessibilityDelegateCompat() {
                 override fun onInitializeAccessibilityNodeInfo(
                     host: View,
-                    info: AccessibilityNodeInfoCompat
+                    info: AccessibilityNodeInfoCompat,
                 ) {
                     super.onInitializeAccessibilityNodeInfo(host, info)
                     info.addAction(
@@ -241,7 +235,7 @@ class PreviewTabs(
                 override fun performAccessibilityAction(
                     host: View,
                     action: Int,
-                    args: Bundle?
+                    args: Bundle?,
                 ): Boolean {
                     if (
                         action ==
@@ -252,7 +246,7 @@ class PreviewTabs(
                     }
                     return super.performAccessibilityAction(host, action, args)
                 }
-            }
+            },
         )
     }
 
@@ -260,7 +254,12 @@ class PreviewTabs(
 
         const val TRANSITION_DURATION = 200
 
-        private fun isClick(event: MotionEvent, downX: Float, downY: Float): Boolean {
+        private fun isClick(
+            viewConfiguration: ViewConfiguration,
+            event: MotionEvent,
+            downX: Float,
+            downY: Float,
+        ): Boolean {
             return when {
                 // It's not a click if the event is not an UP action (though it may become one
                 // later, when/if an UP is received).
@@ -269,7 +268,7 @@ class PreviewTabs(
                 // event.
                 gestureElapsedTime(event) > ViewConfiguration.getTapTimeout() -> false
                 // It's not a click if the touch traveled too far.
-                distanceMoved(event, downX, downY) > ViewConfiguration.getTouchSlop() -> false
+                distanceMoved(event, downX, downY) > viewConfiguration.scaledTouchSlop -> false
                 // Otherwise, this is a click!
                 else -> true
             }

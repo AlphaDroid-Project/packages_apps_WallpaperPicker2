@@ -46,6 +46,12 @@ constructor(
 
     private var clearActionUri: Uri? = null
 
+    fun isEffectInitialized() = _creativeEffectsModel.value != null
+
+    // TODO (b/372890403): After either isNewPickerUi or isWallpaperCategoryRefactoringEnabled is
+    //  turned on and PersistentWallpaperModelRepository is used, we should inject
+    //  PersistentWallpaperModelRepository and listen to the view model data flow, instead of have
+    //  the WallpaperPreviewActivity calling initializeEffect when onCreate().
     suspend fun initializeEffect(data: CreativeWallpaperEffectsData) {
         withContext(bgDispatcher) {
             clearActionUri = data.clearActionUri

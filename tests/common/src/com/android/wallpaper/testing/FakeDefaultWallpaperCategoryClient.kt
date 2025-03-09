@@ -51,7 +51,7 @@ class FakeDefaultWallpaperCategoryClient @Inject constructor() : DefaultWallpape
             "Fake My Photos",
             "fake_my_photos_id",
             1,
-            0 // Placeholder resource ID
+            0, // Placeholder resource ID
         )
     }
 
@@ -64,15 +64,11 @@ class FakeDefaultWallpaperCategoryClient @Inject constructor() : DefaultWallpape
     }
 
     override suspend fun getThirdPartyCategory(excludedPackageNames: List<String>): List<Category> {
-        TODO("Not yet implemented")
+        return fakeThirdPartyAppCategories
     }
 
     override fun getExcludedThirdPartyPackageNames(): List<String> {
-        TODO("Not yet implemented")
-    }
-
-    suspend fun getThirdPartyCategory(): List<Category> {
-        return fakeThirdPartyAppCategories
+        return emptyList()
     }
 
     override suspend fun getThirdPartyLiveWallpaperCategory(
@@ -82,6 +78,6 @@ class FakeDefaultWallpaperCategoryClient @Inject constructor() : DefaultWallpape
     }
 
     override fun getExcludedLiveWallpaperPackageNames(): Set<String> {
-        TODO("Not yet implemented")
+        return emptySet()
     }
 }

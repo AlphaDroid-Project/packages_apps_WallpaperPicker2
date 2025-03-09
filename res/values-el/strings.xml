@@ -30,7 +30,7 @@
     <string name="rotating_wallpaper_presentation_mode_message" msgid="3361676041605733288">"Ημερήσια ταπετσαρία"</string>
     <string name="wallpaper_destination_both" msgid="1124197176741944063">"Αρχική οθόνη και οθόνη κλειδώματος"</string>
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"Επιλέξτε μια ταπετσαρία"</string>
-    <string name="creative_wallpaper_title" msgid="3581650238648981372">"Δημιουργία ταπετσαρίας"</string>
+    <string name="creative_wallpaper_title" msgid="3581650238648981372">"Δημιουργήστε μια ταπετσαρία"</string>
     <string name="home_screen_message" msgid="106444102822522813">"Αρχική οθόνη"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"Οθόνη κλειδώματος"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"Αρχική και κλειδώματος"</string>
@@ -124,6 +124,7 @@
     <string name="wallpaper_picker_entry_title" msgid="5185793991582084891">"Αλλαγή ταπετσαρίας"</string>
     <string name="lockscreen_wallpaper_preview_card_content_description" msgid="2244890820627302245">"Προεπ/ση ταπετσαρίας οθόνης κλειδώματος"</string>
     <string name="apply_btn" msgid="5764555565943538528">"Εφαρμογή"</string>
+    <string name="apply_wallpaper_title_text" msgid="2100301064316744087">"Να εφαρμοστεί η ταπετσαρία;"</string>
     <string name="accessibility_customize_hidden" msgid="6320568529768181691">"Το πλαίσιο Προσαρμογή είναι κρυφό."</string>
     <string name="accessibility_customize_shown" msgid="590964727831547651">"Το πλαίσιο Προσαρμογή είναι ορατό."</string>
     <string name="accessibility_info_hidden" msgid="2288603712350168107">"Το πλαίσιο Πληροφορίες είναι κρυφό."</string>

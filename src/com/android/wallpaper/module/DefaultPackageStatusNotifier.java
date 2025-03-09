@@ -21,21 +21,28 @@ import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
 import android.os.UserHandle;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 
 /**
  * Default version of {@link PackageStatusNotifier} that uses {@link LauncherApps}
  */
+@Singleton
 public class DefaultPackageStatusNotifier implements PackageStatusNotifier {
 
     private final Map<Listener, ListenerWrapper> mListeners = new HashMap<>();
     private final Context mAppContext;
     private final LauncherApps mLauncherApps;
 
-
-    public DefaultPackageStatusNotifier(Context context) {
-        mAppContext = context.getApplicationContext();
+    @Inject
+    public DefaultPackageStatusNotifier(@ApplicationContext Context context) {
+        mAppContext = context;
         mLauncherApps = (LauncherApps) context.getSystemService(Context.LAUNCHER_APPS_SERVICE);
     }
 

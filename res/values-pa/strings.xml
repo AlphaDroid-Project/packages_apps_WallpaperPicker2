@@ -124,6 +124,7 @@
     <string name="wallpaper_picker_entry_title" msgid="5185793991582084891">"ਵਾਲਪੇਪਰ ਬਦਲੋ"</string>
     <string name="lockscreen_wallpaper_preview_card_content_description" msgid="2244890820627302245">"ਲਾਕਸਕ੍ਰੀਨ ਵਾਲਪੇਪਰ ਦੀ ਪੂਰਵ-ਝਲਕ"</string>
     <string name="apply_btn" msgid="5764555565943538528">"ਲਾਗੂ ਕਰੋ"</string>
+    <string name="apply_wallpaper_title_text" msgid="2100301064316744087">"ਕੀ ਵਾਲਪੇਪਰ ਲਾਗੂ ਕਰਨਾ ਹੈ?"</string>
     <string name="accessibility_customize_hidden" msgid="6320568529768181691">"\'ਵਿਉਂਤਬੱਧ ਕਰੋ\' ਨੂੰ ਲੁਕਾਇਆ ਗਿਆ"</string>
     <string name="accessibility_customize_shown" msgid="590964727831547651">"\'ਵਿਉਂਤਬੱਧ ਕਰੋ\' ਨੂੰ ਦਿਖਾਇਆ ਗਿਆ"</string>
     <string name="accessibility_info_hidden" msgid="2288603712350168107">"ਜਾਣਕਾਰੀ ਨੂੰ ਲੁਕਾਇਆ ਗਿਆ"</string>

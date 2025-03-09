@@ -45,7 +45,7 @@
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"سرویس کاغذ‌دیواری پویا برای کاغذدیواری‌های چرخشی"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"کاغذ‌دیواری روزانه"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"برای روشن کردن، تک‌ضرب بزنید"</string>
-    <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"‏کاغذ‌دیواری هر روز به‌طور خودکار تغییر خواهد کرد. برای اتمام راه‌اندازی، روی &lt;strong&gt;تنظیم کاغذدیواری &lt;/strong&gt; در صفحه بعد تک‌ضرب بزنید."</string>
+    <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"‏کاغذ‌دیواری هر روز به‌طور خودکار تغییر خواهد کرد. برای تمام کردن راه‌اندازی، روی &lt;strong&gt;تنظیم کاغذدیواری &lt;/strong&gt; در صفحه بعد تک‌ضرب بزنید."</string>
     <string name="start_rotation_dialog_wifi_only_option_message" msgid="3126269859713666225">"‏کاغذ‌دیواری‌های بعدی فقط ازطریق Wi-Fi بارگیری شود"</string>
     <string name="start_rotation_dialog_continue" msgid="276678987852274872">"ادامه"</string>
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"درحال بارگیری اولین کاغذ‌دیواری..."</string>
@@ -124,6 +124,7 @@
     <string name="wallpaper_picker_entry_title" msgid="5185793991582084891">"تغییر کاغذدیواری"</string>
     <string name="lockscreen_wallpaper_preview_card_content_description" msgid="2244890820627302245">"پیش‌نمای کاغذدیواری صفحه قفل"</string>
     <string name="apply_btn" msgid="5764555565943538528">"اعمال کردن"</string>
+    <string name="apply_wallpaper_title_text" msgid="2100301064316744087">"کاغذدیواری اعمال شود؟"</string>
     <string name="accessibility_customize_hidden" msgid="6320568529768181691">"پانل سفارشی‌سازی پنهان است"</string>
     <string name="accessibility_customize_shown" msgid="590964727831547651">"پانل سفارشی‌سازی نمایان است"</string>
     <string name="accessibility_info_hidden" msgid="2288603712350168107">"پانل اطلاعات پنهان است"</string>

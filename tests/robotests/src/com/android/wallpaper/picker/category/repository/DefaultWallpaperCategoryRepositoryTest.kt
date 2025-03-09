@@ -34,6 +34,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -70,7 +71,7 @@ class DefaultWallpaperCategoryRepositoryTest {
                 ImageCategory(
                     "My photos" /* title */,
                     "image_wallpapers" /* collection */,
-                    0 /* priority */
+                    0, /* priority */
                 )
 
             val wallpapers = ArrayList<WallpaperInfo>()
@@ -81,7 +82,7 @@ class DefaultWallpaperCategoryRepositoryTest {
                     "Test category",
                     "init_collection",
                     wallpapers,
-                    1 /* priority */
+                    1, /* priority */
                 )
 
             val thirdPartyLiveWallpaperCategory: Category =
@@ -90,7 +91,7 @@ class DefaultWallpaperCategoryRepositoryTest {
                     "Third_Party_CollectionId",
                     wallpapers,
                     1,
-                    emptySet()
+                    emptySet(),
                 )
 
             val mCategories = ArrayList<Category>()
@@ -107,7 +108,7 @@ class DefaultWallpaperCategoryRepositoryTest {
                     context,
                     defaultWallpaperCategoryClient,
                     defaultCategoryFactory,
-                    testScope
+                    testScope,
                 )
             testScope.advanceUntilIdle()
             assertThat(repository.isDefaultCategoriesFetched.value).isTrue()
@@ -122,9 +123,43 @@ class DefaultWallpaperCategoryRepositoryTest {
                 context,
                 defaultWallpaperCategoryClient,
                 defaultCategoryFactory,
-                testScope
+                testScope,
             )
         assertThat(repository.systemCategories.value).isEmpty()
         assertThat(repository.isDefaultCategoriesFetched.value).isFalse()
+    }
+
+    @Test
+    fun refreshThirdPartyLiveWallpaperCategoriesShouldUpdateStateCorrectly() = runTest {
+        repository =
+            DefaultWallpaperCategoryRepository(
+                context,
+                defaultWallpaperCategoryClient,
+                defaultCategoryFactory,
+                testScope,
+            )
+
+        val job = launch { repository.refreshThirdPartyLiveWallpaperCategories() }
+        assertThat(repository.isDefaultCategoriesFetched.value).isFalse()
+        testScope.advanceUntilIdle()
+        job.join()
+        assertThat(repository.isDefaultCategoriesFetched.value).isTrue()
+    }
+
+    @Test
+    fun refreshThirdPartyAppCategoriesShouldUpdateStateCorrectly() = runTest {
+        repository =
+            DefaultWallpaperCategoryRepository(
+                context,
+                defaultWallpaperCategoryClient,
+                defaultCategoryFactory,
+                testScope,
+            )
+
+        val job = launch { repository.refreshThirdPartyAppCategories() }
+        assertThat(repository.isDefaultCategoriesFetched.value).isFalse()
+        testScope.advanceUntilIdle()
+        job.join()
+        assertThat(repository.isDefaultCategoriesFetched.value).isTrue()
     }
 }

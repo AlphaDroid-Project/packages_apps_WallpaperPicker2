@@ -16,8 +16,10 @@
 package com.android.wallpaper.picker;
 
 import android.annotation.Nullable;
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
+
+import androidx.activity.result.ActivityResultLauncher;
 
 /**
  * Interface for activities that launch an Android custom image picker.
@@ -29,6 +31,15 @@ public interface MyPhotosStarter {
      * photo to set as the device's wallpaper.
      */
     void requestCustomPhotoPicker(PermissionChangedListener listener);
+
+    /**
+     * Displays the Android custom photo picker within this Activity to select an image for
+     * setting as the device’s wallpaper. This implementation enables launching the photo picker
+     * from a specified custom Activity, allowing greater flexibility in initiating the photo
+     * selection process.
+     */
+    void requestCustomPhotoPicker(PermissionChangedListener listener, Activity activity,
+            ActivityResultLauncher<Intent> photoPickerLauncher);
 
     /**
      * Interface for clients to implement in order to be notified of permissions grant status changes.
@@ -62,14 +73,14 @@ public interface MyPhotosStarter {
         /**
          * @return the Intent to use to start the "My Photos" picker.
          */
-        default Intent getMyPhotosIntent(Context context) {
+        default Intent getMyPhotosIntent() {
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setType("image/*");
             return intent;
         }
 
         @Nullable
-        default Intent getFallbackIntent(Context context) {
+        default Intent getFallbackIntent() {
             return null;
         }
     }
