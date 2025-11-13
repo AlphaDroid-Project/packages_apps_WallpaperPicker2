@@ -45,6 +45,7 @@ import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.core.widget.ContentLoadingProgressBar
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -67,13 +68,12 @@ import com.android.wallpaper.picker.MyPhotosStarter.MyPhotosStarterProvider
 import com.android.wallpaper.picker.RotationStarter
 import com.android.wallpaper.picker.StartRotationDialogFragment
 import com.android.wallpaper.picker.StartRotationErrorDialogFragment
-import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
-import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel.CategoryType
 import com.android.wallpaper.picker.category.wrapper.WallpaperCategoryWrapper
+import com.android.wallpaper.picker.customization.shared.model.CategoryType
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2.Companion.CUSTOMIZATION_PICKER_FRAGMENT_TAG
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerFragment2
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
-import com.android.wallpaper.util.ActivityUtils
-import com.android.wallpaper.util.LaunchUtils
 import com.android.wallpaper.util.SizeCalculator
 import com.android.wallpaper.widget.GridPaddingDecoration
 import com.android.wallpaper.widget.GridPaddingDecorationCreativeCategory
@@ -127,7 +127,7 @@ class IndividualPickerFragment2 :
 
         fun newInstance(
             collectionId: String?,
-            categoryType: CategoriesViewModel.CategoryType,
+            categoryType: CategoryType,
         ): IndividualPickerFragment2 {
             val args = Bundle()
             args.putString(ARG_CATEGORY_COLLECTION_ID, collectionId)
@@ -160,7 +160,7 @@ class IndividualPickerFragment2 :
     private var categoryRefactorFlag = false
     private var isNewPickerUi = false
 
-    private var refreshCreativeCategories: CategoriesViewModel.CategoryType? = null
+    private var refreshCreativeCategories: CategoryType? = null
 
     /**
      * Staged error dialog fragments that were unable to be shown when the activity didn't allow
@@ -519,11 +519,7 @@ class IndividualPickerFragment2 :
         if (!this::imageGrid.isInitialized) {
             return
         }
-        // Skip if category hasn't loaded yet
-        if (category == null) {
-            return
-        }
-        if (context == null) {
+        if (category == null || activity == null || context == null) {
             return
         }
         // Wallpaper count could change, so we may need to change the layout(2 or 3 columns layout)
@@ -745,11 +741,28 @@ class IndividualPickerFragment2 :
                             } catch (e: Resources.NotFoundException) {
                                 Log.e(TAG, "Could not show toast $e")
                             }
-                            activity.setResult(Activity.RESULT_OK)
-                            activity.finish()
-                            if (!ActivityUtils.isSUWMode(appContext)) {
-                                // Go back to launcher home.
-                                LaunchUtils.launchHome(appContext)
+
+                            // Navigate back to the root fragment (CustomizationPickerFragment2)
+                            val fragmentManager: FragmentManager = parentFragmentManager
+                            // Pop all the fragments until the root fragment
+                            fragmentManager.popBackStack(
+                                null,
+                                FragmentManager.POP_BACK_STACK_INCLUSIVE,
+                            )
+                            // Ensure the root fragment is CUSTOMIZATION_PICKER_FRAGMENT_TAG
+                            if (
+                                fragmentManager.findFragmentByTag(
+                                    CUSTOMIZATION_PICKER_FRAGMENT_TAG
+                                ) == null
+                            ) {
+                                fragmentManager
+                                    .beginTransaction()
+                                    .replace(
+                                        R.id.fragment_container, // containerViewId
+                                        CustomizationPickerFragment2(), // fragment
+                                        CUSTOMIZATION_PICKER_FRAGMENT_TAG, // tag
+                                    )
+                                    .commit()
                             }
                         }
                     } else { // Failed to start rotation.

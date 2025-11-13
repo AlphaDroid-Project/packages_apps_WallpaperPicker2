@@ -23,7 +23,7 @@
     android:layout_marginEnd="@dimen/curated_photo_horizontal_margin"
     android:layout_height="match_parent"
     android:foreground="?attr/selectableItemBackground"
-    app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.ExtraLarge">
+    app:shapeAppearance="@style/ShapeAppearance.Wallpaper.Corner.ExtraLarge">
 
     <ImageView
         android:id="@+id/carousel_image_view"
@@ -39,8 +39,9 @@
         android:layout_gravity="bottom|start"
         android:layout_marginStart="10dp"
         android:layout_marginBottom="10dp"
-        android:textColor="@color/system_primary"
+        android:textColor="@color/white"
         android:textSize="14sp"
+        android:textStyle="bold"
         android:background="@android:color/transparent"
         android:padding="4dp"/>
 

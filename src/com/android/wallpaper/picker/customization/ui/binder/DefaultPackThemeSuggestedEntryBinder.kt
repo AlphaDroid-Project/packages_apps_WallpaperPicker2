@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,23 @@
 
 package com.android.wallpaper.picker.customization.ui.binder
 
-import android.view.View
-import androidx.core.view.isVisible
-import androidx.lifecycle.Lifecycle
+import android.content.Intent
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import com.android.wallpaper.picker.customization.ui.view.PackThemeSuggestedChip
+import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
-import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 
-object PagerTouchInterceptorBinder {
-
-    fun bind(
-        pagerTouchInterceptor: View,
+@Singleton
+class DefaultPackThemeSuggestedEntryBinder @Inject constructor() : PackThemeSuggestedEntryBinder {
+    override fun bind(
+        view: PackThemeSuggestedChip,
         viewModel: CustomizationPickerViewModel2,
+        colorUpdateViewModel: ColorUpdateViewModel,
         lifecycleOwner: LifecycleOwner,
+        navigateToPackThemeActivity: (Intent) -> Unit,
     ) {
-        lifecycleOwner.lifecycleScope.launch {
-            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.isPagerInteractable.collect { pagerTouchInterceptor.isVisible = !it }
-                }
-            }
-        }
+        // Do nothing intended
     }
 }

@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"ವಾಲ್‌ಪೇಪರ್‌ ಆಯ್ಕೆಮಾಡಿ"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"ಸೂಚಿಸಿದ ಫೋಟೋಗಳು"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"ವಾಲ್‌ಪೇಪರ್ ಅನ್ನು ರಚಿಸಿ"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"ವಾಲ್‌ಪೇಪರ್ ಸ್ಟುಡಿಯೋ"</string>
     <string name="home_screen_message" msgid="106444102822522813">"ಹೋಮ್ ಸ್ಕ್ರೀನ್"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"ಲಾಕ್ ಸ್ಕ್ರೀನ್"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"ಮುಖಪುಟ ಮತ್ತು ಲಾಕ್‌"</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"ಪ್ರವೇಶವನ್ನು ಆನುಮತಿಸಿ"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"ತಿರುಗುವ ವಾಲ್‌ಪೇಪರ್‌ಗಳಿಗಾಗಿ ಲೈವ್ ವಾಲ್‌ಪೇಪರ್ ಸೇವೆ"</string>
     <string name="more_photos" msgid="2183343115041498453">"ಇನ್ನಷ್ಟು ಫೋಟೋಗಳು"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"ಫೋಟೋವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"ದಿನನಿತ್ಯದ ವಾಲ್‌ಪೇಪರ್"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"ಆನ್‌‌‌ ಮಾಡಲು ಟ್ಯಾಪ್‌ ಮಾಡಿ"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"ವಾಲ್‌ಪೇಪರ್ ಪ್ರತಿ ದಿನ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಬದಲಾಗುತ್ತದೆ. ಸೆಟಪ್ ಮುಗಿಸಲು, ಮುಂದಿನ ಪರದೆಯಲ್ಲಿನ &lt;strong&gt;ವಾಲ್‌ಪೇಪರ್ ಸೆಟ್ ಮಾಡಿ&lt;/strong&gt; ಅನ್ನು ಟ್ಯಾಪ್‌ ಮಾಡಿ."</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"ಬದಲಾವಣೆಗಳನ್ನು ರೀಸೆಟ್ ಮಾಡಬೇಕೆ?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"ನಿಮ್ಮ ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಲಾಗುವುದಿಲ್ಲ"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"ಇನ್ನಷ್ಟು ವಾಲ್‌ಪೇಪರ್‌ಗಳು"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nಎಲ್ಲವನ್ನೂ ವೀಕ್ಷಿಸಿ"</string>
     <string name="wallpapers" msgid="7133442512006469886">"ವಾಲ್‌ಪೇಪರ್‌ಗಳು"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"ವಾಲ್‌ಪೇಪರ್"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"%d%% ಗೆ ಝೂಮ್‌ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"ಗರಿಷ್ಠ ಝೂಮ್‌ ಸಾಧಿಸಲಾಗಿದೆ"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"ಕನಿಷ್ಠ ಝೂಮ್‌ ಸಾಧಿಸಲಾಗಿದೆ"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"ಸಂಗ್ರಹಣೆಗಳು"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"%2$d ರಲ್ಲಿ %1$d ನೇ ಫೋಟೋ"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"%2$d ರಲ್ಲಿ %1$d ಡೀಫಾಲ್ಟ್ ವಾಲ್‌ಪೇಪರ್"</string>
 </resources>

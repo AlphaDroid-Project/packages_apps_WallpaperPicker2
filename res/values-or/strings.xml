@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"ଏକ ୱାଲପେପର ବାଛନ୍ତୁ"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"ପ୍ରସ୍ତାବିତ ଫଟୋ"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"ୱାଲପେପର ତିଆରି କରନ୍ତୁ"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"ୱାଲପେପର ଷ୍ଟୁଡିଓ"</string>
     <string name="home_screen_message" msgid="106444102822522813">"ହୋମ ସ୍କ୍ରିନ"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"ଲକ ସ୍କ୍ରିନ"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"ହୋମ ଓ ଲକ"</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"ଆକ୍ସେସ୍‌ର ଅନୁମତି ଦିଅନ୍ତୁ"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"ଘୂରୁଥିବା ୱାଲପେପର୍‌ ପାଇଁ ଲାଇଭ୍ ୱାଲପେପର୍ ସେବା"</string>
     <string name="more_photos" msgid="2183343115041498453">"ଅଧିକ ଫଟୋ"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"ଗୋଟିଏ ଫଟୋ ବାଛନ୍ତୁ"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"ଦୈନିକ ୱାଲପେପର୍"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"ଚାଲୁ କରିବା ପାଇଁ ଟାପ୍ କରନ୍ତୁ"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"ସ୍ଵଚାଳିତ ଭାବେ ପ୍ରତିଦିନ ୱାଲପେପର୍ ପରିବର୍ତ୍ତନ ହେବ। ସେଟ‍ଅପ୍‍କୁ ସମାପ୍ତ କରିବା ପାଇଁ ପରବର୍ତ୍ତୀ ସ୍କ୍ରୀନ୍‍ରେ ଥିବା &lt;strong&gt;ୱାଲପେପର୍ ସେଟ୍ କରନ୍ତୁ&lt;/strong&gt;ରେ ଟାପ୍ କରନ୍ତୁ।"</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"ପରିବର୍ତ୍ତନଗୁଡ଼ିକୁ ରିସେଟ କରିବେ?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"ଆପଣଙ୍କର ପରିବର୍ତ୍ତନଗୁଡ଼ିକୁ ସେଭ କରାଯିବ ନାହିଁ"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"ଅଧିକ ୱାଲପେପର"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nସବୁ ଭ୍ୟୁ କରନ୍ତୁ"</string>
     <string name="wallpapers" msgid="7133442512006469886">"ୱାଲପେପର"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"ୱାଲପେପର"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"%d%%ରେ ଜୁମ କରାଯାଇଛି"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"ଜୁମ କରିବାର ସର୍ବାଧିକ ସୀମାରେ ପହଞ୍ଚିଯାଇଛି"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"ଜୁମ କରିବାର ସର୍ବନିମ୍ନ ସୀମାରେ ପହଞ୍ଚିଯାଇଛି"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"ସଂଗ୍ରହ"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"%2$dରୁ %1$d ଫଟୋ"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"%2$dରୁ %1$d ଡିଫଲ୍ଟ ୱାଲପେପର"</string>
 </resources>

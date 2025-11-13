@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"选择一张壁纸"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"建议的照片"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"制作壁纸"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"壁纸工作室"</string>
     <string name="home_screen_message" msgid="106444102822522813">"主屏幕"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"锁定屏幕"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"主屏幕和锁定屏幕"</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"允许访问"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"可轮换展示壁纸的动态壁纸服务"</string>
     <string name="more_photos" msgid="2183343115041498453">"更多照片"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"选择一张照片"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"每日壁纸"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"点按即可启用"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"壁纸将每天自动更换。要完成设置，请在下一个屏幕上点按&lt;strong&gt;设置壁纸&lt;/strong&gt;。"</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"要重置更改吗？"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"您所做的更改将不会保存"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"更多壁纸"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\n查看全部"</string>
     <string name="wallpapers" msgid="7133442512006469886">"壁纸"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s、%2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"壁纸"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"已缩放至 %d%%"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"已达到最大缩放比例"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"已达到最小缩放比例"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"集合"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"第 %1$d 张照片，共 %2$d 张"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"第 %1$d 张默认壁纸，共 %2$d 张"</string>
 </resources>

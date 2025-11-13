@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"انتخاب کاغذدیواری"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"عکس‌های پیشنهادی"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"ساختن کاغذدیواری"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"استودیو کاغذدیواری"</string>
     <string name="home_screen_message" msgid="106444102822522813">"صفحه اصلی"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"صفحه در حالت قفل"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"صفحه اصلی و صفحه در حالت قفل"</string>
@@ -41,11 +42,12 @@
     <string name="set_wallpaper_lock_screen_destination" msgid="6224685559375417945">"صفحه در حالت قفل"</string>
     <string name="set_wallpaper_both_destination" msgid="2536004558738350775">"صفحه اصلی و صفحه قفل"</string>
     <string name="no_backup_image_wallpaper_label" msgid="6316627676107284851">"کاغذ‌دیواری با تصویر چرخشی"</string>
-    <string name="permission_needed_explanation" msgid="139166837541426823">"برای نمایش کاغذدیواری فعلی در اینجا، <xliff:g id="APP_NAME">%1$s</xliff:g> باید به حافظه دستگاهتان دسترسی داشته باشد."</string>
+    <string name="permission_needed_explanation" msgid="139166837541426823">"برای نمایش کاغذدیواری کنونی در اینجا، <xliff:g id="APP_NAME">%1$s</xliff:g> باید به حافظه دستگاهتان دسترسی داشته باشد."</string>
     <string name="permission_needed_explanation_go_to_settings" msgid="3923551582092599609">"‏برای اینکه کاغذدیواری کنونی اینجا نمایش داده شود، Wallpapers باید به حافظه دستگاهتان دسترسی داشته باشد.\n\nبرای تغییر این تنظیم، به بخش «اجازه‌ها»ی اطلاعات برنامه Wallpapers بروید."</string>
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"اجازه دسترسی"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"سرویس کاغذ‌دیواری پویا برای کاغذدیواری‌های چرخشی"</string>
     <string name="more_photos" msgid="2183343115041498453">"عکس‌های بیشتر"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"انتخاب عکس"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"کاغذ‌دیواری روزانه"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"برای روشن کردن، تک‌ضرب بزنید"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"‏کاغذ‌دیواری هر روز به‌طور خودکار تغییر خواهد کرد. برای تمام کردن راه‌اندازی، روی &lt;strong&gt;تنظیم کاغذدیواری &lt;/strong&gt; در صفحه بعد تک‌ضرب بزنید."</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"تغییرات بازنشانی شود؟"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"تغییرات شما ذخیره نخواهد شد"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"کاغذدیواری‌های بیشتر"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"‏&gt;\nمشاهده همه"</string>
     <string name="wallpapers" msgid="7133442512006469886">"کاغذدیواری"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"‏%1$s،‏ %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"کاغذدیواری"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"‏‫%%d٪ بزرگ‌نمایی شده"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"به حداکثر بزرگ‌نمایی رسیدید"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"به حداقل بزرگ‌نمایی رسیدید"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"مجموعه‌ها"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"‏عکس %1$d از %2$d"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"‏کاغذدیواری پیش‌فرض %1$d از %2$d"</string>
 </resources>

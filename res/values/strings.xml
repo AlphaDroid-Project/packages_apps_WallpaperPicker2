@@ -64,12 +64,16 @@
          wallpaper in the WallpaperPicker screen [CHAR LIMIT=100] -->
     <string name="choose_a_wallpaper_section_title">Choose a Wallpaper</string>
 
+
     <!-- Label indicating the title for block that allows user to select a curated photo
      to be set as a wallpaper in the WallpaperPicker screen [CHAR LIMIT=100] -->
     <string name="choose_a_curated_photo_section_title">Suggested photos</string>
 
     <!-- Label indicating the title for Creative Wallpapers block in the WallpaperPicker screen [CHAR LIMIT=100] -->
     <string name="creative_wallpaper_title">Create wallpaper</string>
+
+    <!-- New label indicating the title for Creative Wallpapers block in the categories screen [CHAR LIMIT=100] -->
+    <string name="wallpaper_studio_title">Wallpaper Studio</string>
 
     <!-- Label referring to the home screen of the device, i.e. shown behind the launcher.
          [CHAR LIMIT=30] -->
@@ -133,6 +137,10 @@
     <!-- Label that is present on the More Photos button in the category picker page.
      [CHAR LIMIT=30] -->
     <string name="more_photos">More Photos</string>
+
+    <!-- Label that is present in the category picker page for selecting other photos when no
+       suggested photos are present. [CHAR LIMIT=30] -->
+    <string name="choose_a_photo">Choose a photo</string>
 
     <!-- Title of a feature where the wallpaper changes on a daily basis. [CHAR LIMIT=50] -->
     <string name="daily_refresh_tile_title">Daily wallpaper</string>
@@ -549,6 +557,14 @@
 
     <!--
     Label for button that lets the user navigate to a full-screen experience of selecting
+    wallpapers. This button needs to be paired with the list of suggested photos.
+
+    [CHAR LIMIT=128].
+    -->
+    <string name="view_all_wallpapers">>\nView all</string>
+
+    <!--
+    Label for button that lets the user navigate to a full-screen experience of selecting
     wallpapers.
 
     [CHAR LIMIT=128].
@@ -628,5 +644,21 @@
          This is announced to the user when they try to zoom out further, but the image is
          already at its minimum zoom. [CHAR LIMIT=None] -->
     <string name="min_zoom_percentage">Minimum zoom achieved</string>
+
+    <!-- Label for the collection title on the categories screen [CHAR LIMIT=None] -->
+    <string name="categories_collection_label">Collections</string>
+
+    <!-- Content description for photos in the carousel view
+        The first parameter represents the index of the photo in the collection
+        The second parameter represents the total number of photos in the collection
+        [CHAR LIMIT=None] -->
+    <string name="carousel_content_description_photos">Photo %1$d of %2$d</string>
+
+    <!-- Content description for default wallpaper in the carousel view
+        Default wallpapers are shown when photos are not available.
+        The first parameter represents the index of the default wallpaper in the collection
+        The second parameter represents the total number of default wallpapers in the collection
+        [CHAR LIMIT=None] -->
+    <string name="carousel_content_description_default_wallpapers">Default wallpaper %1$d of %2$d</string>
 
 </resources>

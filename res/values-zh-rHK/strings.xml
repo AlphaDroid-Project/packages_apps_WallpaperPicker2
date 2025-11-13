@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"選擇桌布"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"建議相片"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"製作桌布"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"桌布製作室"</string>
     <string name="home_screen_message" msgid="106444102822522813">"主畫面"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"上鎖畫面"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"主畫面及上鎖畫面"</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"允許存取"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"動態桌布服務可輪替顯示桌布"</string>
     <string name="more_photos" msgid="2183343115041498453">"更多相片"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"選擇相片"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"每日桌布"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"輕按即可啟用"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"系統會每日自動變更桌布。如要完成設定，請在下一個畫面輕按 [設定桌布]&lt;strong&gt;&lt;/strong&gt;。"</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"要重設變更嗎？"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"你的變更不會儲存"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"更多桌布"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\n查看全部"</string>
     <string name="wallpapers" msgid="7133442512006469886">"桌布"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s，%2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"桌布"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"已經縮放到 %d%%"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"已經放到最大"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"已經縮到最細"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"桌布系列"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"第 %1$d 張相片，共 %2$d 張"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"第 %1$d 張預設桌布，共 %2$d 張"</string>
 </resources>

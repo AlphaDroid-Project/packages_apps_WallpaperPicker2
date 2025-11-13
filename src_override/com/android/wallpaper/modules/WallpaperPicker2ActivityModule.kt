@@ -18,8 +18,10 @@ package com.android.wallpaper.modules
 
 import com.android.customization.picker.clock.ui.view.ClockViewFactory
 import com.android.customization.picker.clock.ui.view.DefaultClockViewFactory
-import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil
-import com.android.wallpaper.picker.customization.ui.util.DefaultCustomizationOptionUtil
+import com.android.customization.picker.icon.ui.util.DefaultIconStyleViewUtil
+import com.android.customization.picker.icon.ui.util.IconStyleViewUtil
+import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionViewUtil
+import com.android.wallpaper.picker.customization.ui.util.DefaultCustomizationOptionViewUtil
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -36,7 +38,11 @@ abstract class WallpaperPicker2ActivityModule {
 
     @Binds
     @ActivityScoped
-    abstract fun bindCustomizationOptionUtil(
-        impl: DefaultCustomizationOptionUtil
-    ): CustomizationOptionUtil
+    abstract fun bindCustomizationOptionViewUtil(
+        impl: DefaultCustomizationOptionViewUtil
+    ): CustomizationOptionViewUtil
+
+    @Binds
+    @ActivityScoped
+    abstract fun bindIconStyleViewUtil(impl: DefaultIconStyleViewUtil): IconStyleViewUtil
 }

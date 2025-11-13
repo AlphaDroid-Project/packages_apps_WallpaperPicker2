@@ -17,7 +17,6 @@
 package com.android.wallpaper.picker.customization.ui.binder
 
 import android.view.View
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.Toolbar
 import androidx.appcompat.content.res.AppCompatResources
@@ -27,6 +26,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.wallpaper.R
+import com.android.wallpaper.picker.customization.ui.view.ApplyButton
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationOptionsViewModel
 import javax.inject.Inject
@@ -39,7 +39,7 @@ class DefaultToolbarBinder @Inject constructor() : ToolbarBinder {
     override fun bind(
         navButton: FrameLayout,
         toolbar: Toolbar,
-        applyButton: Button,
+        applyButton: ApplyButton,
         viewModel: CustomizationOptionsViewModel,
         colorUpdateViewModel: ColorUpdateViewModel,
         lifecycleOwner: LifecycleOwner,
@@ -59,7 +59,7 @@ class DefaultToolbarBinder @Inject constructor() : ToolbarBinder {
 
         ColorUpdateBinder.bind(
             setColor = { color ->
-                DrawableCompat.setTint(DrawableCompat.wrap(navButton.background), color)
+                DrawableCompat.setTint(DrawableCompat.wrap(navButtonIcon.background), color)
             },
             color = colorUpdateViewModel.colorSurfaceContainerHighest,
             shouldAnimate = { true },
@@ -68,7 +68,7 @@ class DefaultToolbarBinder @Inject constructor() : ToolbarBinder {
 
         ColorUpdateBinder.bind(
             setColor = { color ->
-                DrawableCompat.setTint(DrawableCompat.wrap(navButtonIcon.background), color)
+                DrawableCompat.setTint(DrawableCompat.wrap(navButtonIcon.foreground), color)
             },
             color = colorUpdateViewModel.colorOnSurfaceVariant,
             shouldAnimate = { true },
@@ -80,13 +80,13 @@ class DefaultToolbarBinder @Inject constructor() : ToolbarBinder {
                 launch {
                     viewModel.selectedOption.collect {
                         if (it == null) {
-                            navButtonIcon.background =
+                            navButtonIcon.foreground =
                                 AppCompatResources.getDrawable(
                                     appContext,
                                     R.drawable.ic_arrow_back_24dp,
                                 )
                         } else {
-                            navButtonIcon.background =
+                            navButtonIcon.foreground =
                                 AppCompatResources.getDrawable(appContext, R.drawable.ic_close_24dp)
                         }
                     }

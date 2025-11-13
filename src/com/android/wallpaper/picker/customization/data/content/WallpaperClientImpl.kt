@@ -43,6 +43,7 @@ import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.asset.BitmapUtils
 import com.android.wallpaper.asset.CurrentWallpaperAsset
 import com.android.wallpaper.asset.StreamableAsset
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.LiveWallpaperPrefMetadata
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.StaticWallpaperPrefMetadata
@@ -67,6 +68,7 @@ import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
 import com.android.wallpaper.util.CurrentWallpaperInfoUtils.getCurrentWallpapers
 import com.android.wallpaper.util.WallpaperCropUtils
 import com.android.wallpaper.util.converter.WallpaperModelFactory
+import com.android.wallpaper.util.toDescription
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
 import java.io.InputStream
@@ -167,13 +169,24 @@ constructor(
                     cropModels.mapValues { it.value.adjustCropForParallax(wallpaperSize) }
                 } ?: emptyMap()
             val managerId =
-                wallpaperManager.setStaticWallpaperToSystem(
-                    asset.getStreamOrFromBitmap(bitmap),
-                    bitmap,
-                    cropHintsWithParallax,
-                    destination,
-                    asset,
-                )
+                if (BaseFlags.get().isRecentWallpapersFromSystemEnabled(context)) {
+                    val hash = "${BitmapUtils.generateHashCode(bitmap)}"
+                    wallpaperManager.setStaticWallpaperWithDescription(
+                        asset.getStreamOrFromBitmap(bitmap),
+                        bitmap,
+                        wallpaperModel.toDescription(hash, cropHintsWithParallax),
+                        destination,
+                        asset,
+                    )
+                } else {
+                    wallpaperManager.setStaticWallpaperWithCrops(
+                        asset.getStreamOrFromBitmap(bitmap),
+                        bitmap,
+                        cropHintsWithParallax,
+                        destination,
+                        asset,
+                    )
+                }
 
             wallpaperPreferences.setStaticWallpaperMetadata(
                 metadata = wallpaperModel.getMetadata(bitmap, managerId),
@@ -191,12 +204,14 @@ constructor(
 
             // Save the static wallpaper to recent wallpapers
             // TODO(b/309138446): check if we can update recent with all cropHints from WM later
-            wallpaperPreferences.addStaticWallpaperToRecentWallpapers(
-                destination,
-                wallpaperModel,
-                bitmap,
-                cropHintsWithParallax,
-            )
+            if (!BaseFlags.get().isRecentWallpapersFromSystemEnabled(context)) {
+                wallpaperPreferences.addStaticWallpaperToRecentWallpapers(
+                    destination,
+                    wallpaperModel,
+                    bitmap,
+                    cropHintsWithParallax,
+                )
+            }
         }
     }
 
@@ -212,7 +227,38 @@ constructor(
      *
      * @return Wallpaper manager ID
      */
-    private fun WallpaperManager.setStaticWallpaperToSystem(
+    private fun WallpaperManager.setStaticWallpaperWithDescription(
+        inputStream: InputStream?,
+        bitmap: Bitmap,
+        description: WallpaperDescription,
+        destination: WallpaperDestination,
+        asset: Asset,
+    ): Int {
+        // The InputStream of current wallpaper points to system wallpaper file which will be
+        // overwritten during set wallpaper and reads 0 bytes, use Bitmap instead.
+        return if (inputStream != null && asset !is CurrentWallpaperAsset) {
+            setStreamWithDescription(
+                inputStream,
+                description,
+                /* allowBackup= */ true,
+                destination.toSetWallpaperFlags(),
+            )
+        } else {
+            setBitmapWithDescription(
+                bitmap,
+                description,
+                /* allowBackup= */ true,
+                destination.toSetWallpaperFlags(),
+            )
+        }
+    }
+
+    /**
+     * Use [WallpaperManager] to set a static wallpaper to the system.
+     *
+     * @return Wallpaper manager ID
+     */
+    private fun WallpaperManager.setStaticWallpaperWithCrops(
         inputStream: InputStream?,
         bitmap: Bitmap,
         cropHints: Map<Point, Rect>,
@@ -311,7 +357,9 @@ constructor(
                     UserEventLogger.toWallpaperDestinationForLogging(destination.toDestinationInt()),
             )
 
-            wallpaperPreferences.addLiveWallpaperToRecentWallpapers(destination, wallpaperModel)
+            if (!BaseFlags.get().isRecentWallpapersFromSystemEnabled(context)) {
+                wallpaperPreferences.addLiveWallpaperToRecentWallpapers(destination, wallpaperModel)
+            }
         }
     }
 
@@ -319,6 +367,10 @@ constructor(
         wallpaperModel: LiveWallpaperModel,
         destination: WallpaperDestination,
     ): Boolean {
+        val description =
+            if (BaseFlags.get().isRecentWallpapersFromSystemEnabled(context))
+                wallpaperModel.toDescription()
+            else wallpaperModel.liveWallpaperData.description
         try {
             val method =
                 wallpaperManager.javaClass.getMethod(
@@ -326,11 +378,7 @@ constructor(
                     WallpaperDescription::class.java,
                     Int::class.javaPrimitiveType,
                 )
-            method.invoke(
-                wallpaperManager,
-                wallpaperModel.liveWallpaperData.description,
-                destination.toSetWallpaperFlags(),
-            )
+            method.invoke(wallpaperManager, description, destination.toSetWallpaperFlags())
             return true
         } catch (e: NoSuchMethodException) {
             return false

@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"வால்பேப்பரைத் தேர்வுசெய்யுங்கள்"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"பரிந்துரைக்கப்படும் படங்கள்"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"வால்பேப்பரை உருவாக்குதல்"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"வால்பேப்பர் ஸ்டுடியோ"</string>
     <string name="home_screen_message" msgid="106444102822522813">"முகப்புத் திரை"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"பூட்டுத் திரை"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"முகப்பு &amp; பூட்டு"</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"அணுகலை அனுமதி"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"சுழலும் வால்பேப்பர்களுக்கான லைவ் வால்பேப்பர் சேவை"</string>
     <string name="more_photos" msgid="2183343115041498453">"மேலும் படங்கள்"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"படத்தைத் தேர்வுசெய்யுங்கள்"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"தினசரி வால்பேப்பர்"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"ஆன் செய்ய, தட்டவும்"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"ஒவ்வொரு நாளும் வால்பேப்பர் தானாகவே மாறும். அமைவை முடிக்க, அடுத்த திரையிலுள்ள &lt;strong&gt;வால்பேப்பரை அமை&lt;/strong&gt; என்பதைத் தட்டவும்."</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"மாற்றங்களை மீட்டமைக்கவா?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"உங்கள் மாற்றங்கள் சேமிக்கப்படாது"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"மேலும் வால்பேப்பர்கள்"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nஅனைத்தையும் காட்டு"</string>
     <string name="wallpapers" msgid="7133442512006469886">"வால்பேப்பர்கள்"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"வால்பேப்பர்"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"%d%%க்குப் பெரிதாக்கப்பட்டது"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"அதிகபட்ச அளவை அடைந்துவிட்டது"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"குறைந்தபட்ச அளவை அடைந்துவிட்டது"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"தொகுப்புகள்"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"படம் %1$d/%2$d"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"இயல்பு வால்பேப்பர் %1$d/%2$d"</string>
 </resources>

@@ -25,7 +25,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.os.RemoteException
 import android.text.TextUtils
+import android.util.Log
+import com.android.wallpaper.model.Screen
 import java.util.concurrent.Executors
 
 /** Util class for wallpaper preview. */
@@ -33,6 +36,7 @@ class PreviewUtils(
     private val context: Context,
     authorityMetadataKey: String? = null,
     authority: String? = null,
+    val screen: Screen,
 ) {
     /** Callback for a call to the provider to render preview */
     interface WorkspacePreviewCallback {
@@ -45,10 +49,12 @@ class PreviewUtils(
     constructor(
         context: Context,
         authorityMetadataKey: String,
+        screen: Screen,
     ) : this(
         context = context.applicationContext,
         authorityMetadataKey = authorityMetadataKey,
         authority = null,
+        screen = screen,
     )
 
     init {
@@ -57,10 +63,7 @@ class PreviewUtils(
 
         providerInfo =
             if (!TextUtils.isEmpty(providerAuthority)) {
-                context.packageManager.resolveContentProvider(
-                    providerAuthority,
-                    0,
-                )
+                context.packageManager.resolveContentProvider(providerAuthority, 0)
             } else {
                 null
             }
@@ -71,6 +74,7 @@ class PreviewUtils(
                     context.checkSelfPermission(it.readPermission) !=
                         PackageManager.PERMISSION_GRANTED
                 ) {
+                    Log.i(TAG, "No permission to query authority $authority")
                     providerInfo = null
                 }
             }
@@ -86,20 +90,19 @@ class PreviewUtils(
     fun renderPreview(bundle: Bundle?, callback: WorkspacePreviewCallback) {
         EXECUTOR_SERVICE.submit {
             val result =
-                context.contentResolver.call(
-                    getUri(PREVIEW),
-                    METHOD_GET_PREVIEW,
-                    null,
-                    bundle,
-                )
+                context.contentResolver.call(getUri(PREVIEW), METHOD_GET_PREVIEW, null, bundle)
             Handler(Looper.getMainLooper()).post { callback.onPreviewRendered(result) }
         }
     }
 
     /** Cleans up the preview on the renderer side */
     fun cleanUp(workspaceCallback: Message?) {
-        // Send any message to clean up the corresponding preview on the renderer side.
-        workspaceCallback?.replyTo?.send(workspaceCallback)
+        try {
+            // Send any message to clean up the corresponding preview on the renderer side.
+            workspaceCallback?.replyTo?.send(workspaceCallback)
+        } catch (remoteException: RemoteException) {
+            Log.e(TAG, "Fail to clean up the workspace preview", remoteException)
+        }
     }
 
     /** Easy way to generate a Uri with the provider info from this class. */
@@ -117,6 +120,7 @@ class PreviewUtils(
     }
 
     companion object {
+        private const val TAG = "PreviewUtils"
         private const val PREVIEW = "preview"
         private const val METHOD_GET_PREVIEW = "get_preview"
         private val EXECUTOR_SERVICE = Executors.newSingleThreadExecutor()
@@ -128,8 +132,11 @@ class PreviewUtils(
                     homeIntent,
                     PackageManager.MATCH_DEFAULT_ONLY or PackageManager.GET_META_DATA,
                 )
-
-            return info?.activityInfo?.metaData?.getString(authorityMetadataKey)
+            val providerAuthority = info?.activityInfo?.metaData?.getString(authorityMetadataKey)
+            if (providerAuthority == null) {
+                Log.i(TAG, "Couldn't resolve $authorityMetadataKey from $homeIntent")
+            }
+            return providerAuthority
         }
     }
 }

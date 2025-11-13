@@ -15,7 +15,6 @@
  */
 package com.android.wallpaper.picker.preview.ui.viewmodel
 
-import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
@@ -25,12 +24,19 @@ import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.customization.picker.clock.shared.ClockSize
+import com.android.systemui.shared.Flags
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.BasePreviewActivity.EXTRA_VIEW_AS_HOME
 import com.android.wallpaper.picker.customization.shared.model.WallpaperColorsModel
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
+import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.Companion.toScreens
+import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_FADE_ALPHA
+import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_HIDE_ALPHA
+import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_SHOW_ALPHA
+import com.android.wallpaper.picker.customization.ui.viewmodel.PreviewAlpha
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.StaticWallpaperModel
@@ -41,7 +47,9 @@ import com.android.wallpaper.picker.preview.domain.interactor.PreviewActionsInte
 import com.android.wallpaper.picker.preview.domain.interactor.WallpaperPreviewInteractor
 import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
+import com.android.wallpaper.picker.preview.ui.binder.ApplyWallpaperOptionsProvider
 import com.android.wallpaper.picker.preview.ui.binder.PreviewTooltipBinder
+import com.android.wallpaper.picker.preview.ui.util.AccessibilityUtil
 import com.android.wallpaper.util.DisplayUtils
 import com.android.wallpaper.util.PreviewUtils
 import com.android.wallpaper.util.WallpaperConnection.WhichPreview
@@ -61,6 +69,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.launch
 
 /** Top level [ViewModel] for [WallpaperPreviewActivity] and its fragments */
@@ -73,6 +82,7 @@ constructor(
     staticWallpaperPreviewViewModelFactory: StaticWallpaperPreviewViewModel.Factory,
     val previewActionsViewModel: PreviewActionsViewModel,
     private val displayUtils: DisplayUtils,
+    private val applyWallpaperOptionsProvider: ApplyWallpaperOptionsProvider,
     @HomeScreenPreviewUtils private val homePreviewUtils: PreviewUtils,
     @LockScreenPreviewUtils private val lockPreviewUtils: PreviewUtils,
     @ApplicationContext private val context: Context,
@@ -98,6 +108,8 @@ constructor(
 
     val wallpaper: StateFlow<WallpaperModel?> = interactor.wallpaperModel
 
+    val preferredClockSize: Flow<ClockSize?> = interactor.preferredClockSize
+
     fun setPreviewWallpaperModel(wallpaperModel: WallpaperModel) {
         interactor.setPreviewWallpaper(wallpaperModel)
     }
@@ -111,6 +123,12 @@ constructor(
 
     private val _currentPreviewScreen = MutableStateFlow(PreviewScreen.SMALL_PREVIEW)
     val currentPreviewScreen = _currentPreviewScreen.asStateFlow()
+    val previousAndCurrentPreviewScreen =
+        currentPreviewScreen.runningFold<PreviewScreen, Pair<PreviewScreen?, PreviewScreen?>>(
+            null to null
+        ) { accumulator, currentValue ->
+            accumulator.second to currentValue
+        }
 
     val shouldEnableClickOnPager: Flow<Boolean> =
         _currentPreviewScreen.map { it != PreviewScreen.FULL_PREVIEW }
@@ -120,25 +138,106 @@ constructor(
     private val _smallPreviewSelectedTab = MutableStateFlow(getWallpaperPreviewSource())
     val smallPreviewSelectedTab = _smallPreviewSelectedTab.asStateFlow()
 
+    private val _shouldUpdateSelectedPreviewTab = MutableStateFlow(false)
+    val shouldUpdateSelectedPreviewTab = _shouldUpdateSelectedPreviewTab.asStateFlow()
+
+    fun setShouldUpdateSelectedPreviewTab(shouldUpdate: Boolean) {
+        _shouldUpdateSelectedPreviewTab.value = shouldUpdate
+    }
+
+    private val _applyWallpaperPreviewSelectedTab = MutableStateFlow<Screen?>(null)
+    val applyWallpaperPreviewSelectedTab = _applyWallpaperPreviewSelectedTab.asStateFlow()
+
     val smallPreviewSelectedTabIndex = smallPreviewSelectedTab.map { smallPreviewTabs.indexOf(it) }
+
+    private val isLockPreviewReady: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    private val isHomePreviewReady: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    fun setPreviewReady(screen: Screen, isReady: Boolean) {
+        when (screen) {
+            Screen.LOCK_SCREEN -> isLockPreviewReady.value = isReady
+            Screen.HOME_SCREEN -> isHomePreviewReady.value = isReady
+        }
+    }
+
+    /** Flow of float that emits to trigger the lock screen preview to animate to an alpha value. */
+    val smallLockPreviewAlpha: Flow<PreviewAlpha?> =
+        combine(isLockPreviewReady, currentPreviewScreen, smallPreviewSelectedTab) {
+            isPreviewReady,
+            previewScreen,
+            selectedTab ->
+            if (previewScreen == PreviewScreen.SMALL_PREVIEW) {
+                getPreviewAlpha(
+                    isPreviewReady = isPreviewReady,
+                    isSelectedPreview = selectedTab == Screen.LOCK_SCREEN,
+                )
+            } else {
+                null
+            }
+        }
+
+    /** Flow of float that emits to trigger the home screen preview to animate to an alpha value. */
+    val smallHomePreviewAlpha: Flow<PreviewAlpha?> =
+        combine(isHomePreviewReady, currentPreviewScreen, smallPreviewSelectedTab) {
+            isPreviewReady,
+            previewScreen,
+            selectedTab ->
+            if (previewScreen == PreviewScreen.SMALL_PREVIEW) {
+                getPreviewAlpha(
+                    isPreviewReady = isPreviewReady,
+                    isSelectedPreview = selectedTab == Screen.HOME_SCREEN,
+                )
+            } else {
+                null
+            }
+        }
+
+    private fun getPreviewAlpha(isPreviewReady: Boolean, isSelectedPreview: Boolean): PreviewAlpha {
+        return if (isPreviewReady) {
+            PreviewAlpha(
+                alpha = if (isSelectedPreview) PREVIEW_SHOW_ALPHA else PREVIEW_FADE_ALPHA,
+                shouldAnimate = true,
+            )
+        } else {
+            PreviewAlpha(alpha = PREVIEW_HIDE_ALPHA, shouldAnimate = false)
+        }
+    }
 
     /**
      * Returns true if back pressed is handled due to conditions like users at a secondary screen.
+     *
+     * [PreviewScreen.SMALL_PREVIEW] with floating sheet should collapse sheet and consume press.
+     * [PreviewScreen.APPLY_WALLPAPER] to [PreviewScreen.SMALL_PREVIEW] should consume press.
+     * [PreviewScreen.FULL_PREVIEW] to [PreviewScreen.SMALL_PREVIEW] shouldn't consume press. Other
+     * cases shouldn't consume press.
      */
     fun handleBackPressed(): Boolean {
-        if (_currentPreviewScreen.value == PreviewScreen.APPLY_WALLPAPER) {
+        if (
+            _currentPreviewScreen.value == PreviewScreen.SMALL_PREVIEW &&
+                previewActionsViewModel.isFloatingSheetVisible()
+        ) {
+            previewActionsViewModel.onFloatingSheetCollapsed()
+            return true
+        } else if (_currentPreviewScreen.value == PreviewScreen.APPLY_WALLPAPER) {
             _currentPreviewScreen.value = PreviewScreen.SMALL_PREVIEW
             return true
         } else if (_currentPreviewScreen.value == PreviewScreen.FULL_PREVIEW) {
             _currentPreviewScreen.value = PreviewScreen.SMALL_PREVIEW
-            // TODO(b/367374790): Returns true when shared element transition is removed
             return false
         }
         return false
     }
 
+    fun onTransitionToFullPreview() {
+        _currentPreviewScreen.value = PreviewScreen.FULL_PREVIEW
+    }
+
     fun getSmallPreviewTabIndex(): Int {
         return smallPreviewTabs.indexOf(smallPreviewSelectedTab.value)
+    }
+
+    fun setApplyWallpaperPreviewSelectedTab(screen: Screen) {
+        _applyWallpaperPreviewSelectedTab.value = screen
     }
 
     fun setSmallPreviewSelectedTab(screen: Screen) {
@@ -161,11 +260,18 @@ constructor(
     val smallTooltipViewModel =
         object : PreviewTooltipBinder.TooltipViewModel {
             override val shouldShowTooltip: Flow<Boolean> =
-                combine(isWallpaperCroppable, interactor.hasSmallPreviewTooltipBeenShown) {
-                        isCroppable,
-                        hasTooltipBeenShown ->
+                combine(
+                        isWallpaperCroppable,
+                        interactor.hasSmallPreviewTooltipBeenShown,
+                        currentPreviewScreen,
+                    ) { isCroppable, hasTooltipBeenShown, previewScreen ->
                         // Only show tooltip if it has not been shown before.
-                        isCroppable && !hasTooltipBeenShown
+                        val shouldShow = isCroppable && !hasTooltipBeenShown
+                        if (BaseFlags.get().isNewPickerUi()) {
+                            shouldShow && previewScreen == PreviewScreen.SMALL_PREVIEW
+                        } else {
+                            shouldShow
+                        }
                     }
                     .distinctUntilChanged()
 
@@ -227,6 +333,7 @@ constructor(
             .combine(_wallpaperConnectionColors) { _, wallpaperConnectionColors ->
                 wallpaperConnectionColors
             }
+            .distinctUntilChanged()
     val wallpaperColorsModel: Flow<WallpaperColorsModel> =
         merge(liveWallpaperColors, staticWallpaperPreviewViewModel.wallpaperColors).combine(
             isWallpaperColorPreviewEnabled
@@ -319,14 +426,8 @@ constructor(
             } else null
         }
 
-    val onNextButtonClicked: Flow<(() -> Unit)?> =
-        isSetWallpaperButtonEnabled.map {
-            if (it) {
-                { _currentPreviewScreen.value = PreviewScreen.APPLY_WALLPAPER }
-            } else null
-        }
-
     val onCancelButtonClicked: Flow<() -> Unit> = flowOf {
+        applyWallpaperPreviewSelectedTab.value?.let { setSmallPreviewSelectedTab(it) }
         _currentPreviewScreen.value = PreviewScreen.SMALL_PREVIEW
     }
 
@@ -334,12 +435,21 @@ constructor(
     val showSetWallpaperDialog = _showSetWallpaperDialog.asStateFlow()
 
     private val _setWallpaperDialogSelectedScreens: MutableStateFlow<Set<Screen>> =
-        MutableStateFlow(EnumSet.allOf(Screen::class.java))
+        MutableStateFlow(
+            if (Flags.newCustomizationPickerUi()) setOf() else EnumSet.allOf(Screen::class.java)
+        )
     val setWallpaperDialogSelectedScreens: StateFlow<Set<Screen>> =
         _setWallpaperDialogSelectedScreens.asStateFlow()
 
     val isApplyButtonEnabled: Flow<Boolean> =
         setWallpaperDialogSelectedScreens.map { it.isNotEmpty() }
+
+    val applyWallpaperSubTitle: Flow<String?> =
+        wallpaper.map { model ->
+            (model as? LiveWallpaperModel)?.liveWallpaperData?.description?.let {
+                applyWallpaperOptionsProvider.getSuggestedWallpaperDestinationReason(it)
+            }
+        }
 
     val isHomeCheckBoxChecked: Flow<Boolean> =
         setWallpaperDialogSelectedScreens.map { it.contains(Screen.HOME_SCREEN) }
@@ -355,6 +465,10 @@ constructor(
         onSetWallpaperDialogScreenSelected(Screen.LOCK_SCREEN)
     }
 
+    private fun initSetWallpaperDialogScreenSelected(screen: Set<Screen>) {
+        _setWallpaperDialogSelectedScreens.value = screen
+    }
+
     fun onSetWallpaperDialogScreenSelected(screen: Screen) {
         val previousSelection = _setWallpaperDialogSelectedScreens.value
         _setWallpaperDialogSelectedScreens.value =
@@ -367,6 +481,29 @@ constructor(
                 previousSelection.plus(screen)
             }
     }
+
+    val suggestedWallpaperDestination: Flow<WallpaperDestination?> =
+        wallpaper.map { model ->
+            (model as? LiveWallpaperModel)?.liveWallpaperData?.description?.let {
+                applyWallpaperOptionsProvider.getSuggestedWallpaperDestination(it)
+            }
+        }
+
+    val disableApplyWallpaperSelectionCheckBox: Flow<Boolean> =
+        suggestedWallpaperDestination.map { it != null }
+
+    val onNextButtonClicked: Flow<(() -> Unit)?> =
+        combine(isSetWallpaperButtonEnabled, suggestedWallpaperDestination, ::Pair).map {
+            (enabledSet, dest) ->
+            if (enabledSet) {
+                {
+                    val screens = dest?.toScreens() ?: WallpaperDestination.BOTH.toScreens()
+                    initSetWallpaperDialogScreenSelected(screens)
+                    setApplyWallpaperPreviewSelectedTab(smallPreviewSelectedTab.value)
+                    _currentPreviewScreen.value = PreviewScreen.APPLY_WALLPAPER
+                }
+            } else null
+        }
 
     private val _isSetWallpaperProgressBarVisible = MutableStateFlow(false)
     val isSetWallpaperProgressBarVisible: Flow<Boolean> =
@@ -429,8 +566,22 @@ constructor(
         _showSetWallpaperDialog.value = false
     }
 
-    fun setWallpaperConnectionColors(wallpaperColors: WallpaperColorsModel) {
-        _wallpaperConnectionColors.value = wallpaperColors
+    fun setWallpaperConnectionColors(wallpaperColors: WallpaperColorsModel.Loaded) {
+        // Don't update the color if:
+        // 1. It's still loading and the update is null
+        // 2. It already had a color and the new color is null
+        if (
+            wallpaperColors.colors == null &&
+                (_wallpaperConnectionColors.value is WallpaperColorsModel.Loading ||
+                    (_wallpaperConnectionColors.value as? WallpaperColorsModel.Loaded)?.colors !=
+                        null)
+        ) {
+            return
+        }
+
+        if (_wallpaperConnectionColors.value != wallpaperColors) {
+            _wallpaperConnectionColors.value = wallpaperColors
+        }
     }
 
     fun getWorkspacePreviewConfig(
@@ -515,15 +666,7 @@ constructor(
 
     @VisibleForTesting
     fun isAccessibilityEnabled(am: AccessibilityManager): Boolean {
-        val enabledServices =
-            am.getEnabledAccessibilityServiceList(
-                AccessibilityServiceInfo.FEEDBACK_AUDIBLE or
-                    AccessibilityServiceInfo.FEEDBACK_SPOKEN or
-                    AccessibilityServiceInfo.FEEDBACK_VISUAL or
-                    AccessibilityServiceInfo.FEEDBACK_HAPTIC or
-                    AccessibilityServiceInfo.FEEDBACK_BRAILLE
-            )
-        return enabledServices.isNotEmpty()
+        return AccessibilityUtil.isAccessibilityEnabled(am)
     }
 
     companion object {

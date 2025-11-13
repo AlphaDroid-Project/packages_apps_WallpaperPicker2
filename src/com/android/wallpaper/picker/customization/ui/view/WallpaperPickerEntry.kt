@@ -16,6 +16,8 @@
 
 package com.android.wallpaper.picker.customization.ui.view
 
+import android.animation.Animator
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Path
@@ -25,9 +27,10 @@ import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
+import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 
 /**
  * The wallpaper entry on the main screen. This view needs to be in a [ConstraintLayout].
@@ -40,6 +43,13 @@ import com.android.wallpaper.R
 class WallpaperPickerEntry
 @JvmOverloads
 constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
+
+    enum class State {
+        COLLAPSING,
+        COLLAPSED,
+        EXPANDING,
+        EXPANDED,
+    }
 
     val collapsedButton: TextView
     val moreWallpapersButton: TextView
@@ -57,9 +67,18 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
     private var expandedHeight = 0
     private var collapsedHeight = 0
     private var collapsedWidth = 0
+    private var progress = 1f
+    private var animator: ValueAnimator? = null
+    private var state: State = State.EXPANDED
 
     init {
-        inflate(context, R.layout.wallpaper_picker_entry, this)
+        val layoutResource =
+            if (BaseFlags.get().shouldShowDesktopUi(context)) {
+                R.layout.wallpaper_picker_entry_desktop
+            } else {
+                R.layout.wallpaper_picker_entry
+            }
+        inflate(context, layoutResource, this)
 
         collapsedButton =
             requireViewById(R.id.customization_option_entry_wallpaper_collapsed_button)
@@ -82,7 +101,9 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
 
         clipChildren = false
         clipToPadding = false
+    }
 
+    fun configureForAnimation() {
         post {
             // Make fixed width and height of the container, so it does not shrink with parent.
             expandedContainer.layoutParams =
@@ -118,17 +139,19 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
     }
 
     /**
-     * Set collapsing progress of the [WallpaperPickerEntry]
+     * Set progress of the [WallpaperPickerEntry]
      *
-     * @param progress 0.0 means fully expanded and 1.0 means fully collapsed
+     * @param progress 1.0 means fully expanded and 0.0 means fully collapsed
      */
-    fun setProgress(progress: Float) {
-        collapsedButton.alpha = progress
-        collapsedButton.isVisible = progress > 0
-        expandedContainer.alpha = 1 - progress
+    private fun setProgress(progress: Float) {
+        this.progress = progress
+        collapsedButton.alpha = 1 - progress
+        collapsedButton.isInvisible = progress == 1f
+        expandedContainer.alpha = progress
+        expandedContainer.isInvisible = progress == 0f
         val radii = background.cornerRadii ?: FloatArray(8)
         val topCornerRadius =
-            expandedBackgroundTopCornerRadius -
+            defaultCornerRadius +
                 (expandedBackgroundTopCornerRadius - defaultCornerRadius) * progress
         radii[0] = topCornerRadius
         radii[1] = topCornerRadius
@@ -142,8 +165,84 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
 
         val params = layoutParams as ConstraintLayout.LayoutParams
 
-        params.width = (expandedWidth - (expandedWidth - collapsedWidth) * progress).toInt()
-        params.height = (expandedHeight - (expandedHeight - collapsedHeight) * progress).toInt()
+        params.width = (collapsedWidth + (expandedWidth - collapsedWidth) * progress).toInt()
+        params.height = (collapsedHeight + (expandedHeight - collapsedHeight) * progress).toInt()
         layoutParams = params
+    }
+
+    fun animateToExpanded() {
+        if (wallpaperCarousel.adapter?.itemCount == 0) return
+
+        if (state == State.EXPANDED || state == State.EXPANDING) {
+            return
+        }
+        animator?.cancel()
+        state = State.EXPANDING
+        animator =
+            ValueAnimator.ofFloat(progress, PROGRESS_EXPANDED).apply {
+                duration = 500
+                addUpdateListener { animation -> setProgress(animation.animatedValue as Float) }
+                addListener(
+                    object : Animator.AnimatorListener {
+                        override fun onAnimationStart(animation: Animator) {
+                            state = State.EXPANDING
+                        }
+
+                        override fun onAnimationEnd(animation: Animator) {
+                            state = State.EXPANDED
+                        }
+
+                        override fun onAnimationCancel(animation: Animator) {
+                            state = State.EXPANDED
+                        }
+
+                        override fun onAnimationRepeat(animation: Animator) {
+                            // Do nothing intended
+                        }
+                    }
+                )
+            }
+        animator?.start()
+    }
+
+    fun animateToCollapsed() {
+        if (state == State.COLLAPSED || state == State.COLLAPSING) {
+            return
+        }
+        animator?.cancel()
+        state = State.COLLAPSING
+        animator =
+            ValueAnimator.ofFloat(progress, PROGRESS_COLLAPSED).apply {
+                duration = ANIMATION_DURATION
+                addUpdateListener { animation -> setProgress(animation.animatedValue as Float) }
+                addListener(
+                    object : Animator.AnimatorListener {
+                        override fun onAnimationStart(animation: Animator) {
+                            state = State.COLLAPSING
+                        }
+
+                        override fun onAnimationEnd(animation: Animator) {
+                            state = State.COLLAPSED
+                        }
+
+                        override fun onAnimationCancel(animation: Animator) {
+                            state = State.COLLAPSED
+                        }
+
+                        override fun onAnimationRepeat(animation: Animator) {
+                            // Do nothing intended
+                        }
+                    }
+                )
+            }
+        animator?.start()
+    }
+
+    fun getState(): State = state
+
+    companion object {
+        private const val PROGRESS_COLLAPSED = 0F
+        private const val PROGRESS_EXPANDED = 1F
+        private const val ANIMATION_DURATION = 300L
     }
 }

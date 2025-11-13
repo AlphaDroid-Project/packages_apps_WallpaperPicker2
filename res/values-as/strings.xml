@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"ৱালপেপাৰ বাছনি কৰক"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"পৰামৰ্শিত ফট’সমূহ"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"ৱালপেপাৰ সৃষ্টি কৰক"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"ৱালপেপাৰ ষ্টুডিঅ’"</string>
     <string name="home_screen_message" msgid="106444102822522813">"গৃহ স্ক্ৰীন"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"লক স্ক্ৰীন"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"গৃহ স্ক্ৰীন আৰু লক স্ক্ৰীন"</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"ব্যৱহাৰ কৰাৰ অনুমতি দিয়ক"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"আৱৰ্তিত ৱালপেপাৰৰ বাবে লাইভ ৱালপেপাৰ সেৱা"</string>
     <string name="more_photos" msgid="2183343115041498453">"অধিক ফট’"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"এখন ফট’ বাছনি কৰক"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"দৈনিক ৱালপেপাৰ"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"অন কৰিবলৈ টিপক"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"প্ৰতি দিনে ৱালপেপাৰ স্বয়ংক্ৰিয়ভাৱে সলনি হ\'ব। ছেট আপ সম্পূৰ্ণ কৰিবলৈ পৰৱৰ্তী স্ক্ৰীনত &lt;strong&gt;ৱালপেপাৰ ছেট কৰক&lt;/strong&gt;-ত টিপক।"</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"সালসলনিসমূহ ৰিছেট কৰিবনে?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"আপোনাৰ সম্পাদনাবোৰ ছেভ কৰা নহ’ব"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"অধিক ৱালপেপাৰ"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nআটাইবোৰ চাওক"</string>
     <string name="wallpapers" msgid="7133442512006469886">"ৱালপেপাৰ"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"ৱালপেপাৰ"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"%d%%লৈ জুম কৰা হৈছে"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"সৰ্বাধিক জুমৰ সীমাত উপনীত হৈছে"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"ন্যূনতম জুমৰ সীমাত উপনীত হৈছে"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"সংগ্ৰহ"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"ফট’ %2$d খনৰ ভিতৰত %1$d খন"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"ডিফ’ল্ট ৱালপেপাৰ %2$d খনৰ ভিতৰত %1$d খন"</string>
 </resources>

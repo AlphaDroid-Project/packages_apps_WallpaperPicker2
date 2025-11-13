@@ -19,15 +19,18 @@ package com.android.wallpaper.picker.customization.ui.binder
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.view.View
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.customization.picker.clock.ui.view.ClockViewFactory
+import com.android.customization.picker.icon.ui.util.IconStyleViewUtil
 import com.android.wallpaper.R
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
+import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationOptionsData
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationOptionsViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
 import javax.inject.Inject
@@ -38,6 +41,7 @@ import kotlinx.coroutines.launch
 class DefaultCustomizationOptionsBinder @Inject constructor() : CustomizationOptionsBinder {
 
     override fun bind(
+        customizationOptionsData: CustomizationOptionsData,
         view: View,
         lockScreenCustomizationOptionEntries: List<Pair<CustomizationOption, View>>,
         homeScreenCustomizationOptionEntries: List<Pair<CustomizationOption, View>>,
@@ -48,13 +52,15 @@ class DefaultCustomizationOptionsBinder @Inject constructor() : CustomizationOpt
         navigateToMoreLockScreenSettingsActivity: () -> Unit,
         navigateToColorContrastSettingsActivity: () -> Unit,
         navigateToLockScreenNotificationsSettingsActivity: () -> Unit,
-        navigateToPackThemeActivity: () -> Unit,
+        navigateToPackThemeActivity: (Intent) -> Unit,
+        iconStyleViewUtil: IconStyleViewUtil,
     ) {
         // Do nothing intended
     }
 
     override fun bindClockPreview(
         context: Context,
+        rootView: View,
         clockHostView: View,
         clockFaceClickDelegateView: View,
         viewModel: CustomizationPickerViewModel2,

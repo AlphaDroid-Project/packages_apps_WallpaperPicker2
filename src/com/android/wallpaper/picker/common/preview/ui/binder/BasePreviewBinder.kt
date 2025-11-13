@@ -28,6 +28,7 @@ import com.android.customization.picker.clock.ui.view.ClockViewFactory
 import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
+import com.android.wallpaper.model.Screen.LOCK_SCREEN
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
@@ -64,14 +65,41 @@ object BasePreviewBinder {
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
         onLaunchPreview: ((WallpaperModel) -> Unit)? = null,
         onTransitionToScreen: ((Screen) -> Unit)? = null,
+        onPreviewReady: ((Screen) -> Unit)? = null,
+        onPreviewSurfaceDestroyed: ((Screen) -> Unit)? = null,
         clockViewFactory: ClockViewFactory,
     ) {
         val wallpaperSurface: SurfaceView = view.requireViewById(R.id.wallpaper_surface)
         val workspaceSurface: SurfaceView = view.requireViewById(R.id.workspace_surface)
 
+        view.contentDescription =
+            view.context.getString(
+                R.string.wallpaper_preview_card_content_description_non_editable,
+                when (screen) {
+                    LOCK_SCREEN -> view.context.getString(R.string.lock_screen_tab)
+                    HOME_SCREEN -> view.context.getString(R.string.home_screen_tab)
+                },
+                "", // No need to specify folded or unfolded state for main screen preview
+            )
+
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch { viewModel.isPreviewClickable.collect { view.isClickable = it } }
+                launch {
+                    val previewAlpha =
+                        if (screen == HOME_SCREEN) {
+                            viewModel.homePreviewAlpha
+                        } else {
+                            viewModel.lockPreviewAlpha
+                        }
+                    previewAlpha.collect {
+                        if (it.alpha == 0f) {
+                            view.importantForAccessibility =
+                                View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                        } else {
+                            view.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                        }
+                    }
+                }
 
                 launch {
                     combine(
@@ -80,13 +108,25 @@ object BasePreviewBinder {
                                 else it.lockWallpaper ?: it.homeWallpaper
                             },
                             viewModel.selectedPreviewScreen,
-                            ::Pair,
+                            viewModel.isPreviewClickable,
+                            ::Triple,
                         )
-                        .collect { (wallpaper, selectedPreviewScreen) ->
-                            if (selectedPreviewScreen == screen) {
-                                view.setOnClickListener { onLaunchPreview?.invoke(wallpaper) }
+                        .collect { (wallpaper, selectedPreviewScreen, isPreviewClickable) ->
+                            if (isPreviewClickable) {
+                                if (selectedPreviewScreen == screen) {
+                                    view.setOnClickListener { onLaunchPreview?.invoke(wallpaper) }
+                                    // Set selected state to be announced for Talkback
+                                    view.isSelected = true
+                                } else {
+                                    view.setOnClickListener { onTransitionToScreen?.invoke(screen) }
+                                    // Set selected state to be announced for Talkback
+                                    view.isSelected = false
+                                }
+                                view.isClickable = true
                             } else {
-                                view.setOnClickListener { onTransitionToScreen?.invoke(screen) }
+                                view.setOnClickListener(null)
+                                view.isClickable = false
+                                view.isSelected = false
                             }
                         }
                 }
@@ -104,6 +144,8 @@ object BasePreviewBinder {
             viewLifecycleOwner = lifecycleOwner,
             wallpaperConnectionUtils = wallpaperConnectionUtils,
             isFirstBindingDeferred = isFirstBindingDeferred,
+            onPreviewReady = onPreviewReady,
+            onPreviewSurfaceDestroyed = onPreviewSurfaceDestroyed,
         )
 
         WorkspacePreviewBinder.bind(

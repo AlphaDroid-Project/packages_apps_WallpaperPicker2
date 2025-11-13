@@ -18,6 +18,7 @@ package com.android.wallpaper.picker.category.ui.view.viewholder
 
 import android.content.Context
 import android.graphics.Point
+import android.view.KeyEvent
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -30,8 +31,9 @@ import com.android.wallpaper.picker.category.ui.view.SectionCardinality
 import com.android.wallpaper.picker.category.ui.viewmodel.TileViewModel
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
-import com.android.wallpaper.util.ResourceUtils
+import com.android.wallpaper.util.ResourceUtilsKt
 import com.android.wallpaper.util.SizeCalculator
+import com.bumptech.glide.Glide
 
 /** Caches and binds [TileViewHolder] to a [WallpaperTileView] */
 class TileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -51,17 +53,24 @@ class TileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     fun bind(
         item: TileViewModel,
         context: Context,
+        /** The number of spans (spanSize) the category occupies */
         columnCount: Int,
+        /** The number of tiles in the category */
         tileCount: Int,
         windowWidth: Int,
         colorUpdateViewModel: ColorUpdateViewModel,
         shouldAnimateColor: () -> Boolean,
         lifecycleOwner: LifecycleOwner,
     ) {
+        wallpaperCategoryImage.contentDescription = item.contentDescription
+
         title.visibility = View.GONE
 
         val isNewPickerUi = BaseFlags.get().isNewPickerUi()
         if (isNewPickerUi) {
+            categorySubtitle.setTextAppearance(
+                R.style.TextAppearance_DeviceDefault_Small_LabelMedium
+            )
             ColorUpdateBinder.bind(
                 setColor = { color ->
                     title.setTextColor(color)
@@ -87,7 +96,12 @@ class TileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         ) {
             // sections with more than 1 column and 1 tile
             tileSize = SizeCalculator.getFeaturedCategoryTileSize(itemView.context, windowWidth)
-            tileRadius = tileSize.y
+            tileRadius =
+                if (BaseFlags.get().isMagicPortraitEntryPointsEnabled()) {
+                    context.resources.getDimension(R.dimen.grid_item_all_radius).toInt()
+                } else {
+                    tileSize.y
+                }
         } else {
             // sections witch take more than 1 column and have more than 1 tile
             tileSize = SizeCalculator.getFeaturedCategoryTileSize(itemView.context, windowWidth)
@@ -100,17 +114,29 @@ class TileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         if (item.thumbnailAsset != null) {
             val placeHolderColor =
-                ResourceUtils.getColorAttr(context, android.R.attr.colorSecondary)
+                ResourceUtilsKt.getColorAttr(context, android.R.attr.colorSecondary)
+                    ?: context.getColor(R.color.system_secondary)
             item.thumbnailAsset.loadDrawable(context, wallpaperCategoryImage, placeHolderColor)
         } else {
-            wallpaperCategoryImage.setImageDrawable(item.defaultDrawable)
-            wallpaperCategoryImage.setBackgroundColor(
-                context.resources.getColor(R.color.myphoto_background_color)
-            )
+            item.defaultDrawable?.let {
+                Glide.with(itemView.context).load(it).into(wallpaperCategoryImage)
+            }
+                ?: wallpaperCategoryImage.setBackgroundColor(
+                    context.getColor(R.color.myphoto_background_color)
+                )
         }
         categorySubtitle.text = item.text
 
         // bind the tile action to the button
         itemView.setOnClickListener { _ -> item.onClicked?.invoke() }
+
+        // Set up key listener to handle keyboard Enter presses as clicks
+        categoryCardView.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_ENTER) {
+                item.onClicked?.invoke()
+                return@setOnKeyListener true
+            }
+            return@setOnKeyListener false
+        }
     }
 }

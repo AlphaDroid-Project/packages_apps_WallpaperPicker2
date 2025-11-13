@@ -17,6 +17,7 @@
 package com.android.wallpaper.picker.customization.ui.viewmodel
 
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil
+import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -25,19 +26,30 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOf
 
 class DefaultCustomizationOptionsViewModel
 @AssistedInject
 constructor(
     wallpaperCarouselViewModelFactory: WallpaperCarouselViewModel.Factory,
+    customizationOptionUtil: CustomizationOptionUtil,
     @Assisted viewModelScope: CoroutineScope,
+    @Assisted("destination") private val initialDeepLinkDestination: String?,
+    @Assisted("shortcutSlotId") initialDeepLinkShortcutSlotId: String?,
 ) : CustomizationOptionsViewModel {
 
-    override val wallpaperCarouselViewModel =
+    override val customizationOptionsData: Flow<CustomizationOptionsData> =
+        flowOf(DefaultCustomizationOptionsData())
+
+    override val wallpaperCarouselViewModel: WallpaperCarouselViewModel =
         wallpaperCarouselViewModelFactory.create(viewModelScope)
 
-    private val _selectedOptionState =
-        MutableStateFlow<CustomizationOptionUtil.CustomizationOption?>(null)
+    private val _selectedOptionState: MutableStateFlow<CustomizationOption?> =
+        MutableStateFlow(
+            initialDeepLinkDestination?.let {
+                customizationOptionUtil.getCustomizationOptionFromDestination(it)
+            }
+        )
     override val selectedOption = _selectedOptionState.asStateFlow()
 
     private val _discardChangesDialogViewModel: MutableStateFlow<DiscardChangesDialogViewModel?> =
@@ -45,12 +57,13 @@ constructor(
     override val discardChangesDialogViewModel: Flow<DiscardChangesDialogViewModel?> =
         _discardChangesDialogViewModel.asStateFlow()
 
-    fun showDiscardChangesDialogViewModel() {
+    fun showDiscardChangesDialogViewModel(onDiscard: () -> Unit) {
         _discardChangesDialogViewModel.value =
             DiscardChangesDialogViewModel(
                 onDismiss = { _discardChangesDialogViewModel.value = null },
                 onKeepEditing = { _discardChangesDialogViewModel.value = null },
                 onDiscard = {
+                    onDiscard.invoke()
                     _discardChangesDialogViewModel.value = null
                     unselectOption()
                 },
@@ -58,6 +71,12 @@ constructor(
     }
 
     override fun handleBackPressed(): Boolean {
+        if (initialDeepLinkDestination != null) {
+            // If initial deep link destination is not null. We should navigate back to the previous
+            // app or activity, instead of navigating back the main screen. Thus we return false to
+            // have the parent activity handle the navigation to the previous app or activity.
+            return false
+        }
         return unselectOption()
     }
 
@@ -76,13 +95,19 @@ constructor(
 
     override fun resetPreview() {}
 
-    fun selectOption(option: CustomizationOptionUtil.CustomizationOption) {
+    override fun onTransitionToSecondaryScreenComplete() {}
+
+    fun selectOption(option: CustomizationOption) {
         _selectedOptionState.value = option
     }
 
     @ViewModelScoped
     @AssistedFactory
     interface Factory : CustomizationOptionsViewModelFactory {
-        override fun create(viewModelScope: CoroutineScope): DefaultCustomizationOptionsViewModel
+        override fun create(
+            viewModelScope: CoroutineScope,
+            @Assisted("destination") initialDeepLinkDestination: String?,
+            @Assisted("shortcutSlotId") initialDeepLinkShortcutSlotId: String?,
+        ): DefaultCustomizationOptionsViewModel
     }
 }

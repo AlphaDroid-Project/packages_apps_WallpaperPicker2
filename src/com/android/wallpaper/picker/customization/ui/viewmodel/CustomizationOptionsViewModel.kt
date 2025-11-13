@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface CustomizationOptionsViewModel {
 
+    val customizationOptionsData: Flow<CustomizationOptionsData>
+
     val wallpaperCarouselViewModel: WallpaperCarouselViewModel
 
     val selectedOption: StateFlow<CustomizationOptionUtil.CustomizationOption?>
@@ -44,9 +46,22 @@ interface CustomizationOptionsViewModel {
 
     /** Reset all the customization options that are being previewed. */
     fun resetPreview()
+
+    /** When the transition to a secondary customization option screen completes. */
+    fun onTransitionToSecondaryScreenComplete()
 }
 
 interface CustomizationOptionsViewModelFactory {
 
-    fun create(viewModelScope: CoroutineScope): CustomizationOptionsViewModel
+    /**
+     * @param initialDeepLinkDestination This field will only be not null, when receiving an intent
+     *   requiring to deep-link to screens other than the main screen.
+     * @param initialDeepLinkShortcutSlotId In ths case of deep-linking, this is the initial
+     *   shortcut slot ID where the correspondent slot tab needs to be selected.
+     */
+    fun create(
+        viewModelScope: CoroutineScope,
+        initialDeepLinkDestination: String?,
+        initialDeepLinkShortcutSlotId: String?,
+    ): CustomizationOptionsViewModel
 }

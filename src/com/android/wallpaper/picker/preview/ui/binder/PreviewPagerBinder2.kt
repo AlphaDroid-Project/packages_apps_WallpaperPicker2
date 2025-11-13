@@ -18,28 +18,19 @@ package com.android.wallpaper.picker.preview.ui.binder
 import android.content.Context
 import android.graphics.Point
 import android.view.View
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.transition.Transition
 import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
-import com.android.wallpaper.model.wallpaper.DeviceDisplayType.Companion.FOLDABLE_DISPLAY_TYPES
-import com.android.wallpaper.picker.customization.ui.binder.CustomizationPickerBinder2.ALPHA_NON_SELECTED_PREVIEW
-import com.android.wallpaper.picker.customization.ui.binder.CustomizationPickerBinder2.ALPHA_SELECTED_PREVIEW
 import com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
 import com.android.wallpaper.picker.preview.ui.view.DualDisplayAspectRatioLayout.Companion.getViewId
 import com.android.wallpaper.picker.preview.ui.view.DualDisplayAspectRatioLayout2
 import com.android.wallpaper.picker.preview.ui.viewmodel.FullPreviewConfigViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
-import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.Companion.PreviewScreen
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
 
 /** Binds single preview home screen and lock screen tabs view pager. */
 object PreviewPagerBinder2 {
@@ -47,6 +38,12 @@ object PreviewPagerBinder2 {
     private val pagerItems = linkedSetOf(R.id.lock_preview, R.id.home_preview)
     private val commonClickableViewIds =
         listOf(R.id.apply_button, R.id.cancel_button, R.id.home_checkbox, R.id.lock_checkbox)
+
+    interface Binding {
+        fun showSurfaces()
+
+        fun hideSurfaces()
+    }
 
     fun bind(
         applicationContext: Context,
@@ -60,8 +57,12 @@ object PreviewPagerBinder2 {
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
         isFoldable: Boolean,
+        onPreviewReady: ((Screen) -> Unit)? = null,
+        onStartTransition: (() -> Unit)? = null,
+        onPreviewSurfaceDestroyed: ((Screen) -> Unit)? = null,
         navigate: (View) -> Unit,
-    ) {
+    ): Binding {
+        val bindings: MutableList<SmallPreviewBinder.Binding> = mutableListOf()
         pagerItems.forEach { item ->
             val container = previewPager.requireViewById<View>(item)
             PreviewTooltipBinder.bindSmallPreviewTooltip(
@@ -86,94 +87,78 @@ object PreviewPagerBinder2 {
                 DeviceDisplayType.FOLDABLE_DISPLAY_TYPES.forEach { display ->
                     dualDisplayAspectRatioLayout.getPreviewDisplaySize(display)?.let { displaySize
                         ->
-                        SmallPreviewBinder.bind(
-                            applicationContext = applicationContext,
-                            view =
-                                dualDisplayAspectRatioLayout.requireViewById(display.getViewId()),
-                            viewModel = viewModel,
-                            screen = viewModel.smallPreviewTabs[pagerItems.indexOf(item)],
-                            displaySize = displaySize,
-                            deviceDisplayType = display,
-                            mainScope = mainScope,
-                            viewLifecycleOwner = lifecycleOwner,
-                            currentNavDestId = R.id.smallPreviewFragment,
-                            transition = transition,
-                            transitionConfig = transitionConfig,
-                            wallpaperConnectionUtils = wallpaperConnectionUtils,
-                            isFirstBindingDeferred = isFirstBindingDeferred,
-                            navigate = navigate,
+                        bindings.add(
+                            SmallPreviewBinder.bind(
+                                applicationContext = applicationContext,
+                                view =
+                                    dualDisplayAspectRatioLayout.requireViewById(
+                                        display.getViewId()
+                                    ),
+                                viewModel = viewModel,
+                                screen = viewModel.smallPreviewTabs[pagerItems.indexOf(item)],
+                                displaySize = displaySize,
+                                deviceDisplayType = display,
+                                mainScope = mainScope,
+                                viewLifecycleOwner = lifecycleOwner,
+                                currentNavDestId = R.id.smallPreviewFragment,
+                                transition = transition,
+                                transitionConfig = transitionConfig,
+                                wallpaperConnectionUtils = wallpaperConnectionUtils,
+                                isFirstBindingDeferred = isFirstBindingDeferred,
+                                navigate = navigate,
+                                onPreviewReady =
+                                    // Only report onPreviewReady for UNFOLDED preview as it loads
+                                    // longer than the FOLDED preview
+                                    if (display == DeviceDisplayType.UNFOLDED) onPreviewReady
+                                    else null,
+                                onStartTransition = onStartTransition,
+                                onPreviewSurfaceDestroyed =
+                                    // Align with onPreviewReady to only report
+                                    // onPreviewSurfaceDestroyed for UNFOLDED preview
+                                    if (display == DeviceDisplayType.UNFOLDED)
+                                        onPreviewSurfaceDestroyed
+                                    else null,
+                                isFoldable = isFoldable,
+                            )
                         )
                     }
                 }
             } else {
                 val previewViewId = R.id.preview
                 previewPager.setClickableViewIds(commonClickableViewIds.toList() + previewViewId)
-                SmallPreviewBinder.bind(
-                    applicationContext = applicationContext,
-                    view = container.requireViewById(previewViewId),
-                    viewModel = viewModel,
-                    screen = viewModel.smallPreviewTabs[pagerItems.indexOf(item)],
-                    displaySize = previewDisplaySize,
-                    deviceDisplayType = DeviceDisplayType.SINGLE,
-                    mainScope = mainScope,
-                    viewLifecycleOwner = lifecycleOwner,
-                    currentNavDestId = R.id.smallPreviewFragment,
-                    transition = transition,
-                    transitionConfig = transitionConfig,
-                    wallpaperConnectionUtils = wallpaperConnectionUtils,
-                    isFirstBindingDeferred = isFirstBindingDeferred,
-                    navigate = navigate,
+                bindings.add(
+                    SmallPreviewBinder.bind(
+                        applicationContext = applicationContext,
+                        view = container.requireViewById(previewViewId),
+                        viewModel = viewModel,
+                        screen = viewModel.smallPreviewTabs[pagerItems.indexOf(item)],
+                        displaySize = previewDisplaySize,
+                        deviceDisplayType = DeviceDisplayType.SINGLE,
+                        mainScope = mainScope,
+                        viewLifecycleOwner = lifecycleOwner,
+                        currentNavDestId = R.id.smallPreviewFragment,
+                        transition = transition,
+                        transitionConfig = transitionConfig,
+                        wallpaperConnectionUtils = wallpaperConnectionUtils,
+                        isFirstBindingDeferred = isFirstBindingDeferred,
+                        navigate = navigate,
+                        onPreviewReady = onPreviewReady,
+                        onStartTransition = onStartTransition,
+                        onPreviewSurfaceDestroyed = onPreviewSurfaceDestroyed,
+                        isFoldable = isFoldable,
+                    )
                 )
             }
         }
 
-        lifecycleOwner.lifecycleScope.launch {
-            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                combine(viewModel.currentPreviewScreen, viewModel.smallPreviewSelectedTab) {
-                        previewScreen,
-                        selectedTab ->
-                        previewScreen to selectedTab
-                    }
-                    .collect { (previewScreen, selectedTab) ->
-                        if (previewScreen == PreviewScreen.SMALL_PREVIEW) {
-                            Screen.entries.forEach { screen ->
-                                val screenView =
-                                    previewPager.requireViewById<View>(
-                                        pagerItems.elementAt(screen.ordinal)
-                                    )
-                                if (isFoldable) {
-                                    FOLDABLE_DISPLAY_TYPES.map {
-                                            screenView.requireViewById<View>(it.getViewId())
-                                        }
-                                        .forEach {
-                                            animatePreviewAlpha(
-                                                parent = it,
-                                                selected = selectedTab == screen,
-                                            )
-                                        }
-                                } else {
-                                    animatePreviewAlpha(
-                                        parent = screenView,
-                                        selected = selectedTab == screen,
-                                    )
-                                }
-                            }
-                        }
-                    }
+        return object : Binding {
+            override fun showSurfaces() {
+                bindings.forEach { it.showSurfaces() }
             }
-        }
-    }
 
-    private fun animatePreviewAlpha(parent: View, selected: Boolean) {
-        setOf(R.id.wallpaper_surface, R.id.workspace_surface).forEach {
-            parent
-                .requireViewById<View>(it)
-                .animate()
-                .alpha(if (selected) ALPHA_SELECTED_PREVIEW else ALPHA_NON_SELECTED_PREVIEW)
-                .setDuration(
-                    parent.resources.getInteger(android.R.integer.config_mediumAnimTime).toLong()
-                )
-                .start()
+            override fun hideSurfaces() {
+                bindings.forEach { it.hideSurfaces() }
+            }
         }
     }
 }

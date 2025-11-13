@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,33 +16,32 @@
 
 package com.android.wallpaper.picker.customization.ui.binder
 
-import android.widget.TextView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.android.wallpaper.model.Screen
-import com.android.wallpaper.model.Screen.HOME_SCREEN
-import com.android.wallpaper.model.Screen.LOCK_SCREEN
-import com.android.wallpaper.picker.customization.ui.util.ViewAlphaAnimator.animateToAlpha
+import com.android.wallpaper.R
+import com.android.wallpaper.picker.customization.ui.view.PreviewPagerViews
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
 import kotlinx.coroutines.launch
 
-object PreviewLabelBinder {
+/** Binds the main screen home and lock screen preview MotionLayout. */
+object PreviewPagerBinder {
 
     fun bind(
-        previewLabel: TextView,
-        screen: Screen,
+        previewPagerViews: PreviewPagerViews,
         viewModel: CustomizationPickerViewModel2,
         lifecycleOwner: LifecycleOwner,
     ) {
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    when (screen) {
-                        LOCK_SCREEN -> viewModel.lockPreviewAnimateToAlpha
-                        HOME_SCREEN -> viewModel.homePreviewAnimateToAlpha
-                    }.collect { previewLabel.animateToAlpha(it) }
+                    viewModel.isPagerInteractable.collect {
+                        previewPagerViews.previewPager.apply {
+                            getTransition(R.id.preview_swipe_transition).isEnabled = it
+                            shouldInterceptTouch = it
+                        }
+                    }
                 }
             }
         }

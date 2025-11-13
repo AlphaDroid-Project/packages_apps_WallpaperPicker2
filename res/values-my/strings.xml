@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"နောက်ခံရွေးရန်"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"အကြံပြုထားသော ဓာတ်ပုံများ"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"နောက်ခံလုပ်ရန်"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"Wallpaper Studio"</string>
     <string name="home_screen_message" msgid="106444102822522813">"ပင်မစာမျက်နှာ"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"လော့ခ်မျက်နှာပြင်"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"ပင်မနှင့် လော့ခ်မျက်နှာပြင်"</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"အသုံးပြုခွင့်ပေးရန်"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"နောက်ခံများ လှည့်ရန်အတွက် သက်ဝင်နောက်ခံ ဝန်ဆောင်မှု"</string>
     <string name="more_photos" msgid="2183343115041498453">"နောက်ထပ်ဓာတ်ပုံများ"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"ဓာတ်ပုံ ရွေးရန်"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"နေ့စဉ် နောက်ခံ"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"ဖွင့်ရန်တို့ပါ"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"နောက်ခံသည် နေ့စဉ်အလိုအလျောက် ပြောင်းပါမည်။ စနစ်ထည့်သွင်းမှုကို အဆုံးသတ်ရန် နောက်လာမည့် မျက်နှာပြင်တွင် &lt;strong&gt;နောက်ခံ သတ်မှတ်ရန်&lt;/strong&gt; ကို တို့ပါ။"</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"အပြောင်းအလဲများ ပြန်သတ်မှတ်မလား။"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"သင့်ပြောင်းလဲမှုများအား သိမ်းမည် မဟုတ်ပါ"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"နောက်ထပ် နောက်ခံပုံများ"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nအားလုံးကြည့်ရန်"</string>
     <string name="wallpapers" msgid="7133442512006469886">"နောက်ခံများ"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s၊ %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"နောက်ခံ"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"%d%% အထိ ဇူးမ်ဆွဲထားသည်"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"ဇူးမ်အဆင့်အမြင့်ဆုံး ရောက်ပါပြီ"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"ဇူးမ်အဆင့်အနိမ့်ဆုံး ရောက်ပါပြီ"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"စုစည်းမှုများ"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"ဓာတ်ပုံ %2$d ပုံအနက် %1$d"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"မူရင်းနောက်ခံ %2$d ခုအနက် %1$d"</string>
 </resources>

@@ -38,8 +38,14 @@ import com.android.wallpaper.picker.common.preview.ui.binder.DefaultWorkspaceCal
 import com.android.wallpaper.picker.common.preview.ui.binder.WorkspaceCallbackBinder
 import com.android.wallpaper.picker.customization.ui.binder.CustomizationOptionsBinder
 import com.android.wallpaper.picker.customization.ui.binder.DefaultCustomizationOptionsBinder
+import com.android.wallpaper.picker.customization.ui.binder.DefaultPackThemeSuggestedEntryBinder
 import com.android.wallpaper.picker.customization.ui.binder.DefaultToolbarBinder
+import com.android.wallpaper.picker.customization.ui.binder.PackThemeSuggestedEntryBinder
 import com.android.wallpaper.picker.customization.ui.binder.ToolbarBinder
+import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil
+import com.android.wallpaper.picker.customization.ui.util.DefaultCustomizationOptionUtil
+import com.android.wallpaper.picker.preview.ui.binder.ApplyWallpaperOptionsProvider
+import com.android.wallpaper.picker.preview.ui.binder.DefaultApplyWallpaperOptionsProvider
 import com.android.wallpaper.picker.preview.ui.util.DefaultImageEffectDialogUtil
 import com.android.wallpaper.picker.preview.ui.util.ImageEffectDialogUtil
 import com.android.wallpaper.testing.FakeCategoryInteractor
@@ -103,6 +109,12 @@ abstract class WallpaperPicker2TestModule {
 
     @Binds
     @Singleton
+    abstract fun bindCustomizationOptionUtil(
+        impl: DefaultCustomizationOptionUtil
+    ): CustomizationOptionUtil
+
+    @Binds
+    @Singleton
     abstract fun bindDefaultPhotosErrorConvertor(
         impl: FakeDefaultPhotosErrorConvertor
     ): PhotosErrorConvertor
@@ -120,6 +132,12 @@ abstract class WallpaperPicker2TestModule {
     abstract fun bindOnDeviceWallpapersInteractor(
         impl: FakeOnDeviceWallpapersInteractor
     ): OnDeviceWallpapersInteractor
+
+    @Binds
+    @Singleton
+    abstract fun bindPackThemeSuggestedEntryBinder(
+        impl: DefaultPackThemeSuggestedEntryBinder
+    ): PackThemeSuggestedEntryBinder
 
     @Binds @Singleton abstract fun bindPartnerProvider(impl: TestPartnerProvider): PartnerProvider
 
@@ -162,4 +180,10 @@ abstract class WallpaperPicker2TestModule {
     abstract fun bindRecentWallpaperManager(
         impl: DefaultRecentWallpaperManager
     ): RecentWallpaperManager
+
+    @Binds
+    @Singleton
+    abstract fun bindApplyWallpaperOptionsProvider(
+        impl: DefaultApplyWallpaperOptionsProvider
+    ): ApplyWallpaperOptionsProvider
 }

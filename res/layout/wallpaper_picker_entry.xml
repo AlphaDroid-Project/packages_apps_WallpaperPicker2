@@ -48,13 +48,13 @@
             <include
                 layout="@layout/curated_photo_tile"
                 android:layout_width="@dimen/curated_photo_tile_width"
-                android:layout_height="@dimen/curated_photo_height"
+                android:layout_height="match_parent"
                 android:visibility="invisible" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/wallpaper_carousel"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="@dimen/curated_photo_height"
                 android:clipToPadding="false"
                 android:clipChildren="false"
                 android:orientation="horizontal"
@@ -68,10 +68,11 @@
             android:minHeight="@dimen/accessibility_min_height"
             android:gravity="start|center_vertical"
             android:text="@string/choose_a_curated_photo_section_title"
-            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+            android:textAppearance="@style/TextAppearance.DeviceDefault.Small.LabelLargeEmphasized"
             android:textSize="@dimen/wallpaper_header_text_size"
             android:ellipsize="end"
             android:singleLine="true"
+            android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@+id/wallpaper_carousel_container"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -79,7 +80,7 @@
 
         <TextView
             android:id="@+id/more_wallpapers_button"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minHeight="@dimen/accessibility_min_height"
             android:gravity="center"
@@ -94,6 +95,7 @@
             app:drawableStartCompat="@drawable/ic_nav_wallpaper"
             app:drawableTint="@color/system_primary"
             android:clickable="true" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
@@ -110,6 +112,8 @@
         android:textSize="@dimen/wallpaper_header_text_size"
         android:alpha="0.0"
         android:visibility="invisible"
+        android:maxLines="1"
+        android:ellipsize="end"
         app:drawableStartCompat="@drawable/ic_nav_wallpaper"
         app:drawableTint="@color/system_primary"
         android:clickable="true" />

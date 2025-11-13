@@ -16,8 +16,10 @@
 
 package com.android.wallpaper.picker.customization.ui.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
@@ -39,10 +41,18 @@ class CustomizationPickerViewModel2
 constructor(
     customizationOptionsViewModelFactory: CustomizationOptionsViewModelFactory,
     basePreviewViewModelFactory: BasePreviewViewModel.Factory,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
+    private val initialDestination: String? = savedStateHandle[KEY_DESTINATION]
+    private val initialShortcutSlotId: String? = savedStateHandle[KEY_SHORTCUT_SLOT_ID]
+
     val customizationOptionsViewModel =
-        customizationOptionsViewModelFactory.create(viewModelScope = viewModelScope)
+        customizationOptionsViewModelFactory.create(
+            viewModelScope = viewModelScope,
+            initialDeepLinkDestination = initialDestination,
+            initialDeepLinkShortcutSlotId = initialShortcutSlotId,
+        )
     val basePreviewViewModel = basePreviewViewModelFactory.create(viewModelScope)
 
     enum class PickerScreen {
@@ -58,58 +68,125 @@ constructor(
     }
 
     val screen =
-        customizationOptionsViewModel.selectedOption.map {
-            if (it != null) {
-                Pair(PickerScreen.CUSTOMIZATION_OPTION, it)
+        customizationOptionsViewModel.selectedOption
+            .map {
+                if (it != null) {
+                    Pair(PickerScreen.CUSTOMIZATION_OPTION, it)
+                } else {
+                    Pair(PickerScreen.MAIN, null)
+                }
+            }
+            .shareIn(viewModelScope, SharingStarted.WhileSubscribed(), 1)
+
+    private val isLockPreviewReady: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    private val isHomePreviewReady: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    fun setPreviewReady(screen: Screen, isReady: Boolean) {
+        when (screen) {
+            LOCK_SCREEN -> isLockPreviewReady.value = isReady
+            HOME_SCREEN -> isHomePreviewReady.value = isReady
+        }
+    }
+
+    /** Flow of float that emits to trigger the lock screen preview to animate to an alpha value. */
+    val lockPreviewAlpha: Flow<PreviewAlpha> =
+        combine(isLockPreviewReady, screen, selectedPreviewScreen) {
+                isPreviewReady,
+                navigationScreen,
+                previewScreen ->
+                getPreviewAlpha(
+                    isPreviewReady = isPreviewReady,
+                    navigationScreen = navigationScreen.first,
+                    previewScreen = previewScreen,
+                    targetScreen = LOCK_SCREEN,
+                )
+            }
+            .distinctUntilChanged()
+            .shareIn(viewModelScope, SharingStarted.WhileSubscribed(), 1)
+
+    /** Flow of a style res Id that represents the home preview label text appearance. */
+    val lockPreviewLabelTextAppearance: Flow<Int> =
+        selectedPreviewScreen.map {
+            if (it == LOCK_SCREEN) {
+                R.style.TextAppearance_Preview_Label_Selected
             } else {
-                Pair(PickerScreen.MAIN, null)
+                R.style.TextAppearance_Preview_Label_Unselected
             }
         }
 
-    /** Flow of float that emits to trigger the lock screen preview to animate to an alpha value. */
-    val lockPreviewAnimateToAlpha: Flow<Float> =
-        combine(screen, selectedPreviewScreen, ::Pair)
-            .map { (navigationScreen, previewScreen) ->
-                when (navigationScreen.first) {
-                    PickerScreen.MAIN ->
-                        if (previewScreen == LOCK_SCREEN) PREVIEW_SHOW_ALPHA else PREVIEW_FADE_ALPHA
-                    PickerScreen.CUSTOMIZATION_OPTION -> {
-                        when (previewScreen) {
-                            LOCK_SCREEN -> PREVIEW_SHOW_ALPHA
-                            HOME_SCREEN -> PREVIEW_HIDE_ALPHA
-                        }
-                    }
-                }
-            }
-            .distinctUntilChanged()
-            .shareIn(viewModelScope, SharingStarted.WhileSubscribed(), 1)
-
     /** Flow of float that emits to trigger the home screen preview to animate to an alpha value. */
-    val homePreviewAnimateToAlpha: Flow<Float> =
-        combine(screen, selectedPreviewScreen, ::Pair)
-            .map { (navigationScreen, previewScreen) ->
-                when (navigationScreen.first) {
-                    PickerScreen.MAIN ->
-                        if (previewScreen == HOME_SCREEN) PREVIEW_SHOW_ALPHA else PREVIEW_FADE_ALPHA
-                    PickerScreen.CUSTOMIZATION_OPTION -> {
-                        when (previewScreen) {
-                            LOCK_SCREEN -> PREVIEW_HIDE_ALPHA
-                            HOME_SCREEN -> PREVIEW_SHOW_ALPHA
-                        }
-                    }
-                }
+    val homePreviewAlpha: Flow<PreviewAlpha> =
+        combine(isHomePreviewReady, screen, selectedPreviewScreen) {
+                isPreviewReady,
+                navigationScreen,
+                previewScreen ->
+                getPreviewAlpha(
+                    isPreviewReady = isPreviewReady,
+                    navigationScreen = navigationScreen.first,
+                    previewScreen = previewScreen,
+                    targetScreen = HOME_SCREEN,
+                )
             }
             .distinctUntilChanged()
             .shareIn(viewModelScope, SharingStarted.WhileSubscribed(), 1)
 
-    val isPreviewClickable: Flow<Boolean> = basePreviewViewModel.wallpapers.map { it != null }
+    /** Flow of a style res Id that represents the home preview label text appearance. */
+    val homePreviewLabelTextAppearance: Flow<Int> =
+        selectedPreviewScreen.map {
+            if (it == HOME_SCREEN) {
+                R.style.TextAppearance_Preview_Label_Selected
+            } else {
+                R.style.TextAppearance_Preview_Label_Unselected
+            }
+        }
+
+    /**
+     * Get the preview's target alpha value to animate or set to.
+     *
+     * @return [PreviewAlpha] contains the target alpha value and shouldAnimate. If shouldAnimate is
+     *   true, the view should animate to the target alpha; otherwise, directly set to the alpha.
+     */
+    private fun getPreviewAlpha(
+        isPreviewReady: Boolean,
+        navigationScreen: PickerScreen,
+        previewScreen: Screen,
+        targetScreen: Screen,
+    ): PreviewAlpha {
+        return if (isPreviewReady) {
+            when (navigationScreen) {
+                PickerScreen.MAIN ->
+                    if (previewScreen == targetScreen)
+                        PreviewAlpha(alpha = PREVIEW_SHOW_ALPHA, shouldAnimate = true)
+                    else PreviewAlpha(alpha = PREVIEW_FADE_ALPHA, shouldAnimate = true)
+                PickerScreen.CUSTOMIZATION_OPTION -> {
+                    when (previewScreen) {
+                        targetScreen ->
+                            PreviewAlpha(alpha = PREVIEW_SHOW_ALPHA, shouldAnimate = true)
+                        else -> PreviewAlpha(alpha = PREVIEW_HIDE_ALPHA, shouldAnimate = true)
+                    }
+                }
+            }
+        } else {
+            PreviewAlpha(alpha = PREVIEW_HIDE_ALPHA, shouldAnimate = false)
+        }
+    }
 
     val isPagerInteractable: Flow<Boolean> =
         customizationOptionsViewModel.selectedOption.map { it == null }
+
+    val isPreviewClickable: Flow<Boolean> =
+        combine(basePreviewViewModel.wallpapers, isPagerInteractable) {
+            wallpapers,
+            isPagerInteractable ->
+            wallpapers != null && isPagerInteractable
+        }
 
     companion object {
         const val PREVIEW_SHOW_ALPHA = 1F
         const val PREVIEW_HIDE_ALPHA = 0F
         const val PREVIEW_FADE_ALPHA = 0.4F
+
+        const val KEY_DESTINATION = "destination"
+        const val KEY_SHORTCUT_SLOT_ID = "slot_id"
     }
 }

@@ -21,6 +21,7 @@ import android.graphics.Point
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.SurfaceControlViewHost
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
@@ -36,6 +37,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.transition.Transition
 import androidx.transition.TransitionListenerAdapter
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.TouchForwardingLayout
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -77,9 +79,11 @@ object FullWallpaperPreviewBinder {
         savedInstanceState: Bundle?,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
+        onStartTransition: (() -> Unit)? = null,
         onWallpaperLoaded: ((Boolean) -> Unit)? = null,
     ) {
-        val surfaceView: SurfaceView = view.requireViewById(R.id.wallpaper_surface)
+        val wallpaperSurface: SurfaceView = view.requireViewById(R.id.wallpaper_surface)
+        val workspaceSurface: SurfaceView = view.requireViewById(R.id.workspace_surface)
         val wallpaperPreviewCrop: FullPreviewFrameLayout =
             view.requireViewById(R.id.wallpaper_preview_crop)
         val previewCard: CardView = view.requireViewById(R.id.preview_card)
@@ -91,7 +95,6 @@ object FullWallpaperPreviewBinder {
             if (isWallpaperFullScreen) {
                 previewCard.radius = 0f
             }
-            surfaceView.cornerRadius = previewCard.radius
             scrimView.isVisible = isWallpaperFullScreen
             onWallpaperLoaded?.invoke(isWallpaperFullScreen)
         }
@@ -110,6 +113,18 @@ object FullWallpaperPreviewBinder {
                             object : TransitionListenerAdapter() {
                                 override fun onTransitionStart(transition: Transition) {
                                     super.onTransitionStart(transition)
+                                    if (BaseFlags.get().isNewPickerUi()) {
+                                        // When putting the surface on top for full transition, the
+                                        // card view is behind the surface view so we need to apply
+                                        // radius on surface view instead
+                                        wallpaperSurface.cornerRadius = previewCard.radius
+                                        workspaceSurface.cornerRadius = previewCard.radius
+                                        // Set top z order during shared element transition to
+                                        // prevent showing any other surfaces, e.g. background
+                                        // engine
+                                        wallpaperSurface.setZOrderOnTop(true)
+                                        workspaceSurface.setZOrderOnTop(true)
+                                    }
                                     if (isPreviewingFullScreen) {
                                         scrimView.isVisible = true
                                         scrimView.alpha = 0f
@@ -123,6 +138,13 @@ object FullWallpaperPreviewBinder {
 
                                 override fun onTransitionEnd(transition: Transition) {
                                     super.onTransitionEnd(transition)
+                                    if (BaseFlags.get().isNewPickerUi()) {
+                                        // When shared element transition finished, set z order back
+                                        // to media overlay, to place z order between background
+                                        // engine and app UI (background engine z order is media)
+                                        wallpaperSurface.setZOrderMediaOverlay(true)
+                                        workspaceSurface.setZOrderMediaOverlay(true)
+                                    }
                                     setFinalPreviewCardRadiusAndEndLoading(isPreviewingFullScreen)
                                     transitionDisposableHandle?.dispose()
                                     transitionDisposableHandle = null
@@ -192,20 +214,24 @@ object FullWallpaperPreviewBinder {
                 surfaceCallback =
                     bindSurface(
                         applicationContext = applicationContext,
-                        surfaceView = surfaceView,
+                        surfaceView = wallpaperSurface,
                         surfaceTouchForwardingLayout = surfaceTouchForwardingLayout,
                         viewModel = viewModel,
                         mainScope = mainScope,
                         lifecycleOwner = lifecycleOwner,
                         wallpaperConnectionUtils = wallpaperConnectionUtils,
                         isFirstBindingDeferred = isFirstBindingDeferred,
+                        onStartTransition = onStartTransition,
                     )
-                surfaceView.setZOrderMediaOverlay(true)
-                surfaceView.holder.addCallback(surfaceCallback)
+                if (!BaseFlags.get().isNewPickerUi()) {
+                    wallpaperSurface.setZOrderMediaOverlay(true)
+                }
+                wallpaperSurface.holder.addCallback(surfaceCallback)
             }
             // When OnDestroy, release the surface
             surfaceCallback?.let {
-                surfaceView.holder.removeCallback(it)
+                it.releaseSurfaceControlViewHost()
+                wallpaperSurface.holder.removeCallback(it)
                 surfaceCallback = null
             }
         }
@@ -300,10 +326,12 @@ object FullWallpaperPreviewBinder {
         lifecycleOwner: LifecycleOwner,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
+        onStartTransition: (() -> Unit)?,
     ): SurfaceViewUtils.SurfaceCallback {
         return object : SurfaceViewUtils.SurfaceCallback {
 
             var job: Job? = null
+            var surfaceControlViewHost: SurfaceControlViewHost? = null
 
             // Suppress lint warning for setting on touch listener to a live wallpaper surface view.
             // This is because the touch effect on a live wallpaper is purely visual, instead of
@@ -331,6 +359,8 @@ object FullWallpaperPreviewBinder {
                                     surfaceView,
                                     engineRenderingConfig,
                                     isFirstBindingDeferred,
+                                    disconnectOnWallpaperChange = false,
+                                    onPreviewReady = { onStartTransition?.invoke() },
                                 )
                                 if (!viewModel.isAccessibilityEnabled()) {
                                     surfaceTouchForwardingLayout.initTouchForwarding(surfaceView)
@@ -389,14 +419,17 @@ object FullWallpaperPreviewBinder {
                                     onZoomChanged,
                                 )
                                 // Bind static wallpaper
-                                StaticWallpaperPreviewBinder.bind(
-                                    staticPreviewView = preview,
-                                    wallpaperSurface = surfaceView,
-                                    viewModel = viewModel.staticWallpaperPreviewViewModel,
-                                    displaySize = displaySize,
-                                    parentCoroutineScope = this,
-                                    isFullScreen = true,
-                                )
+                                surfaceControlViewHost?.release()
+                                surfaceControlViewHost =
+                                    StaticWallpaperPreviewBinder.bind(
+                                        staticPreviewView = preview,
+                                        wallpaperSurface = surfaceView,
+                                        viewModel = viewModel.staticWallpaperPreviewViewModel,
+                                        displaySize = displaySize,
+                                        parentCoroutineScope = this,
+                                        isFullScreen = true,
+                                        onStartTransition = { onStartTransition?.invoke() },
+                                    )
                                 fullResImageView.doOnLayout {
                                     val imageSize =
                                         Point(fullResImageView.width, fullResImageView.height)
@@ -444,6 +477,11 @@ object FullWallpaperPreviewBinder {
                 // WallpaperPreviewActivity's onDestroy().
                 // This is to reduce multiple times of connecting and disconnecting live
                 // wallpaper services, when going back and forth small and full preview.
+            }
+
+            override fun releaseSurfaceControlViewHost() {
+                surfaceControlViewHost?.release()
+                surfaceControlViewHost = null
             }
         }
     }

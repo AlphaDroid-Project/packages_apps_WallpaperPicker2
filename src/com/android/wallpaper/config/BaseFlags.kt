@@ -15,27 +15,37 @@
  */
 package com.android.wallpaper.config
 
+import android.app.Flags.updateRecentsFromSystem
 import android.app.WallpaperManager
 import android.content.Context
+import android.content.pm.PackageManager
 import com.android.settings.accessibility.Flags.enableColorContrastControl
 import com.android.systemui.shared.Flags.clockReactiveVariants
 import com.android.systemui.shared.Flags.extendedWallpaperEffects
+import com.android.systemui.shared.Flags.extendibleThemeManager
 import com.android.systemui.shared.Flags.lockscreenCustomClocks
 import com.android.systemui.shared.Flags.newCustomizationPickerUi
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClient
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClientImpl
 import com.android.systemui.shared.customization.data.content.CustomizationProviderContract as Contract
 import com.android.wallpaper.Flags.composeRefactorFlag
+import com.android.wallpaper.Flags.creativeWallpaperFieldCollectionWallpaper
+import com.android.wallpaper.Flags.desktopUiFlag
+import com.android.wallpaper.Flags.fullscreenPreviewFlag
 import com.android.wallpaper.Flags.newCreativeWallpaperCategory
 import com.android.wallpaper.Flags.refactorWallpaperCategoryFlag
 import com.android.wallpaper.Flags.wallpaperRestorerFlag
 import com.android.wallpaper.module.InjectorProvider
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 abstract class BaseFlags {
     private var customizationProviderClient: CustomizationProviderClient? = null
     private var cachedFlags: List<CustomizationProviderClient.Flag>? = null
+
+    // local flag to gate the entry points for magic portrait
+    open fun isMagicPortraitEntryPointsEnabled() = true
 
     open fun isStagingBackdropContentEnabled() = false
 
@@ -53,9 +63,14 @@ abstract class BaseFlags {
 
     open fun isNewCreativeWallpaperCategoryEnabled() = newCreativeWallpaperCategory()
 
+    open fun isCreativeWallpaperCollectionFieldEnabled() =
+        creativeWallpaperFieldCollectionWallpaper()
+
     open fun isColorContrastControlEnabled() = enableColorContrastControl()
 
     open fun isExtendedWallpaperEnabled() = extendedWallpaperEffects()
+
+    open fun isExtendibleThemeManager() = extendibleThemeManager()
 
     open fun isNewPickerUi() = newCustomizationPickerUi()
 
@@ -140,6 +155,32 @@ abstract class BaseFlags {
         return cachedFlags
             ?: runBlocking { getCustomizationProviderClient(context).queryFlags() }
                 .also { cachedFlags = it }
+    }
+
+    open fun isFullscreenPreviewEnabled(context: Context): Boolean {
+        return fullscreenPreviewFlag() &&
+            isNewPickerUi() &&
+            DesktopState.fromContext(context).canEnterDesktopMode
+    }
+
+    open fun isRecentWallpapersFromSystemEnabled(context: Context): Boolean {
+        val wallpaperManager = context.getSystemService(WallpaperManager::class.java)
+        try {
+            wallpaperManager.javaClass.getMethod(
+                "getWallpaperInstance",
+                Int::class.javaPrimitiveType,
+            )
+            return updateRecentsFromSystem()
+        } catch (e: NoSuchMethodException) {
+            return false
+        }
+    }
+
+    open fun shouldShowDesktopUi(context: Context): Boolean {
+        // TODO: b/416024080 use a better solution than FEATURE_PC.
+        return desktopUiFlag() &&
+            isNewPickerUi() &&
+            context.packageManager.hasSystemFeature(PackageManager.FEATURE_PC)
     }
 
     companion object {

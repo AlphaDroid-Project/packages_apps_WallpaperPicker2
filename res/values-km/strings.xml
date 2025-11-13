@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"ជ្រើសរើសផ្ទាំងរូបភាព"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"រូបថតដែលបានណែនាំ"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"បង្កើតផ្ទាំងរូបភាព"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"ស្ទូឌីយ៉ូផ្ទាំង​រូបភាព"</string>
     <string name="home_screen_message" msgid="106444102822522813">"អេក្រង់ដើម"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"អេក្រង់​ចាក់សោ"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"ដើម និង​ចាក់សោ"</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"ផ្តល់សិទិ្ធ​ចូលប្រើ"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"សេវាកម្មផ្ទាំងរូបភាពរស់រវើកសម្រាប់បង្វិលផ្ទាំងរូបភាព"</string>
     <string name="more_photos" msgid="2183343115041498453">"រូបថត​ច្រើន​ទៀត"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"ជ្រើសរើស​រូបថត"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"ផ្ទាំងរូបភាពប្រចាំថ្ងៃ"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"ចុចដើម្បីបើក"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"Wallpaper នឹង​ផ្លាស់​ប្ដូរ​ដោយស្វ័យ​ប្រវត្តិ​ជារៀងរាល់ថ្ងៃ។ ដើម្បី​បញ្ចប់​ការ​រៀបចំ សូម​ចុច &lt;strong&gt;កំណត់​ផ្ទាំងរូបភាព&lt;/strong&gt; នៅលើ​អេក្រង់​បន្ទាប់។"</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"កំណត់​ការផ្លាស់ប្ដូរ​ឡើង​វិញឬ?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"ការផ្លាស់ប្ដូររបស់អ្នកនឹងមិនត្រូវបានរក្សាទុកទេ"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"ផ្ទាំងរូបភាព​ច្រើនទៀត"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nមើលទាំងអស់"</string>
     <string name="wallpapers" msgid="7133442512006469886">"ផ្ទាំង​រូបភាព"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"ផ្ទាំង​រូបភាព"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"បានពង្រីកបង្រួមដល់ %d%%"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"សម្រេចបានការពង្រីកបង្រួមអតិបរមា"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"សម្រេចបានការពង្រីកបង្រួមអប្បបរមា"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"បណ្ដុំ"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"រូបថត %1$d នៃ %2$d"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"ផ្ទាំង​រូបភាពលំនាំដើម %1$d នៃ %2$d"</string>
 </resources>

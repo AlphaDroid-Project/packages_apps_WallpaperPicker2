@@ -16,13 +16,17 @@
 package com.android.wallpaper.module.logging
 
 import android.content.Intent
+import android.stats.style.StyleEnums
+import com.android.wallpaper.module.logging.UserEventLogger.CustomizationPickerScreen
 import com.android.wallpaper.module.logging.UserEventLogger.SetWallpaperEntryPoint
 import com.android.wallpaper.module.logging.UserEventLogger.WallpaperDestination
+import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
+import io.grpc.Status
 
 /** [UserEventLogger] implementation that does nothing. */
 open class NoOpUserEventLogger : UserEventLogger {
 
-    override fun logSnapshot() {}
+    override suspend fun logSnapshot() {}
 
     override fun logAppLaunched(launchSource: Intent) {}
 
@@ -52,4 +56,17 @@ open class NoOpUserEventLogger : UserEventLogger {
     override fun logResetApplied() {}
 
     override fun logWallpaperExploreButtonClicked() {}
+
+    override fun logEnterScreen(screen: Int) {}
+
+    @CustomizationPickerScreen
+    override fun transformCustomizationOptionToScreenForLogging(
+        customizationOption: CustomizationOption
+    ): Int {
+        return StyleEnums.SCREEN_UNSPECIFIED
+    }
+
+    override fun logCuratedPhotosRendered(timeElapsedMillis: Long, userPhoto: Boolean) {}
+
+    override fun logCuratedPhotosFetched(timeElapsedMillis: Long, status: Status) {}
 }

@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"Choisir un fond d\'écran"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"Photos suggérées"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"Créer un fond d\'écran"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"Fond d\'écran Studio"</string>
     <string name="home_screen_message" msgid="106444102822522813">"Écran d\'accueil"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"Écran de verrouillage"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"Écr. d\'accueil et de verrouill."</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"Autoriser l\'accès"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"Service de fonds d\'écran animés pour la rotation des images"</string>
     <string name="more_photos" msgid="2183343115041498453">"Autres photos"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"Choisir une photo"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"Fond d\'écran quotidien"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"Touchez pour activer"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"Le fond d\'écran changera automatiquement chaque jour. Pour terminer la configuration, touchez &lt;strong&gt;Définir le fond d\'écran&lt;/strong&gt; à l\'écran suivant."</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"Réinitialiser les modifications?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"Vos modifications ne seront pas enregistrées"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"Plus de fonds d\'écran"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nAfficher tout"</string>
     <string name="wallpapers" msgid="7133442512006469886">"Fonds d\'écran"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"Fond d\'écran"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"Zoom à %d%%"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"Zoom maximal atteint"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"Zoom minimal atteint"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"Collections"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"Photo %1$d sur %2$d"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"Fond d\'écran par défaut %1$d sur %2$d"</string>
 </resources>

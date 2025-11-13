@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"ਕੋਈ ਵਾਲਪੇਪਰ ਚੁਣੋ"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"ਸੁਝਾਈਆਂ ਗਈਆਂ ਫ਼ੋਟੋਆਂ"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"ਵਾਲਪੇਪਰ ਬਣਾਓ"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"Wallpaper Studio"</string>
     <string name="home_screen_message" msgid="106444102822522813">"ਹੋਮ ਸਕ੍ਰੀਨ"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"ਲਾਕ ਸਕ੍ਰੀਨ"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"ਹੋਮ ਸਕ੍ਰੀਨ ਅਤੇ ਲਾਕ ਸਕ੍ਰੀਨ"</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"ਪਹੁੰਚ ਕਰਨ ਦਿਓ"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"ਬਦਲਣ ਵਾਲੇ ਚਿੱਤਰ ਵਾਲਪੇਪਰਾਂ ਲਈ ਲਾਈਵ ਵਾਲਪੇਪਰ ਸੇਵਾ"</string>
     <string name="more_photos" msgid="2183343115041498453">"ਹੋਰ ਫ਼ੋਟੋਆਂ"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"ਫ਼ੋਟੋ ਚੁਣੋ"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"ਰੋਜ਼ਾਨਾ ਵਾਲਪੇਪਰ"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"ਚਾਲੂ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"ਵਾਲਪੇਪਰ ਸਵੈਚਲਿਤ ਤੌਰ \'ਤੇ ਹਰ ਦਿਨ ਬਦਲੇਗਾ। ਸੈੱਟਅੱਪ ਪੂਰਾ ਕਰਨ ਲਈ, ਅਗਲੀ ਸਕ੍ਰੀਨ \'ਤੇ &lt;strong&gt;ਵਾਲਪੇਪਰ ਸੈੱਟ ਕਰੋ&lt;/strong&gt; \'ਤੇ ਟੈਪ ਕਰੋ।"</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"ਕੀ ਤਬਦੀਲੀਆਂ ਨੂੰ ਰੀਸੈੱਟ ਕਰਨਾ ਹੈ?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"ਤੁਹਾਡੀਆਂ ਤਬਦੀਲੀਆਂ ਨੂੰ ਰੱਖਿਅਤ ਨਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"ਹੋਰ ਵਾਲਪੇਪਰ"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nਸਭ ਦੇਖੋ"</string>
     <string name="wallpapers" msgid="7133442512006469886">"ਵਾਲਪੇਪਰ"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"ਵਾਲਪੇਪਰ"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"%d%% ਤੱਕ ਜ਼ੂਮ ਕੀਤਾ ਗਿਆ"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"ਇਸ ਤੋਂ ਜ਼ਿਆਦਾ ਜ਼ੂਮ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"ਇਸ ਤੋਂ ਘੱਟ ਜ਼ੂਮ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"ਸੰਗ੍ਰਹਿ"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"ਫ਼ੋਟੋ: %2$d ਵਿੱਚੋਂ %1$d"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਵਾਲਪੇਪਰ: %2$d ਵਿੱਚੋਂ %1$d"</string>
 </resources>

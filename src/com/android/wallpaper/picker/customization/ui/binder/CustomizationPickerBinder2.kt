@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.picker.customization.ui.binder
 
+import android.content.Intent
 import android.view.View
 import android.widget.LinearLayout
 import androidx.constraintlayout.motion.widget.MotionLayout
@@ -24,32 +25,36 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.customization.picker.icon.ui.util.IconStyleViewUtil
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags.Companion.get
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
+import com.android.wallpaper.module.logging.UserEventLogger
+import com.android.wallpaper.picker.customization.shared.model.CategoryType
 import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
 import com.android.wallpaper.picker.customization.ui.util.EmptyTransitionListener
+import com.android.wallpaper.picker.customization.ui.view.PackThemeSuggestedChip
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
+import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationOptionsData
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.PickerScreen.CUSTOMIZATION_OPTION
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.PickerScreen.MAIN
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
+import com.android.wallpaper.util.CuratedPhotosTimeUtil
 import kotlinx.coroutines.launch
 
 object CustomizationPickerBinder2 {
-
-    const val ALPHA_SELECTED_PREVIEW = 1f
-    const val ALPHA_NON_SELECTED_PREVIEW = 0.4f
-
     /**
      * @return Callback for the [CustomizationPickerActivity2] to set
      *   [CustomizationPickerViewModel2]'s screen state to null, which infers to the main screen. We
      *   need this callback to handle the back navigation in [CustomizationPickerActivity2].
      */
     fun bind(
+        customizationOptionsData: CustomizationOptionsData,
         view: View,
         lockScreenCustomizationOptionEntries: List<Pair<CustomizationOption, View>>,
         homeScreenCustomizationOptionEntries: List<Pair<CustomizationOption, View>>,
@@ -59,13 +64,21 @@ object CustomizationPickerBinder2 {
         customizationOptionsBinder: CustomizationOptionsBinder,
         lifecycleOwner: LifecycleOwner,
         navigateToPrimary: () -> Unit,
-        navigateToSecondary: (screen: CustomizationOption) -> Unit,
+        navigateToSecondary: (option: CustomizationOption) -> Unit,
         navigateToWallpaperCategoriesScreen: (screen: Screen) -> Unit,
         navigateToMoreLockScreenSettingsActivity: () -> Unit,
         navigateToColorContrastSettingsActivity: () -> Unit,
         navigateToLockScreenNotificationsSettingsActivity: () -> Unit,
         navigateToPreviewScreen: ((wallpaperModel: WallpaperModel) -> Unit)?,
-        navigateToPackThemeActivity: () -> Unit,
+        navigateToPackThemeActivity: (Intent) -> Unit,
+        navigateToWallpaperCollectionScreen:
+            ((collectionId: String, categoryType: CategoryType) -> Unit)?,
+        navigateToExtendedWallpaperEffects: (() -> Unit)?,
+        packThemeSuggestedChip: PackThemeSuggestedChip?,
+        packThemeSuggestedEntryBinder: PackThemeSuggestedEntryBinder,
+        curatedPhotosTimeUtil: CuratedPhotosTimeUtil,
+        userEventLogger: UserEventLogger,
+        iconStyleViewUtil: IconStyleViewUtil,
     ) {
         val lockCustomizationOptionContainer: LinearLayout =
             view.requireViewById(R.id.lock_customization_option_container)
@@ -92,8 +105,26 @@ object CustomizationPickerBinder2 {
                 launch {
                     viewModel.screen.collect { (screen, option) ->
                         when (screen) {
-                            MAIN -> navigateToPrimary()
-                            CUSTOMIZATION_OPTION -> option?.let(navigateToSecondary)
+                            MAIN -> {
+                                navigateToPrimary()
+                                // setting the visibility of the home and lock labels
+                                val lockPreviewLabel: View =
+                                    previewPager.requireViewById(R.id.lock_preview_label)
+                                lockPreviewLabel.visibility = View.VISIBLE
+                                val homePreviewLabel: View =
+                                    previewPager.requireViewById(R.id.home_preview_label)
+                                homePreviewLabel.visibility = View.VISIBLE
+                            }
+                            CUSTOMIZATION_OPTION -> {
+                                val lockPreviewLabel: View =
+                                    previewPager.requireViewById(R.id.lock_preview_label)
+                                // setting the visibility of the home and lock labels
+                                lockPreviewLabel.visibility = View.GONE
+                                val homePreviewLabel: View =
+                                    previewPager.requireViewById(R.id.home_preview_label)
+                                homePreviewLabel.visibility = View.GONE
+                                option?.let(navigateToSecondary)
+                            }
                         }
                     }
                 }
@@ -121,6 +152,18 @@ object CustomizationPickerBinder2 {
             }
         }
 
+        if (get().isPackThemeEnabled()) {
+            packThemeSuggestedChip?.let {
+                packThemeSuggestedEntryBinder.bind(
+                    view = it,
+                    viewModel = viewModel,
+                    colorUpdateViewModel = colorUpdateViewModel,
+                    lifecycleOwner = lifecycleOwner,
+                    navigateToPackThemeActivity = navigateToPackThemeActivity,
+                )
+            }
+        }
+
         WallpaperPickerEntryBinder.bind(
             view = view.requireViewById(R.id.wallpaper_picker_entry),
             viewModel = viewModel,
@@ -128,9 +171,14 @@ object CustomizationPickerBinder2 {
             lifecycleOwner = lifecycleOwner,
             navigateToWallpaperCategoriesScreen = navigateToWallpaperCategoriesScreen,
             navigateToPreviewScreen = navigateToPreviewScreen,
+            navigateToWallpaperCollectionScreen = navigateToWallpaperCollectionScreen,
+            navigateToExtendedWallpaperEffects = navigateToExtendedWallpaperEffects,
+            curatedPhotosTimeUtil = curatedPhotosTimeUtil,
+            userEventLogger = userEventLogger,
         )
 
         customizationOptionsBinder.bind(
+            customizationOptionsData,
             view,
             lockScreenCustomizationOptionEntries,
             homeScreenCustomizationOptionEntries,
@@ -142,6 +190,7 @@ object CustomizationPickerBinder2 {
             navigateToColorContrastSettingsActivity,
             navigateToLockScreenNotificationsSettingsActivity,
             navigateToPackThemeActivity,
+            iconStyleViewUtil,
         )
     }
 }

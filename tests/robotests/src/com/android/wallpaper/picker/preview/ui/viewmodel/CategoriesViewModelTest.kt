@@ -25,6 +25,7 @@ import androidx.test.core.app.ActivityScenario
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.module.NetworkStatusNotifier
 import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
+import com.android.wallpaper.picker.customization.shared.model.CategoryType
 import com.android.wallpaper.picker.preview.PreviewTestActivity
 import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.TestNetworkStatusNotifier
@@ -166,7 +167,7 @@ class CategoriesViewModelTest {
                     .isEqualTo(
                         CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection(
                             CATEGORY_ID_CELESTIAL_DREAMSCAPES,
-                            CategoriesViewModel.CategoryType.DefaultCategories,
+                            CategoryType.DefaultCategories,
                         )
                     )
 
@@ -189,7 +190,7 @@ class CategoriesViewModelTest {
                     .isEqualTo(
                         CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection(
                             CATEGORY_ID_CYBERPUNK_CITYSCAPE,
-                            CategoriesViewModel.CategoryType.DefaultCategories,
+                            CategoryType.DefaultCategories,
                         )
                     )
                 job.cancelAndJoin()
@@ -209,7 +210,7 @@ class CategoriesViewModelTest {
                     .isEqualTo(
                         CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection(
                             CATEGORY_ID_COSMIC_NEBULA,
-                            CategoriesViewModel.CategoryType.DefaultCategories,
+                            CategoryType.DefaultCategories,
                         )
                     )
                 job.cancelAndJoin()
@@ -264,7 +265,7 @@ class CategoriesViewModelTest {
      * replaced with fakes of the repositories or their data sources.
      */
     companion object {
-        const val EXPECTED_NUMBER_OF_SECTIONS = 21
+        const val EXPECTED_NUMBER_OF_SECTIONS = 22
 
         const val EXPECTED_POSITION_CREATIVE_CATEGORY = 0
         const val EXPECTED_SIZE_CREATIVE_CATEGORY = 2
@@ -278,7 +279,7 @@ class CategoriesViewModelTest {
         const val EXPECTED_POSITION_PHOTO_TILE = 0
         const val EXPECTED_TITLE_PHOTO_TILE = "Celestial Dreamscape"
 
-        const val EXPECTED_POSITION_SINGLE_CATEGORIES = 2
+        const val EXPECTED_POSITION_SINGLE_CATEGORIES = 3
         const val EXPECTED_SIZE_SINGLE_CATEGORIES = 19
         const val EXPECTED_SIZE_SINGLE_CATEGORY_TILES = 1
 

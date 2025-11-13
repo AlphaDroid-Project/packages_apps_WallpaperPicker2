@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"Taustapildi valimine"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"Soovitatud fotod"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"Taustapildi loomine"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"Wallpaper Studio"</string>
     <string name="home_screen_message" msgid="106444102822522813">"Avakuva"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"Lukustuskuva"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"Avaekraan ja lukustuskuva"</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"Luba juurdepääs"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"Dünaamilise taustapildi teenus vahelduvatele taustapiltidele"</string>
     <string name="more_photos" msgid="2183343115041498453">"Rohkem fotosid"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"Valige foto"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"Päeva taustapilt"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"Puudutage sisselülitamiseks"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"Taustapilt vahetub automaatselt iga päev. Seadistamise lõpetamiseks puudutage järgmisel ekraanikuval käsku &lt;strong&gt;Määra taustapildiks&lt;/strong&gt;."</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"Kas lähtestada muudatused?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"Muudatusi ei salvestata"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"Rohkem taustapilte"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nKuva kõik"</string>
     <string name="wallpapers" msgid="7133442512006469886">"Taustapildid"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"Taustapilt"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"Suumitud tasemele %d%%"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"Maksimaalne suumitase on saavutatud"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"Minimaalne suumitase on saavutatud"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"Kogud"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"Foto %1$d/%2$d"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"Vaiketaustapilt %1$d/%2$d"</string>
 </resources>

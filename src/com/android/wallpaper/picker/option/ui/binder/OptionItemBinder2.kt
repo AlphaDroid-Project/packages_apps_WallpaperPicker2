@@ -41,7 +41,6 @@ import com.android.wallpaper.picker.option.ui.viewmodel.OptionItemViewModel2
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 
@@ -77,7 +76,7 @@ object OptionItemBinder2 {
         colorUpdateViewModel: WeakReference<ColorUpdateViewModel>,
         shouldAnimateColor: () -> Boolean,
     ): DisposableHandle {
-        val backgroundView: OptionItemBackground = view.requireViewById(R.id.background)
+        val backgroundView: OptionItemBackground? = view.findViewById(R.id.background)
         val foregroundView: ImageView? = view.findViewById(R.id.foreground)
         val textView: TextView? = view.findViewById(R.id.text)
 
@@ -87,7 +86,7 @@ object OptionItemBinder2 {
             // Use the text as the content description of the foreground if we don't have a TextView
             // dedicated to for the text.
             ContentDescriptionViewBinder.bind(
-                view = foregroundView ?: backgroundView,
+                view = foregroundView ?: backgroundView ?: view,
                 viewModel = viewModel.text,
             )
         }
@@ -100,7 +99,7 @@ object OptionItemBinder2 {
                 animationSpec.disabledTextAlpha
             }
 
-        backgroundView.alpha =
+        backgroundView?.alpha =
             if (viewModel.isEnabled) {
                 animationSpec.enabledAlpha
             } else {
@@ -125,43 +124,58 @@ object OptionItemBinder2 {
             }
         view.isLongClickable = viewModel.onLongClicked != null
 
+        var colorBindingDisposableHandle: DisposableHandle? = null
         colorUpdateViewModel.get()?.let {
-            ColorUpdateBinder.bind(
-                setColor = { color -> textView?.setTextColor(color) },
-                color = it.colorOnSurfaceVariant,
-                shouldAnimate = shouldAnimateColor,
-                lifecycleOwner = lifecycleOwner,
-            )
-            ColorUpdateBinder.bind(
-                setColor = { color -> foregroundView?.setColorFilter(color) },
-                color =
-                    combine(
-                        viewModel.isSelected,
-                        it.colorOnSurfaceVariant,
-                        it.colorOnPrimaryFixed,
-                    ) { isSelected, onSurfaceVariant, onPrimaryFixed ->
-                        if (isSelected) {
-                            onPrimaryFixed
-                        } else {
-                            onSurfaceVariant
-                        }
-                    },
-                shouldAnimate = { false },
-                lifecycleOwner = lifecycleOwner,
-            )
-            ColorUpdateBinder.bind(
-                setColor = { color -> backgroundView.setUnselectedColor(color) },
-                color = it.colorSurfaceContainerHigh,
-                shouldAnimate = shouldAnimateColor,
-                lifecycleOwner = lifecycleOwner,
-            )
+            val textColorBinding =
+                ColorUpdateBinder.bind(
+                    setColor = { color -> textView?.setTextColor(color) },
+                    color =
+                        viewModel.isSelected.flatMapLatest { isSelected ->
+                            if (isSelected) {
+                                it.colorOnSurface
+                            } else {
+                                it.colorOnSurfaceVariant
+                            }
+                        },
+                    shouldAnimate = { false },
+                    lifecycleOwner = lifecycleOwner,
+                )
 
-            ColorUpdateBinder.bind(
-                setColor = { color -> backgroundView.setSelectedColor(color) },
-                color = it.colorPrimaryFixedDim,
-                shouldAnimate = shouldAnimateColor,
-                lifecycleOwner = lifecycleOwner,
-            )
+            val foregroundColorBinding =
+                ColorUpdateBinder.bind(
+                    setColor = { color -> foregroundView?.setColorFilter(color) },
+                    color =
+                        viewModel.isSelected.flatMapLatest { isSelected ->
+                            if (isSelected) {
+                                it.colorOnPrimaryFixed
+                            } else {
+                                it.colorOnSurfaceVariant
+                            }
+                        },
+                    shouldAnimate = { false },
+                    lifecycleOwner = lifecycleOwner,
+                )
+
+            val unselectedBackgroundColorBinding =
+                ColorUpdateBinder.bind(
+                    setColor = { color -> backgroundView?.setUnselectedColor(color) },
+                    color = it.colorSurfaceContainerHigh,
+                    shouldAnimate = shouldAnimateColor,
+                    lifecycleOwner = lifecycleOwner,
+                )
+            val selectedBackgroundColorBinding =
+                ColorUpdateBinder.bind(
+                    setColor = { color -> backgroundView?.setSelectedColor(color) },
+                    color = it.colorPrimaryFixedDim,
+                    shouldAnimate = shouldAnimateColor,
+                    lifecycleOwner = lifecycleOwner,
+                )
+            colorBindingDisposableHandle = DisposableHandle {
+                textColorBinding.destroy()
+                foregroundColorBinding.destroy()
+                unselectedBackgroundColorBinding.destroy()
+                selectedBackgroundColorBinding.destroy()
+            }
         }
 
         val job =
@@ -184,16 +198,25 @@ object OptionItemBinder2 {
                                 viewModel.isSelected
                             }
                             .collect { isSelected ->
+                                textView?.setTextAppearance(
+                                    if (isSelected) {
+                                        R.style.TextAppearance_OptionItem_Label_Selected
+                                    } else {
+                                        R.style.TextAppearance_OptionItem_Label_Unselected
+                                    }
+                                )
                                 val shouldAnimate =
                                     lastSelected != null && lastSelected != isSelected
                                 if (shouldAnimate) {
-                                    animatedSelection(
-                                        backgroundView = backgroundView,
-                                        isSelected = isSelected,
-                                        animationSpec = animationSpec,
-                                    )
+                                    backgroundView?.let {
+                                        animatedSelection(
+                                            backgroundView = it,
+                                            isSelected = isSelected,
+                                            animationSpec = animationSpec,
+                                        )
+                                    }
                                 } else {
-                                    backgroundView.setProgress(if (isSelected) 1f else 0f)
+                                    backgroundView?.setProgress(if (isSelected) 1f else 0f)
                                 }
 
                                 view.isSelected = isSelected
@@ -201,21 +224,26 @@ object OptionItemBinder2 {
                             }
                     }
 
-                    launch {
-                        viewModel.onClicked.collect { onClicked ->
-                            view.setOnClickListener(
-                                if (onClicked != null) {
-                                    View.OnClickListener { onClicked.invoke() }
-                                } else {
-                                    null
-                                }
-                            )
+                    if (!viewModel.skipOnClickBinding) {
+                        launch {
+                            viewModel.onClicked.collect { onClicked ->
+                                view.setOnClickListener(
+                                    if (onClicked != null) {
+                                        View.OnClickListener { onClicked.invoke() }
+                                    } else {
+                                        null
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
 
-        return DisposableHandle { job.cancel() }
+        return DisposableHandle {
+            job.cancel()
+            colorBindingDisposableHandle?.dispose()
+        }
     }
 
     private fun animatedSelection(

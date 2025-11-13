@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"Vyberte tapetu"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"Navrhované fotky"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"Vytvoření tapety"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"Wallpaper Studio"</string>
     <string name="home_screen_message" msgid="106444102822522813">"Plocha"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"Obrazovka uzamčení"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"Plocha a uzamknutí"</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"Povolit přístup"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"Živá tapeta, která střídá obrázky"</string>
     <string name="more_photos" msgid="2183343115041498453">"Další fotky"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"Vyberte fotku"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"Denní tapeta"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"Klepnutím zapnete"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"Tapeta se každý den automaticky změní. Nastavení dokončíte klepnutím na &lt;strong&gt;Nastavit tapetu&lt;/strong&gt; na další obrazovce."</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"Resetovat změny?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"Změny nebudou uloženy"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"Více tapet"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nZobrazit vše"</string>
     <string name="wallpapers" msgid="7133442512006469886">"Tapety"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"Tapeta"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"Přiblíženo na %d %%"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"Dosaženo maximální přiblížení"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"Dosaženo minimální přiblížení"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"Sbírky"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"Fotka %1$d z %2$d"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"Výchozí tapeta %1$d z %2$d"</string>
 </resources>

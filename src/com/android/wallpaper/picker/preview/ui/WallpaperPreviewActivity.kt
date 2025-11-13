@@ -21,6 +21,8 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
+import android.os.OutcomeReceiver
+import android.util.Log
 import android.view.Window
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -82,7 +84,12 @@ class WallpaperPreviewActivity :
     private val isCategoriesRefactorEnabled =
         BaseFlags.get().isWallpaperCategoryRefactoringEnabled()
 
+    private var isFirstRun = false
+    private var navigateToExtendedWallpaperEffects: Boolean? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        isFirstRun = savedInstanceState == null
+
         window.requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
         super.onCreate(savedInstanceState)
         enforcePortraitForHandheldAndFoldedDisplay()
@@ -94,6 +101,12 @@ class WallpaperPreviewActivity :
         window.statusBarColor = Color.TRANSPARENT
         setContentView(R.layout.activity_wallpaper_preview)
 
+        navigateToExtendedWallpaperEffects =
+            intent.getBooleanExtra(SHOULD_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS, false)
+
+        wallpaperPreviewViewModel.previewActionsViewModel.hideInformationFloatingSheet.value =
+            intent.getBooleanExtra(HIDE_INFO_SHEET, false)
+
         if (isCategoriesRefactorEnabled) {
             refreshCreativeCategories = intent.getBooleanExtra(SHOULD_CATEGORY_REFRESH, false)
         }
@@ -101,7 +114,7 @@ class WallpaperPreviewActivity :
         val wallpaper: WallpaperModel =
             if (isNewPickerUi || isCategoriesRefactorEnabled) {
                 val model =
-                    if (savedInstanceState != null) {
+                    if (!isFirstRun) {
                         wallpaperPreviewViewModel.wallpaper.value
                     } else {
                         persistentWallpaperModelRepository.wallpaperModel.value
@@ -116,7 +129,7 @@ class WallpaperPreviewActivity :
                     .getParcelableExtra(EXTRA_WALLPAPER_INFO, WallpaperInfo::class.java)
                     ?.convertToWallpaperModel()
             } ?: throw IllegalStateException("No wallpaper for previewing")
-        if (savedInstanceState == null) {
+        if (isFirstRun) {
             wallpaperPreviewRepository.setWallpaperModel(wallpaper)
         }
 
@@ -125,16 +138,31 @@ class WallpaperPreviewActivity :
                     as NavHostFragment)
                 .navController
         val graph = navController.navInflater.inflate(R.navigation.wallpaper_preview_nav_graph)
-        val startDestinationArgs: Bundle? =
-            (wallpaper as? WallpaperModel.LiveWallpaperModel)
-                ?.let {
-                    if (it.isNewCreativeWallpaper()) it.getNewCreativeWallpaperArgs() else null
-                }
-                ?.also {
-                    // For creating a new creative wallpaper, replace the default start destination
+        val startDestinationArgs: Bundle =
+            Bundle().apply {
+                if (navigateToExtendedWallpaperEffects == true) {
+                    putBoolean(SHOULD_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS, true)
+                    // SmallPreviewFragment is the starting fragment. Hide its surfaces when
+                    // entering and exiting to remove activity transition jank.
+                    putBoolean(HIDE_SURFACES_FOR_ENTER_TRANSITION, true)
+                    putBoolean(HIDE_SURFACES_FOR_EXIT_TRANSITION, true)
+                } else if (
+                    wallpaper is WallpaperModel.LiveWallpaperModel &&
+                        wallpaper.isNewCreativeWallpaper()
+                ) {
+                    putAll(wallpaper.getNewCreativeWallpaperArgs())
+                    // For creating a new creative wallpaper, replace the default start
+                    // destination
                     // with CreativeEditPreviewFragment.
                     graph.setStartDestination(R.id.creativeEditPreviewFragment)
+                } else {
+                    // SmallPreviewFragment is the starting fragment. Hide its surfaces when
+                    // entering and exiting to remove activity transition jank.
+                    putBoolean(HIDE_SURFACES_FOR_ENTER_TRANSITION, true)
+                    putBoolean(HIDE_SURFACES_FOR_EXIT_TRANSITION, true)
                 }
+            }
+
         navController.setGraph(graph, startDestinationArgs)
         // Fits screen to navbar and statusbar
         WindowCompat.setDecorFitsSystemWindows(window, ActivityUtils.isSUWMode(this))
@@ -184,6 +212,16 @@ class WallpaperPreviewActivity :
         }
     }
 
+    override fun onEnterAnimationComplete() {
+        super.onEnterAnimationComplete()
+        if (BaseFlags.get().isNewPickerUi()) {
+            val navHostFragment =
+                supportFragmentManager.findFragmentById(R.id.wallpaper_preview_nav_host)
+            (navHostFragment?.getChildFragmentManager()?.fragments?.get(0) as? SmallPreviewFragment)
+                ?.onEnterAnimationComplete()
+        }
+    }
+
     override fun onUpArrowPressed() {
         onBackPressedDispatcher.onBackPressed()
     }
@@ -194,11 +232,32 @@ class WallpaperPreviewActivity :
 
     override fun onResume() {
         super.onResume()
-        val isWindowingModeFreeform =
-            resources.configuration.windowConfiguration.windowingMode == WINDOWING_MODE_FREEFORM
-        if (isInMultiWindowMode && !isWindowingModeFreeform) {
-            Toast.makeText(this, R.string.wallpaper_exit_split_screen, Toast.LENGTH_SHORT).show()
-            onBackPressedDispatcher.onBackPressed()
+        if (isInMultiWindowMode) {
+            val isWindowingModeFreeform =
+                resources.configuration.windowConfiguration.windowingMode == WINDOWING_MODE_FREEFORM
+            if (isWindowingModeFreeform && !isFullscreenPreviewEnabled()) {
+                // Allow current devices in freeform mode to continue while fullscreen preview rolls
+                // out.
+                return
+            }
+            if (isFirstRun && isFullscreenPreviewEnabled()) {
+                requestFullscreenMode(
+                    FULLSCREEN_MODE_REQUEST_ENTER,
+                    object : OutcomeReceiver<Void, Throwable> {
+                        override fun onResult(result: Void) {
+                            Log.v(TAG, "requestFullscreenMode success")
+                        }
+
+                        override fun onError(t: Throwable) {
+                            Log.e(TAG, "Error requesting fullscreen mode", t)
+                            onBackPressedWithToast()
+                        }
+                    },
+                )
+                // Don't dismiss the preview right away while it is still switching to fullscreen.
+                return
+            }
+            onBackPressedWithToast()
         }
     }
 
@@ -230,7 +289,7 @@ class WallpaperPreviewActivity :
         // TODO(b/328302105): MainScope ensures the job gets done non-blocking even if the
         //   activity has been destroyed already. Consider making this part of
         //   WallpaperConnectionUtils.
-        mainScope.launch { wallpaperConnectionUtils.disconnectAll(appContext) }
+        mainScope.launch { wallpaperConnectionUtils.disconnectAll() }
 
         refreshCreativeCategories?.let {
             if (it) {
@@ -245,7 +304,23 @@ class WallpaperPreviewActivity :
         return wallpaperModelFactory.getWallpaperModel(appContext, this)
     }
 
+    private fun onBackPressedWithToast() {
+        // TODO(b/409622144) re-evaluate this string for freeform mode.
+        Toast.makeText(this, R.string.wallpaper_exit_split_screen, Toast.LENGTH_SHORT).show()
+        onBackPressedDispatcher.onBackPressed()
+    }
+
+    private fun isFullscreenPreviewEnabled() = BaseFlags.get().isFullscreenPreviewEnabled(this)
+
     companion object {
+        const val HIDE_SURFACES_FOR_ENTER_TRANSITION = "hide_surfaces_for_enter_transition"
+        const val HIDE_SURFACES_FOR_EXIT_TRANSITION = "hide_surfaces_for_exit_transition"
+        private const val SHOULD_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS =
+            "should_navigate_to_extended_wallpaper_effects"
+        private const val HIDE_INFO_SHEET = "hide_info_sheet"
+
+        private const val TAG = "WallpaperPreviewActivity"
+
         /**
          * Returns a new [Intent] for the new picker UI that can be used to start
          * [WallpaperPreviewActivity].
@@ -258,6 +333,7 @@ class WallpaperPreviewActivity :
             isAssetIdPresent: Boolean,
             isViewAsHome: Boolean = false,
             isNewTask: Boolean = false,
+            hideInfoSheet: Boolean = false,
         ): Intent {
             val isNewPickerUi = BaseFlags.get().isNewPickerUi()
             val isCategoriesRefactorEnabled =
@@ -271,6 +347,7 @@ class WallpaperPreviewActivity :
             intent.putExtra(IS_ASSET_ID_PRESENT, isAssetIdPresent)
             intent.putExtra(EXTRA_VIEW_AS_HOME, isViewAsHome)
             intent.putExtra(IS_NEW_TASK, isNewTask)
+            intent.putExtra(HIDE_INFO_SHEET, hideInfoSheet)
             return intent
         }
 
@@ -288,6 +365,7 @@ class WallpaperPreviewActivity :
             isViewAsHome: Boolean = false,
             isNewTask: Boolean = false,
             shouldCategoryRefresh: Boolean,
+            shouldNavigateToExtendedWallpaperEffects: Boolean = false,
         ): Intent {
             val isNewPickerUi = BaseFlags.get().isNewPickerUi()
             val isCategoriesRefactorEnabled =
@@ -298,6 +376,10 @@ class WallpaperPreviewActivity :
             if (isNewTask) {
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }
+            intent.putExtra(
+                SHOULD_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS,
+                shouldNavigateToExtendedWallpaperEffects,
+            )
             intent.putExtra(IS_ASSET_ID_PRESENT, isAssetIdPresent)
             intent.putExtra(EXTRA_VIEW_AS_HOME, isViewAsHome)
             intent.putExtra(IS_NEW_TASK, isNewTask)

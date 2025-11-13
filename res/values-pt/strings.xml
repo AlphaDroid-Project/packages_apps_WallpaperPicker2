@@ -33,6 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"Escolha um plano de fundo"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"Fotos sugeridas"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"Criar plano de fundo"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"Wallpaper Studio"</string>
     <string name="home_screen_message" msgid="106444102822522813">"Tela inicial"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"Tela de bloqueio"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"Tela inicial e de bloqueio"</string>
@@ -46,6 +47,7 @@
     <string name="permission_needed_allow_access_button_label" msgid="1943133660612924306">"Permitir acesso"</string>
     <string name="no_backup_image_wallpaper_description" msgid="8303268619408738057">"Serviço de plano de fundo interativo para rotação de planos de fundo"</string>
     <string name="more_photos" msgid="2183343115041498453">"Mais fotos"</string>
+    <string name="choose_a_photo" msgid="7641781242539912127">"Escolha uma foto"</string>
     <string name="daily_refresh_tile_title" msgid="3270456074558525091">"Plano de fundo diário"</string>
     <string name="daily_refresh_tile_subtitle" msgid="3976682014885446443">"Toque para ativar"</string>
     <string name="start_rotation_dialog_body_live_wallpaper_needed" msgid="5132580257563846082">"O plano de fundo será alterado automaticamente todos os dias. Para concluir a configuração, toque em &lt;strong&gt;Definir plano de fundo&lt;/strong&gt; na próxima tela."</string>
@@ -105,7 +107,7 @@
     <string name="bottom_action_bar_slideshow_wallpaper" msgid="509770525179533154">"Fundo da apresent. de slides"</string>
     <string name="bottom_action_bar_apply" msgid="2983308349819178932">"Aplicar"</string>
     <string name="accessibility_preview_pager" msgid="1839869637405028575">"Página <xliff:g id="ID_1">%1$d</xliff:g> de <xliff:g id="ID_2">%2$d</xliff:g>"</string>
-    <string name="next_page_content_description" msgid="6268461446679584152">"Próxima"</string>
+    <string name="next_page_content_description" msgid="6268461446679584152">"Avançar"</string>
     <string name="previous_page_content_description" msgid="1138597031571078429">"Anterior"</string>
     <string name="wallpaper_title" msgid="6754214682228331092">"Plano de fundo"</string>
     <string name="wallpaper_preview_card_content_description" msgid="6049261033541034584">"Visualização do plano de fundo"</string>
@@ -129,7 +131,7 @@
     <string name="wallpaper_picker_entry_title" msgid="5185793991582084891">"Mudar plano de fundo"</string>
     <string name="lockscreen_wallpaper_preview_card_content_description" msgid="2244890820627302245">"Plano de fundo da tela de bloqueio"</string>
     <string name="apply_btn" msgid="5764555565943538528">"Aplicar"</string>
-    <string name="apply_wallpaper_title_text" msgid="2100301064316744087">"Aplicar plano de fundo?"</string>
+    <string name="apply_wallpaper_title_text" msgid="2100301064316744087">"Usar plano de fundo?"</string>
     <string name="accessibility_customize_hidden" msgid="6320568529768181691">"O painel \"Personalizar\" foi ocultado"</string>
     <string name="accessibility_customize_shown" msgid="590964727831547651">"O painel \"Personalizar\" está em exibição"</string>
     <string name="accessibility_info_hidden" msgid="2288603712350168107">"O painel \"Informações\" foi ocultado"</string>
@@ -143,6 +145,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"Redefinir mudanças?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"As mudanças não vão ser salvas"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"Mais planos de fundo"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nVer tudo"</string>
     <string name="wallpapers" msgid="7133442512006469886">"Planos de fundo"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"Plano de fundo"</string>
@@ -156,4 +159,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"Zoom em %d%%"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"O zoom está no máximo"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"O zoom está no mínimo"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"Coleções"</string>
+    <string name="carousel_content_description_photos" msgid="3664564065854277456">"Foto %1$d de %2$d"</string>
+    <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"Plano de fundo padrão %1$d de %2$d"</string>
 </resources>

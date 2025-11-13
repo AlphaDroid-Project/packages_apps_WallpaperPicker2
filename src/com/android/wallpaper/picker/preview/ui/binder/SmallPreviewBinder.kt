@@ -21,7 +21,6 @@ import android.view.SurfaceView
 import android.view.View
 import androidx.cardview.widget.CardView
 import androidx.core.view.ViewCompat
-import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -46,6 +45,13 @@ import kotlinx.coroutines.launch
 
 object SmallPreviewBinder {
 
+    interface Binding {
+        fun showSurfaces()
+
+        fun hideSurfaces()
+    }
+
+    // TODO(b/339081035): Remove null case for isFoldable with the flag
     fun bind(
         applicationContext: Context,
         view: View,
@@ -61,7 +67,11 @@ object SmallPreviewBinder {
         transitionConfig: FullPreviewConfigViewModel? = null,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
-    ) {
+        onPreviewReady: ((Screen) -> Unit)? = null,
+        onStartTransition: (() -> Unit)? = null,
+        onPreviewSurfaceDestroyed: ((Screen) -> Unit)? = null,
+        isFoldable: Boolean? = null,
+    ): Binding {
 
         val previewCard: CardView = view.requireViewById(R.id.preview_card)
         val foldedStateDescription =
@@ -102,14 +112,18 @@ object SmallPreviewBinder {
                 )
             }
         val wallpaperSurface = view.requireViewById<SurfaceView>(R.id.wallpaper_surface)
+        val workspaceSurface = view.requireViewById<SurfaceView>(R.id.workspace_surface)
 
         // Don't set radius for set wallpaper dialog
         if (!viewModel.showSetWallpaperDialog.value) {
             // When putting the surface on top for full transition, the card view is behind the
-            // surface view so we need to apply radius on surface view instead
-            wallpaperSurface.cornerRadius = previewCard.radius
+            // surface view so we need to apply radius on surface view instead, posting to get the
+            // final radius
+            previewCard.post {
+                wallpaperSurface.cornerRadius = previewCard.radius
+                workspaceSurface.cornerRadius = previewCard.radius
+            }
         }
-        val workspaceSurface: SurfaceView = view.requireViewById(R.id.workspace_surface)
 
         // Set transition names to enable the small to full preview enter and return shared
         // element transitions.
@@ -157,8 +171,8 @@ object SmallPreviewBinder {
                         } else {
                             // If transitioning to another small preview, keep child surfaces hidden
                             // until transition ends.
-                            wallpaperSurface.isVisible = false
-                            workspaceSurface.isVisible = false
+                            wallpaperSurface.visibility = View.INVISIBLE
+                            workspaceSurface.visibility = View.INVISIBLE
                         }
                     }
 
@@ -171,8 +185,8 @@ object SmallPreviewBinder {
                             wallpaperSurface.setZOrderMediaOverlay(true)
                             workspaceSurface.setZOrderMediaOverlay(true)
                         } else {
-                            wallpaperSurface.isVisible = true
-                            workspaceSurface.isVisible = true
+                            wallpaperSurface.visibility = View.VISIBLE
+                            workspaceSurface.visibility = View.VISIBLE
                             wallpaperSurface.alpha = 0f
                             workspaceSurface.alpha = 0f
 
@@ -193,6 +207,8 @@ object SmallPreviewBinder {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
                 transitionListener?.let {
                     // If transitionListener is not null so do transition and transitionConfig
+                    wallpaperSurface.visibility = View.VISIBLE
+                    workspaceSurface.visibility = View.VISIBLE
                     transition!!.addListener(it)
                     transitionDisposableHandle = DisposableHandle { transition.removeListener(it) }
                 }
@@ -214,8 +230,18 @@ object SmallPreviewBinder {
                             ) {
                                 view.setOnClickListener(null)
                             } else {
-                                onClick?.let { view.setOnClickListener { it() } }
-                                    ?: view.setOnClickListener(null)
+                                onClick?.let {
+                                    view.setOnClickListener {
+                                        // If tab != screen, it's pager switching tab and no need to
+                                        // set z order
+                                        if (BaseFlags.get().isNewPickerUi() && tab == screen) {
+                                            // Set top z order for shared element transition
+                                            wallpaperSurface.setZOrderOnTop(true)
+                                            workspaceSurface.setZOrderOnTop(true)
+                                        }
+                                        it()
+                                    }
+                                } ?: view.setOnClickListener(null)
                             }
                         }
                 } else if (R.id.setWallpaperDialog == currentNavDestId) {
@@ -235,18 +261,36 @@ object SmallPreviewBinder {
         val config = viewModel.getWorkspacePreviewConfig(screen, deviceDisplayType)
         WorkspacePreviewBinder.bind(workspaceSurface, config, viewModel, viewLifecycleOwner)
 
-        SmallWallpaperPreviewBinder.bind(
-            surface = wallpaperSurface,
-            viewModel = viewModel,
-            screen = screen,
-            displaySize = displaySize,
-            applicationContext = applicationContext,
-            mainScope = mainScope,
-            viewLifecycleOwner = viewLifecycleOwner,
-            deviceDisplayType = deviceDisplayType,
-            wallpaperConnectionUtils = wallpaperConnectionUtils,
-            isFirstBindingDeferred = isFirstBindingDeferred,
-        )
+        val binding =
+            SmallWallpaperPreviewBinder.bind(
+                surface = wallpaperSurface,
+                viewModel = viewModel,
+                screen = screen,
+                displaySize = displaySize,
+                applicationContext = applicationContext,
+                mainScope = mainScope,
+                viewLifecycleOwner = viewLifecycleOwner,
+                deviceDisplayType = deviceDisplayType,
+                wallpaperConnectionUtils = wallpaperConnectionUtils,
+                isFirstBindingDeferred = isFirstBindingDeferred,
+                onPreviewReady = onPreviewReady,
+                onStartTransition = onStartTransition,
+                onPreviewSurfaceDestroyed = onPreviewSurfaceDestroyed,
+                isFoldable = isFoldable,
+            )
+
+        return object : Binding {
+            override fun showSurfaces() {
+                wallpaperSurface.visibility = View.VISIBLE
+                workspaceSurface.visibility = View.VISIBLE
+            }
+
+            override fun hideSurfaces() {
+                wallpaperSurface.visibility = View.INVISIBLE
+                workspaceSurface.visibility = View.INVISIBLE
+                binding.destroy()
+            }
+        }
     }
 
     private fun SurfaceView.startFadeInAnimation(duration: Long) {

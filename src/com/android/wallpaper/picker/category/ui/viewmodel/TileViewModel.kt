@@ -22,10 +22,13 @@ import com.android.wallpaper.picker.category.ui.view.SectionCardinality
 
 /** This class represents the view model for a single category tile. */
 class TileViewModel(
+    /** This is the fallback drawable in the case thumbnailAsset is null */
     val defaultDrawable: Drawable?,
+    /** This is the primary image source for the tile */
     val thumbnailAsset: Asset?,
     val text: String,
     val showTitle: Boolean = true,
     val maxCategoriesInRow: SectionCardinality = SectionCardinality.Single,
+    val contentDescription: String? = null,
     val onClicked: (() -> Unit)? = null,
 )

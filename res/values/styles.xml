@@ -14,7 +14,7 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Main themes -->
     <style name="WallpaperTheme" parent="@android:style/Theme.DeviceDefault.Settings">
@@ -67,6 +67,22 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:fitsSystemWindows">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+
+        <!-- For the snack bar style.We need them since we do not inherit Material theme. -->
+        <item name="snackbarStyle">@style/SnackbarMargin</item>
+        <item name="borderlessButtonStyle">@style/Widget.AppCompat.Button.Borderless</item>
+        <item name="colorAccent">@color/accent_color</item>
+        <item name="colorSurface">@color/design_default_color_surface</item>
+        <item name="colorOnSurface">@color/design_default_color_on_surface</item>
+    </style>
+
+    <!-- Snackbar margin -->
+    <style name="SnackbarMargin" parent="Widget.MaterialComponents.Snackbar">
+        <item name="android:layout_margin">48dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Wallpaper.Corner.ExtraLarge" parent="">
+        <item name="cornerSize">@dimen/m3_sys_shape_corner_value_extra_large</item>
     </style>
 
     <style name="WallpaperTheme.NoBackground">
@@ -151,6 +167,10 @@
         <item name="android:textFontWeight">500</item>
     </style>
 
+    <style name="CategorySectionTitleTextAppearance.TitleMedium" />
+
+    <style name="CategorySectionTitleTextAppearance.TitleMediumEmphasized" />
+
     <!-- Individual components / Widgets -->
     <style name="OutlinedButtonStyle"  parent="@android:style/Widget.DeviceDefault.Button">
         <item name="android:background">@drawable/btn_transparent</item>
@@ -184,6 +204,10 @@
         <item name="android:textAllCaps">false</item>
     </style>
 
+    <style name="WallpaperPicker.Preview.TextAppearance.NoAllCaps.LabelLarge" />
+
+    <style name="WallpaperPicker.Preview.TextAppearance.NoAllCaps.LabelLargeEmphasized" />
+
     <!-- Set wallpaper destination item -->
     <!-- Studio can't directly reference ?androidprv:attr/textColorOnAccent here,
      so we set the text color on the dialog items instead. -->
@@ -213,7 +237,7 @@
 
     <!-- Preview cards -->
     <style name="PreviewCard" parent="CardView">
-        <item name="cardCornerRadius">?android:dialogCornerRadius</item>
+        <item name="cardCornerRadius">@dimen/preview_corner_radius</item>
         <item name="android:clipChildren">true</item>
         <item name="contentPadding">@dimen/preview_card_padding</item>
         <item name="cardElevation">0dp</item>
@@ -308,5 +332,56 @@
         <item name="android:gravity">center</item>
         <item name="android:textAlignment">center</item>
         <item name="android:paddingVertical">8dp</item>
+    </style>
+
+    <!-- Main page font styles -->
+    <style name="TextAppearance.DeviceDefault.Small"
+        parent="@android:style/TextAppearance.DeviceDefault.Small" />
+
+    <style name="TextAppearance.DeviceDefault.Small.LabelMedium">
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="TextAppearance.DeviceDefault.Small.LabelMediumEmphasized">
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="TextAppearance.OptionItem.Label.Unselected" parent="TextAppearance.DeviceDefault.Small.LabelMedium">
+        <item name="android:textColor">@color/system_on_surface_variant</item>
+    </style>
+
+    <style name="TextAppearance.OptionItem.Label.Selected" parent="TextAppearance.DeviceDefault.Small.LabelMediumEmphasized">
+        <item name="android:textColor">@color/system_on_surface</item>
+    </style>
+
+    <style name="TextAppearance.DeviceDefault.Small.LabelLargeEmphasized" />
+
+    <style name="TextAppearance.DeviceDefault.Small.TitleMedium" />
+
+    <style name="TextAppearance.DeviceDefault.Small.TitleMediumEmphasized" />
+
+    <style name="TextAppearance.Preview.Label.Unselected" parent="TextAppearance.DeviceDefault.Small.TitleMedium">
+        <item name="android:textColor">@color/system_on_surface</item>
+    </style>
+
+    <style name="TextAppearance.Preview.Label.Selected" parent="TextAppearance.DeviceDefault.Small.TitleMediumEmphasized">
+        <item name="android:textColor">@color/system_on_surface</item>
+    </style>
+
+    <style name="TextAppearance.DeviceDefault.Large" parent="@android:style/TextAppearance.DeviceDefault.Large" />
+
+    <style name="TextAppearance.DeviceDefault.Large.TitleLargeEmphasized" />
+
+    <style name="ToolbarTheme">
+        <item name="android:titleTextAppearance">@style/TextAppearance.DeviceDefault.Large.TitleLargeEmphasized</item>
+    </style>
+
+    <style name="CircularProgressIndicator">
+        <item name="trackThickness">@dimen/apply_button_progress_track_size</item>
+        <item name="indicatorSize">@dimen/apply_button_progress_indicator_size</item>
+        <item name="indicatorColor">@color/system_on_primary</item>
+        <item name="trackCornerRadius">50%</item>
+        <item name="indicatorTrackGapSize">@dimen/apply_button_progress_track_size</item>
+        <item name="indeterminateTrackVisible">false</item>
     </style>
 </resources>

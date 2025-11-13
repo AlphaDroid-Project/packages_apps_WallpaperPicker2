@@ -27,7 +27,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.customization.picker.clock.ui.view.ClockViewFactory
-import com.android.systemui.shared.clocks.shared.model.ClockPreviewConstants
 import com.android.systemui.shared.keyguard.shared.model.KeyguardQuickAffordanceSlots.SLOT_ID_BOTTOM_START
 import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_HIGHLIGHT_QUICK_AFFORDANCES
 import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_INITIALLY_SELECTED_SLOT_ID
@@ -107,26 +106,33 @@ object WorkspacePreviewBinder {
             override fun surfaceCreated(holder: SurfaceHolder) {
                 job =
                     lifecycleOwner.lifecycleScope.launch {
-                        renderWorkspacePreview(
+                        val workspaceCallback =
+                            renderWorkspacePreview(
                                 surfaceView = surfaceView,
                                 screen = screen,
                                 previewUtils = previewUtils,
                                 displayId =
                                     viewModel.basePreviewViewModel.getDisplayId(deviceDisplayType),
                             )
-                            ?.let { workspaceCallback ->
-                                workspaceCallbackBinder.bind(
-                                    workspaceCallback = workspaceCallback,
-                                    viewModel = viewModel.customizationOptionsViewModel,
-                                    colorUpdateViewModel = colorUpdateViewModel,
-                                    screen = screen,
-                                    clockViewFactory = clockViewFactory,
-                                )
+                        if (workspaceCallback != null) {
+                            workspaceCallbackBinder.bind(
+                                workspaceCallback = workspaceCallback,
+                                viewModel = viewModel.customizationOptionsViewModel,
+                                colorUpdateViewModel = colorUpdateViewModel,
+                                screen = screen,
+                                clockViewFactory = clockViewFactory,
+                                lifecycleOwner = lifecycleOwner,
+                            )
+                            previewDisposableHandle?.dispose()
+                            previewDisposableHandle = DisposableHandle {
+                                previewUtils.cleanUp(workspaceCallback)
                             }
+                        }
                     }
             }
 
             override fun surfaceDestroyed(holder: SurfaceHolder) {
+                workspaceCallbackBinder.unbind()
                 job?.cancel()
                 job = null
                 previewDisposableHandle?.dispose()
@@ -157,7 +163,6 @@ object WorkspacePreviewBinder {
                     )
                     .apply {
                         if (screen == Screen.LOCK_SCREEN) {
-                            putBoolean(ClockPreviewConstants.KEY_HIDE_CLOCK, true)
                             putString(KEY_INITIALLY_SELECTED_SLOT_ID, SLOT_ID_BOTTOM_START)
                             putBoolean(KEY_HIGHLIGHT_QUICK_AFFORDANCES, false)
                         }

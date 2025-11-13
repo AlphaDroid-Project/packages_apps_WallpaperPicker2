@@ -17,6 +17,8 @@
 package com.android.wallpaper.picker.customization.ui
 
 import android.annotation.TargetApi
+import android.app.ComponentCaller
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Bundle
@@ -24,18 +26,25 @@ import android.widget.FrameLayout
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
+import androidx.fragment.app.FragmentManager
 import com.android.customization.picker.clock.ui.view.ClockViewFactory
 import com.android.wallpaper.R
 import com.android.wallpaper.module.MultiPanesChecker
+import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
+import com.android.wallpaper.picker.WallpaperPickerDelegate.PREVIEW_LIVE_WALLPAPER_REQUEST_CODE
+import com.android.wallpaper.picker.WallpaperPickerDelegate.PREVIEW_WALLPAPER_REQUEST_CODE
+import com.android.wallpaper.picker.WallpaperPickerDelegate.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE
 import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.picker.common.preview.ui.binder.WorkspaceCallbackBinder
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.binder.CustomizationOptionsBinder
 import com.android.wallpaper.picker.customization.ui.binder.ToolbarBinder
-import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil
+import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionViewUtil
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
+import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.KEY_DESTINATION
+import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.KEY_SHORTCUT_SLOT_ID
 import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import com.android.wallpaper.picker.di.modules.MainDispatcher
 import com.android.wallpaper.util.ActivityUtils
@@ -59,7 +68,7 @@ class CustomizationPickerActivity2 :
     }
 
     @Inject lateinit var multiPanesChecker: MultiPanesChecker
-    @Inject lateinit var customizationOptionUtil: CustomizationOptionUtil
+    @Inject lateinit var customizationOptionViewUtil: CustomizationOptionViewUtil
     @Inject lateinit var customizationOptionsBinder: CustomizationOptionsBinder
     @Inject lateinit var workspaceCallbackBinder: WorkspaceCallbackBinder
     @Inject lateinit var toolbarBinder: ToolbarBinder
@@ -71,6 +80,7 @@ class CustomizationPickerActivity2 :
     @Inject lateinit var wallpaperConnectionUtils: WallpaperConnectionUtils
     @Inject lateinit var colorUpdateViewModel: ColorUpdateViewModel
     @Inject lateinit var clockViewFactory: ClockViewFactory
+    @Inject lateinit var logger: UserEventLogger
 
     private var configuration: Configuration? = null
     private val categoriesViewModel: CategoriesViewModel by viewModels()
@@ -78,6 +88,10 @@ class CustomizationPickerActivity2 :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (intent != null) {
+            logger.logAppLaunched(intent)
+        }
 
         if (savedInstanceState != null) {
             // Activity is being restored, not initial creation
@@ -126,9 +140,30 @@ class CustomizationPickerActivity2 :
         if (fragment == null) {
             supportFragmentManager
                 .beginTransaction()
-                .add(R.id.fragment_container, CustomizationPickerFragment2())
+                .add(
+                    R.id.fragment_container, // containerViewId
+                    CustomizationPickerFragment2().apply {
+                        arguments =
+                            Bundle().apply {
+                                putString(
+                                    KEY_DESTINATION,
+                                    intent.extras?.getString(KEY_DESTINATION),
+                                )
+                                putString(
+                                    KEY_SHORTCUT_SLOT_ID,
+                                    intent.extras?.getString(KEY_SHORTCUT_SLOT_ID),
+                                )
+                            }
+                    }, // fragment
+                    CUSTOMIZATION_PICKER_FRAGMENT_TAG, // tag
+                )
                 .commit()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        categoriesViewModel.refreshCuratedPhotos()
     }
 
     override fun onEnterAnimationComplete() {
@@ -155,8 +190,12 @@ class CustomizationPickerActivity2 :
         super.onConfigurationChanged(newConfig)
         configuration?.let {
             val diff = newConfig.diff(it)
+            val isScreenSizeChange = diff and ActivityInfo.CONFIG_SCREEN_SIZE != 0
             val isAssetsPathsChange = diff and ActivityInfo.CONFIG_ASSETS_PATHS != 0
             val isUiModeChange = diff and ActivityInfo.CONFIG_UI_MODE != 0
+            if (isScreenSizeChange) {
+                recreate()
+            }
             if (isAssetsPathsChange) {
                 colorUpdateViewModel.updateColors()
             }
@@ -165,5 +204,40 @@ class CustomizationPickerActivity2 :
             }
         }
         configuration?.setTo(newConfig)
+    }
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+        caller: ComponentCaller,
+    ) {
+        super.onActivityResult(requestCode, resultCode, data, caller)
+        if (
+            resultCode == RESULT_OK &&
+                (requestCode == PREVIEW_WALLPAPER_REQUEST_CODE ||
+                    requestCode == VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE ||
+                    requestCode == PREVIEW_LIVE_WALLPAPER_REQUEST_CODE)
+        ) {
+            // Navigate back to the root fragment (CustomizationPickerFragment2)
+            val fragmentManager: FragmentManager = supportFragmentManager
+            // Pop all the fragments until the root fragment
+            fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            // Ensure the root fragment is CUSTOMIZATION_PICKER_FRAGMENT_TAG
+            if (fragmentManager.findFragmentByTag(CUSTOMIZATION_PICKER_FRAGMENT_TAG) == null) {
+                fragmentManager
+                    .beginTransaction()
+                    .replace(
+                        R.id.fragment_container, // containerViewId
+                        CustomizationPickerFragment2(), // fragment
+                        CUSTOMIZATION_PICKER_FRAGMENT_TAG, // tag
+                    )
+                    .commit()
+            }
+        }
+    }
+
+    companion object {
+        const val CUSTOMIZATION_PICKER_FRAGMENT_TAG = "customization_picker_fragment"
     }
 }
