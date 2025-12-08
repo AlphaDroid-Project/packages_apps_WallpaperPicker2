@@ -26,6 +26,7 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.compose.ui.platform.ComposeView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
@@ -54,7 +55,8 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
     val collapsedButton: TextView
     val moreWallpapersButton: TextView
     val suggestedPhotosText: TextView
-    val wallpaperCarousel: RecyclerView
+    val wallpaperCarousel: RecyclerView?
+    val wallpaperCarouselDesktop: ComposeView?
 
     private val backgroundLayout: FrameLayout
     val background: GradientDrawable
@@ -72,8 +74,9 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
     private var state: State = State.EXPANDED
 
     init {
+        val shouldShowDesktopUi = BaseFlags.get().shouldShowDesktopUi(context)
         val layoutResource =
-            if (BaseFlags.get().shouldShowDesktopUi(context)) {
+            if (shouldShowDesktopUi) {
                 R.layout.wallpaper_picker_entry_desktop
             } else {
                 R.layout.wallpaper_picker_entry
@@ -84,8 +87,10 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
             requireViewById(R.id.customization_option_entry_wallpaper_collapsed_button)
         moreWallpapersButton = requireViewById(R.id.more_wallpapers_button)
         suggestedPhotosText = requireViewById(R.id.wallpaper_picker_entry_title)
-        wallpaperCarousel = requireViewById(R.id.wallpaper_carousel)
-
+        wallpaperCarousel =
+            if (!shouldShowDesktopUi) requireViewById(R.id.wallpaper_carousel) else null
+        wallpaperCarouselDesktop =
+            if (shouldShowDesktopUi) requireViewById(R.id.wallpaper_carousel_desktop) else null
         backgroundLayout = requireViewById(R.id.wallpaper_picker_entry_background)
         background = backgroundLayout.background as GradientDrawable
         expandedContainer = requireViewById(R.id.wallpaper_picker_entry_expanded_container)
@@ -171,7 +176,7 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
     }
 
     fun animateToExpanded() {
-        if (wallpaperCarousel.adapter?.itemCount == 0) return
+        if (wallpaperCarousel?.adapter?.itemCount == 0) return
 
         if (state == State.EXPANDED || state == State.EXPANDING) {
             return

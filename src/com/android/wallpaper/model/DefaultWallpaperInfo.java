@@ -22,7 +22,9 @@ import android.os.Parcel;
 import com.android.wallpaper.R;
 import com.android.wallpaper.asset.Asset;
 import com.android.wallpaper.asset.BuiltInWallpaperAsset;
+import com.android.wallpaper.config.BaseFlags;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -52,7 +54,12 @@ public class DefaultWallpaperInfo extends WallpaperInfo {
 
     @Override
     public List<String> getAttributions(Context context) {
-        return Arrays.asList(context.getResources().getString(R.string.fallback_wallpaper_title));
+        if (BaseFlags.get().isNewPickerUi()) {
+            return new ArrayList<>();
+        } else {
+            return Arrays.asList(
+                    context.getResources().getString(R.string.fallback_wallpaper_title));
+        }
     }
 
     @Override

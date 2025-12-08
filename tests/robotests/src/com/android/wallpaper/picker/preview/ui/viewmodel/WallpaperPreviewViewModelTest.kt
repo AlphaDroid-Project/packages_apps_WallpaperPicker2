@@ -408,6 +408,29 @@ class WallpaperPreviewViewModelTest {
         }
 
     @Test
+    fun clickSmallPreview_whenClickingANotSelectedTab_updatesSelectedTab() =
+        testScope.runTest {
+            // Arrange: Set the initial selected tab to LOCK_SCREEN.
+            wallpaperPreviewViewModel.setSmallPreviewSelectedTab(Screen.LOCK_SCREEN)
+            val selectedTab = collectLastValue(wallpaperPreviewViewModel.smallPreviewSelectedTab)
+            val onHomePreviewClicked =
+                collectLastValue(
+                    wallpaperPreviewViewModel.onSmallPreviewClicked(
+                        Screen.HOME_SCREEN,
+                        DeviceDisplayType.UNFOLDED,
+                    ) {}
+                )
+
+            // Act: Simulate a click on the HOME_SCREEN preview, which is not the selected tab.
+            onHomePreviewClicked()?.invoke()
+
+            // Assert: The selected tab in the ViewModel should be updated to HOME_SCREEN.
+            // This verifies the ViewModel's behavior for the tab != screen case, which the
+            // SmallPreviewBinder uses to decide whether to change the surface Z-order.
+            assertThat(selectedTab()).isEqualTo(Screen.HOME_SCREEN)
+        }
+
+    @Test
     fun clickCropButton_updatesCropHintsInfo() =
         testScope.runTest {
             val newCropRect = Rect(10, 10, 10, 10)

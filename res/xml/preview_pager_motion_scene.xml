@@ -17,6 +17,7 @@
 <MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- Main preview swipe transition -->
     <Transition
         android:id="@+id/preview_swipe_transition"
         app:constraintSetStart="@id/lock_preview_selected"
@@ -27,6 +28,23 @@
             app:dragDirection="dragStart" />
     </Transition>
 
+    <!-- Left edge effect transition (when at lock screen and trying to swipe more left) -->
+    <Transition
+        android:id="@+id/leftEdgeTransition"
+        app:constraintSetStart="@id/lock_preview_selected"
+        app:constraintSetEnd="@id/leftEdgeActive"
+        app:duration="100"
+        motionInterpolator="spring(1.0, 0.4)"/>
+
+    <!-- Right edge effect transition (when at home screen and trying to swipe more right) -->
+    <Transition
+        android:id="@+id/rightEdgeTransition"
+        app:constraintSetStart="@id/home_preview_selected"
+        app:constraintSetEnd="@id/rightEdgeActive"
+        app:duration="100"
+        motionInterpolator="spring(1.0, 0.4)"/>
+
+    <!-- Lock preview selected -->
     <ConstraintSet android:id="@+id/lock_preview_selected">
         <Constraint
             android:id="@+id/label_placeholder"
@@ -75,6 +93,7 @@
             app:layout_constraintStart_toEndOf="@+id/lock_preview" />
     </ConstraintSet>
 
+    <!-- Home preview selected -->
     <ConstraintSet android:id="@+id/home_preview_selected">
         <Constraint
             android:id="@+id/label_placeholder"
@@ -122,4 +141,122 @@
             app:layout_constraintStart_toStartOf="@+id/guideline_center"
             app:layout_constraintEnd_toEndOf="@+id/guideline_center" />
     </ConstraintSet>
+
+    <!-- Left edge effect active
+        This state represent the terminal UI state where the user overscroll to the left-->
+    <ConstraintSet android:id="@+id/leftEdgeActive">
+        <Constraint
+            android:id="@+id/label_placeholder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom"
+            android:visibility="invisible"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <Constraint
+            android:id="@+id/lock_preview_label_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/lock_preview"
+            app:layout_constraintEnd_toEndOf="@+id/lock_preview" />
+
+        <Constraint
+            android:id="@+id/lock_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@+id/label_placeholder"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline_center"
+            app:layout_constraintEnd_toEndOf="@+id/guideline_center">
+            <Transform
+                android:translationX="10dp"
+                android:scaleX="1.05"/>
+        </Constraint>
+
+        <Constraint
+            android:id="@+id/home_preview_label_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/home_preview"
+            app:layout_constraintEnd_toEndOf="@+id/home_preview" />
+
+        <Constraint
+            android:id="@+id/home_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginStart="@dimen/handheld_small_preview_space_between_preview"
+            app:layout_constraintTop_toBottomOf="@+id/label_placeholder"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/lock_preview">
+            <Transform
+                android:translationX="20dp"
+                android:scaleX="1.05"/>
+        </Constraint>
+    </ConstraintSet>
+
+    <!-- Right edge effect active
+     This state represent the terminal UI state where the user overscroll to the left-->
+    <ConstraintSet android:id="@+id/rightEdgeActive">
+
+        <Constraint
+            android:id="@+id/label_placeholder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom"
+            android:visibility="invisible"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <Constraint
+            android:id="@+id/lock_preview_label_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/lock_preview"
+            app:layout_constraintEnd_toEndOf="@+id/lock_preview" />
+
+        <Constraint
+            android:id="@+id/lock_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginEnd="@dimen/handheld_small_preview_space_between_preview"
+            app:layout_constraintTop_toBottomOf="@+id/label_placeholder"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/home_preview">
+            <Transform
+                android:translationX="-20dp"
+                android:scaleX="1.05"/>
+        </Constraint>
+
+        <Constraint
+            android:id="@+id/home_preview_label_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/home_preview"
+            app:layout_constraintEnd_toEndOf="@+id/home_preview" />
+
+        <Constraint
+            android:id="@+id/home_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@+id/label_placeholder"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline_center"
+            app:layout_constraintEnd_toEndOf="@+id/guideline_center">
+            <Transform
+                android:translationX="-10dp"
+                android:scaleX="1.05"/>
+        </Constraint>
+    </ConstraintSet>
+
 </MotionScene>

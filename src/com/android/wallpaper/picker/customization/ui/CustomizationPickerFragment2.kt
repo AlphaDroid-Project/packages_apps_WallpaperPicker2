@@ -22,6 +22,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.provider.Settings
+import android.stats.style.StyleEnums
 import android.view.LayoutInflater
 import android.view.SurfaceView
 import android.view.View
@@ -38,9 +39,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.isVisible
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
@@ -149,6 +154,8 @@ class CustomizationPickerFragment2 :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        lifecycle.addObserver(iconStyleViewUtil)
+
         if (savedInstanceState != null) {
             // Fragment is being restored, not initial creation
             isInitialCreation = false
@@ -177,7 +184,18 @@ class CustomizationPickerFragment2 :
                     result.data?.let { data ->
                         context?.let { ctx ->
                             val wallpaperModel = extractWallpaperModelFromResult(data, ctx)
-                            startWallpaperPreviewActivity(wallpaperModel, false, true)
+                            persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
+                            ActivityUtils.startWallpaperPreviewActivity(
+                                activity = requireActivity(),
+                                isCreativeCategories = false,
+                                shouldNavigateToExtendedWallpaperEffects = true,
+                                isViewAsHome = true,
+                                requestCode = VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+                                isMultiPanesEnabled =
+                                    multiPanesChecker.isMultiPanesEnabled(requireContext()),
+                                setWallpaperEntryPoint =
+                                    StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
+                            )
                         }
                     }
                 }
@@ -191,6 +209,13 @@ class CustomizationPickerFragment2 :
         val imageUri = result.data
         val imageWallpaperInfo = ImageWallpaperInfo(imageUri)
         return wallpaperModelFactory.getWallpaperModel(context, imageWallpaperInfo)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (BaseFlags.get().isPackThemeEnabled()) {
+            customizationPickerViewModel.customizationOptionsViewModel.refetchThemeInfo()
+        }
     }
 
     override fun onCreateView(
@@ -221,6 +246,41 @@ class CustomizationPickerFragment2 :
         packThemeSuggestedChip?.visibility = View.INVISIBLE
 
         val pickerMotionContainer: MotionLayout = view.requireViewById(R.id.picker_motion_layout)
+
+        val bottomScrollView: NestedScrollView = view.requireViewById(R.id.bottom_scroll_view)
+        // Override bottom scroll view's accessibility delegate to enable collapse and expand of
+        // the preview and the wallpaper entry.
+        ViewCompat.setAccessibilityDelegate(
+            bottomScrollView,
+            object : AccessibilityDelegateCompat() {
+                override fun onInitializeAccessibilityNodeInfo(
+                    host: View,
+                    info: AccessibilityNodeInfoCompat,
+                ) {
+                    super.onInitializeAccessibilityNodeInfo(host, info)
+                    if (pickerMotionContainer.currentState == R.id.expanded_header_primary) {
+                        info.addAction(AccessibilityNodeInfoCompat.ACTION_SCROLL_BACKWARD)
+                    } else {
+                        info.addAction(AccessibilityNodeInfoCompat.ACTION_SCROLL_FORWARD)
+                    }
+                }
+
+                override fun performAccessibilityAction(
+                    host: View,
+                    action: Int,
+                    args: Bundle?,
+                ): Boolean {
+                    if (action == AccessibilityNodeInfoCompat.ACTION_SCROLL_BACKWARD) {
+                        pickerMotionContainer.transitionToState(R.id.collapsed_header_primary)
+                        return true
+                    } else if (action == AccessibilityNodeInfoCompat.ACTION_SCROLL_FORWARD) {
+                        pickerMotionContainer.transitionToState(R.id.expanded_header_primary)
+                        return true
+                    }
+                    return super.performAccessibilityAction(host, action, args)
+                }
+            },
+        )
 
         var isMotionContainerInitialized = false
         val optionContainer: ConstraintLayout =
@@ -661,7 +721,13 @@ class CustomizationPickerFragment2 :
                     }
                 }
             },
-            navigateToWallpaperCategoriesScreen = { _ -> switchFragment(CategoriesFragment()) },
+            navigateToWallpaperCategoriesScreen = { _ ->
+                switchFragment(
+                    CategoriesFragment.newInstance(
+                        destinationScreen = customizationPickerViewModel.selectedPreviewScreen.value
+                    )
+                )
+            },
             navigateToMoreLockScreenSettingsActivity = {
                 activity?.startActivity(Intent(Settings.ACTION_LOCKSCREEN_SETTINGS))
             },
@@ -673,14 +739,29 @@ class CustomizationPickerFragment2 :
             navigateToLockScreenNotificationsSettingsActivity = {
                 activity?.startActivity(Intent(Settings.ACTION_LOCKSCREEN_NOTIFICATIONS_SETTINGS))
             },
-            navigateToPreviewScreen = { wallpaperModel ->
-                // navigate to standard preview screen
-                startWallpaperPreviewActivity(wallpaperModel, false, false)
+            navigateToPreviewScreen = { wallpaperModel, setEntryPoint ->
+                persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
+                ActivityUtils.startWallpaperPreviewActivity(
+                    activity = requireActivity(),
+                    isCreativeCategories = false,
+                    shouldNavigateToExtendedWallpaperEffects = false,
+                    isViewAsHome = true,
+                    requestCode = VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+                    isMultiPanesEnabled = multiPanesChecker.isMultiPanesEnabled(requireContext()),
+                    setWallpaperEntryPoint = setEntryPoint,
+                )
             },
             navigateToPackThemeActivity = { intent -> context?.startActivity(intent) },
+            navigateToScreenSaverSettingsActivity = {
+                activity?.startActivity(Intent(Settings.ACTION_DREAM_SETTINGS))
+            },
             navigateToWallpaperCollectionScreen = { categoryId, categoryType ->
                 switchFragment(
-                    individualPickerFactory.getIndividualPickerInstance(categoryId, categoryType)
+                    individualPickerFactory.getIndividualPickerInstance(
+                        categoryId,
+                        categoryType,
+                        customizationPickerViewModel.selectedPreviewScreen.value,
+                    )
                 )
             },
             navigateToExtendedWallpaperEffects = {
@@ -772,6 +853,23 @@ class CustomizationPickerFragment2 :
             shouldAnimate = { false },
             lifecycleOwner = viewLifecycleOwner,
         )
+
+        // The navButton (close button) should be visible on a customization option screen.
+        // When on the main screen, the nav button (back button) is hidden for large screen devices
+        // with multi-pane layouts.
+        viewLifecycleOwner.lifecycleScope.launch {
+            customizationPickerViewModel.customizationOptionsViewModel.selectedOption.collect {
+                selectedOption ->
+                navButton.isVisible =
+                    if (selectedOption != null) {
+                        true
+                    } else {
+                        !(multiPanesChecker.isMultiPanesEnabled(requireContext()) &&
+                            displayUtils.isLargeScreenOrUnfoldedDisplay(requireContext()))
+                    }
+            }
+        }
+
         toolbarBinder.bind(
             navButton,
             toolbar,
@@ -789,20 +887,6 @@ class CustomizationPickerFragment2 :
         previewPager: ClickableMotionLayout,
     ): PreviewPagerViews {
         previewPager.addClickableViewId(R.id.preview_card)
-        if (BaseFlags.get().shouldShowDesktopUi(rootView.context)) {
-            previewPager.addClickableViewId(R.id.home_preview_label_container)
-            previewPager.addClickableViewId(R.id.lock_preview_label_container)
-            val lockPreviewLabelContainer: View =
-                previewPager.requireViewById(R.id.lock_preview_label_container)
-            val homePreviewLabelContainer: View =
-                previewPager.requireViewById(R.id.home_preview_label_container)
-            homePreviewLabelContainer.setOnClickListener {
-                customizationPickerViewModel.selectPreviewScreen(HOME_SCREEN)
-            }
-            lockPreviewLabelContainer.setOnClickListener {
-                customizationPickerViewModel.selectPreviewScreen(LOCK_SCREEN)
-            }
-        }
 
         // Inflate the clock and attach to the lock preview and bind clock view
         val lockPreview: View = previewPager.requireViewById(R.id.lock_preview)
@@ -940,15 +1024,13 @@ class CustomizationPickerFragment2 :
                 val multiPanesChecker = LargeScreenMultiPanesChecker()
                 val isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext)
                 startForResult.launch(
-                    WallpaperPreviewActivity.newIntent(
-                        context = appContext,
-                        isAssetIdPresent = false,
-                        isViewAsHome = screen == HOME_SCREEN,
-                        isNewTask = isMultiPanel,
+                    WallpaperPreviewActivity.intentBuilder(appContext, false)
+                        .viewAsHome(screen == HOME_SCREEN)
+                        .newTask(isMultiPanel)
                         // Hide info sheet for current wallpapers because attribution is not
                         // updated when language updates, see b/418619944
-                        hideInfoSheet = true,
-                    )
+                        .hideInfoSheet(true)
+                        .build()
                 )
             },
             onTransitionToScreen = {
@@ -1080,31 +1162,6 @@ class CustomizationPickerFragment2 :
             // Wait until motion container's constraints are updated
             motionContainer.post { onSetComplete() }
         }
-    }
-
-    private fun startWallpaperPreviewActivity(
-        wallpaperModel: WallpaperModel,
-        isCreativeCategories: Boolean,
-        shouldNavigateToExtendedWallpaperEffects: Boolean,
-    ) {
-        val appContext = requireContext()
-        val activity = requireActivity()
-        persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
-        val isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext)
-        val previewIntent =
-            WallpaperPreviewActivity.newIntent(
-                context = appContext,
-                isAssetIdPresent = true,
-                isViewAsHome = true,
-                isNewTask = isMultiPanel,
-                shouldCategoryRefresh = isCreativeCategories,
-                shouldNavigateToExtendedWallpaperEffects = shouldNavigateToExtendedWallpaperEffects,
-            )
-        ActivityUtils.startActivityForResultSafely(
-            activity,
-            previewIntent,
-            VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
-        )
     }
 
     companion object {

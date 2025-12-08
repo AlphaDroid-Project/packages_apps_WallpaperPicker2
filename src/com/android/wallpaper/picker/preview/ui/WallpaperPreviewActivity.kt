@@ -22,6 +22,7 @@ import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
 import android.os.OutcomeReceiver
+import android.stats.style.StyleEnums
 import android.util.Log
 import android.view.Window
 import android.widget.Toast
@@ -35,6 +36,7 @@ import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.ImageWallpaperInfo
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.InjectorProvider
+import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.BasePreviewActivity
 import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
@@ -49,6 +51,7 @@ import com.android.wallpaper.picker.preview.ui.fragment.SmallPreviewFragment
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel.Companion.getEditActivityIntent
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel.Companion.isNewCreativeWallpaper
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.DisplayUtils
 import com.android.wallpaper.util.WallpaperConnection
@@ -72,6 +75,7 @@ class WallpaperPreviewActivity :
     @Inject lateinit var creativeEffectsRepository: CreativeEffectsRepository
     @Inject lateinit var persistentWallpaperModelRepository: PersistentWallpaperModelRepository
     @Inject lateinit var liveWallpaperDownloader: LiveWallpaperDownloader
+    @Inject lateinit var categoryWallpapersRepository: CategoryWallpapersRepository
     @MainDispatcher @Inject lateinit var mainScope: CoroutineScope
     @Inject lateinit var wallpaperConnectionUtils: WallpaperConnectionUtils
 
@@ -81,8 +85,8 @@ class WallpaperPreviewActivity :
     private val categoriesViewModel: CategoriesViewModel by viewModels()
 
     private val isNewPickerUi = BaseFlags.get().isNewPickerUi()
-    private val isCategoriesRefactorEnabled =
-        BaseFlags.get().isWallpaperCategoryRefactoringEnabled()
+    private val isRefactorWallpaperPreviewScreenEnabled =
+        BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()
 
     private var isFirstRun = false
     private var navigateToExtendedWallpaperEffects: Boolean? = null
@@ -107,12 +111,10 @@ class WallpaperPreviewActivity :
         wallpaperPreviewViewModel.previewActionsViewModel.hideInformationFloatingSheet.value =
             intent.getBooleanExtra(HIDE_INFO_SHEET, false)
 
-        if (isCategoriesRefactorEnabled) {
-            refreshCreativeCategories = intent.getBooleanExtra(SHOULD_CATEGORY_REFRESH, false)
-        }
+        refreshCreativeCategories = intent.getBooleanExtra(SHOULD_CATEGORY_REFRESH, false)
 
         val wallpaper: WallpaperModel =
-            if (isNewPickerUi || isCategoriesRefactorEnabled) {
+            if (isNewPickerUi) {
                 val model =
                     if (!isFirstRun) {
                         wallpaperPreviewViewModel.wallpaper.value
@@ -137,7 +139,12 @@ class WallpaperPreviewActivity :
             (supportFragmentManager.findFragmentById(R.id.wallpaper_preview_nav_host)
                     as NavHostFragment)
                 .navController
-        val graph = navController.navInflater.inflate(R.navigation.wallpaper_preview_nav_graph)
+        val graph =
+            navController.navInflater.inflate(
+                if (isRefactorWallpaperPreviewScreenEnabled)
+                    R.navigation.wallpaper_preview_nav_graph_compose_refactor
+                else R.navigation.wallpaper_preview_nav_graph
+            )
         val startDestinationArgs: Bundle =
             Bundle().apply {
                 if (navigateToExtendedWallpaperEffects == true) {
@@ -168,6 +175,11 @@ class WallpaperPreviewActivity :
         WindowCompat.setDecorFitsSystemWindows(window, ActivityUtils.isSUWMode(this))
         val isAssetIdPresent = intent.getBooleanExtra(IS_ASSET_ID_PRESENT, false)
         wallpaperPreviewViewModel.isNewTask = intent.getBooleanExtra(IS_NEW_TASK, false)
+        wallpaperPreviewViewModel.wallpaperEntryPoint =
+            intent.getIntExtra(
+                WALLPAPER_ENTRYPOINT,
+                StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
+            )
         val whichPreview =
             if (isAssetIdPresent) WallpaperConnection.WhichPreview.EDIT_NON_CURRENT
             else WallpaperConnection.WhichPreview.EDIT_CURRENT
@@ -250,14 +262,15 @@ class WallpaperPreviewActivity :
 
                         override fun onError(t: Throwable) {
                             Log.e(TAG, "Error requesting fullscreen mode", t)
-                            onBackPressedWithToast()
+                            showToastAndFinish()
                         }
                     },
                 )
                 // Don't dismiss the preview right away while it is still switching to fullscreen.
                 return
             }
-            onBackPressedWithToast()
+            // User has returned to freeform mode, so we should dismiss the preview.
+            showToastAndFinish()
         }
     }
 
@@ -294,6 +307,8 @@ class WallpaperPreviewActivity :
         refreshCreativeCategories?.let {
             if (it) {
                 categoriesViewModel.refreshCategory()
+                // TODO(b/444262256): remove direct references of repos to correct view model
+                categoryWallpapersRepository.refreshWallpapers()
             }
         }
 
@@ -304,10 +319,10 @@ class WallpaperPreviewActivity :
         return wallpaperModelFactory.getWallpaperModel(appContext, this)
     }
 
-    private fun onBackPressedWithToast() {
+    private fun showToastAndFinish() {
         // TODO(b/409622144) re-evaluate this string for freeform mode.
         Toast.makeText(this, R.string.wallpaper_exit_split_screen, Toast.LENGTH_SHORT).show()
-        onBackPressedDispatcher.onBackPressed()
+        finishAfterTransition()
     }
 
     private fun isFullscreenPreviewEnabled() = BaseFlags.get().isFullscreenPreviewEnabled(this)
@@ -321,159 +336,132 @@ class WallpaperPreviewActivity :
 
         private const val TAG = "WallpaperPreviewActivity"
 
-        /**
-         * Returns a new [Intent] for the new picker UI that can be used to start
-         * [WallpaperPreviewActivity].
-         *
-         * @param context application context.
-         * @param isNewTask true to launch at a new task.
-         */
-        fun newIntent(
+        private fun newIntent(
             context: Context,
             isAssetIdPresent: Boolean,
-            isViewAsHome: Boolean = false,
-            isNewTask: Boolean = false,
-            hideInfoSheet: Boolean = false,
+            isViewAsHome: Boolean,
+            isNewTask: Boolean,
+            wallpaperInfo: WallpaperInfo?,
+            fromOriginalIntent: Intent?,
+            shouldCategoryRefresh: Boolean,
+            hideInfoSheet: Boolean,
+            shouldNavigateToExtendedWallpaperEffects: Boolean,
+            @UserEventLogger.SetWallpaperEntryPoint setWallpaperEntryPoint: Int,
         ): Intent {
-            val isNewPickerUi = BaseFlags.get().isNewPickerUi()
-            val isCategoriesRefactorEnabled =
-                BaseFlags.get().isWallpaperCategoryRefactoringEnabled()
-            if (!(isNewPickerUi || isCategoriesRefactorEnabled))
-                throw UnsupportedOperationException()
-            val intent = Intent(context.applicationContext, WallpaperPreviewActivity::class.java)
-            if (isNewTask) {
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            // New Picker UI check for flows that require it.
+            if (wallpaperInfo == null && fromOriginalIntent == null) {
+                val isNewPickerUi = BaseFlags.get().isNewPickerUi()
+                if (!isNewPickerUi) {
+                    throw UnsupportedOperationException("This flow requires the new picker UI.")
+                }
             }
+
+            val intent = Intent(context.applicationContext, WallpaperPreviewActivity::class.java)
+
+            if (isNewTask) {
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+
+            // Special handling for propagating permissions from an original Intent.
+            fromOriginalIntent?.data?.let {
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                intent.setData(it)
+            }
+
+            // Add all extras to the Intent.
             intent.putExtra(IS_ASSET_ID_PRESENT, isAssetIdPresent)
             intent.putExtra(EXTRA_VIEW_AS_HOME, isViewAsHome)
             intent.putExtra(IS_NEW_TASK, isNewTask)
+            wallpaperInfo?.let { intent.putExtra(EXTRA_WALLPAPER_INFO, it) }
+            intent.putExtra(SHOULD_CATEGORY_REFRESH, shouldCategoryRefresh)
             intent.putExtra(HIDE_INFO_SHEET, hideInfoSheet)
-            return intent
-        }
-
-        /**
-         * Returns a new [Intent] for the new picker UI that can be used to start
-         * [WallpaperPreviewActivity].
-         *
-         * @param context application context.
-         * @param isNewTask true to launch at a new task.
-         * @param shouldCategoryRefresh specified the category type
-         */
-        fun newIntent(
-            context: Context,
-            isAssetIdPresent: Boolean,
-            isViewAsHome: Boolean = false,
-            isNewTask: Boolean = false,
-            shouldCategoryRefresh: Boolean,
-            shouldNavigateToExtendedWallpaperEffects: Boolean = false,
-        ): Intent {
-            val isNewPickerUi = BaseFlags.get().isNewPickerUi()
-            val isCategoriesRefactorEnabled =
-                BaseFlags.get().isWallpaperCategoryRefactoringEnabled()
-            if (!(isNewPickerUi || isCategoriesRefactorEnabled))
-                throw UnsupportedOperationException()
-            val intent = Intent(context.applicationContext, WallpaperPreviewActivity::class.java)
-            if (isNewTask) {
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            }
             intent.putExtra(
                 SHOULD_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS,
                 shouldNavigateToExtendedWallpaperEffects,
             )
-            intent.putExtra(IS_ASSET_ID_PRESENT, isAssetIdPresent)
-            intent.putExtra(EXTRA_VIEW_AS_HOME, isViewAsHome)
-            intent.putExtra(IS_NEW_TASK, isNewTask)
-            intent.putExtra(SHOULD_CATEGORY_REFRESH, shouldCategoryRefresh)
+            intent.putExtra(WALLPAPER_ENTRYPOINT, setWallpaperEntryPoint)
+
             return intent
         }
 
         /**
-         * Returns a new [Intent] that can be used to start [WallpaperPreviewActivity].
+         * Creates a new builder for constructing an [Intent] to start [WallpaperPreviewActivity].
+         * This is the recommended entry point for both Java and Kotlin callers.
          *
-         * @param context application context.
-         * @param wallpaperInfo selected by user for editing preview.
-         * @param isNewTask true to launch at a new task.
-         *
-         * TODO(b/291761856): Use wallpaper model to replace wallpaper info.
+         * @param context The application context.
+         * @param isAssetIdPresent Indicates if the asset ID is present. This is a required
+         *   parameter.
+         * @return A new instance of [IntentBuilder].
          */
-        fun newIntent(
-            context: Context,
-            wallpaperInfo: WallpaperInfo,
-            isAssetIdPresent: Boolean,
-            isViewAsHome: Boolean = false,
-            isNewTask: Boolean = false,
-        ): Intent {
-            val intent = Intent(context.applicationContext, WallpaperPreviewActivity::class.java)
-            if (isNewTask) {
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        @JvmStatic
+        fun intentBuilder(context: Context, isAssetIdPresent: Boolean): IntentBuilder {
+            return IntentBuilder(context, isAssetIdPresent)
+        }
+
+        /**
+         * A builder for creating Intents to launch [WallpaperPreviewActivity]. This pattern
+         * provides a clear way to configure the Intent, especially from Java where named arguments
+         * are not available.
+         */
+        class IntentBuilder(private val context: Context, private val isAssetIdPresent: Boolean) {
+            private var isViewAsHome: Boolean = false
+            private var isNewTask: Boolean = false
+            private var wallpaperInfo: WallpaperInfo? = null
+            private var fromOriginalIntent: Intent? = null
+            private var shouldCategoryRefresh: Boolean = false
+            private var hideInfoSheet: Boolean = false
+            private var shouldNavigateToExtendedWallpaperEffects: Boolean = false
+            private var setWallpaperEntryPoint: Int =
+                StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW
+
+            fun viewAsHome(isViewAsHome: Boolean) = apply { this.isViewAsHome = isViewAsHome }
+
+            fun newTask(isNewTask: Boolean) = apply { this.isNewTask = isNewTask }
+
+            fun wallpaperInfo(wallpaperInfo: WallpaperInfo) = apply {
+                this.wallpaperInfo = wallpaperInfo
             }
-            intent.putExtra(EXTRA_WALLPAPER_INFO, wallpaperInfo)
-            intent.putExtra(IS_ASSET_ID_PRESENT, isAssetIdPresent)
-            intent.putExtra(EXTRA_VIEW_AS_HOME, isViewAsHome)
-            intent.putExtra(IS_NEW_TASK, isNewTask)
-            return intent
-        }
 
-        /**
-         * Returns a new [Intent] that can be used to start [WallpaperPreviewActivity].
-         *
-         * @param context application context.
-         * @param wallpaperInfo selected by user for editing preview.
-         * @param isNewTask true to launch at a new task.
-         * @param shouldRefreshCategory specifies the type of category this wallpaper belongs
-         *
-         * TODO(b/291761856): Use wallpaper model to replace wallpaper info.
-         */
-        fun newIntent(
-            context: Context,
-            wallpaperInfo: WallpaperInfo,
-            isAssetIdPresent: Boolean,
-            isViewAsHome: Boolean = false,
-            isNewTask: Boolean = false,
-            shouldRefreshCategory: Boolean,
-        ): Intent {
-            val intent = Intent(context.applicationContext, WallpaperPreviewActivity::class.java)
-            if (isNewTask) {
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            fun fromOriginalIntent(originalIntent: Intent) = apply {
+                this.fromOriginalIntent = originalIntent
             }
-            intent.putExtra(EXTRA_WALLPAPER_INFO, wallpaperInfo)
-            intent.putExtra(IS_ASSET_ID_PRESENT, isAssetIdPresent)
-            intent.putExtra(EXTRA_VIEW_AS_HOME, isViewAsHome)
-            intent.putExtra(IS_NEW_TASK, isNewTask)
-            intent.putExtra(SHOULD_CATEGORY_REFRESH, shouldRefreshCategory)
-            return intent
-        }
 
-        /**
-         * Returns a new [Intent] that can be used to start [WallpaperPreviewActivity], explicitly
-         * propagating any permissions on the wallpaper data to the new [Intent].
-         *
-         * @param context application context.
-         * @param wallpaperInfo selected by user for editing preview.
-         * @param isNewTask true to launch at a new task.
-         *
-         * TODO(b/291761856): Use wallpaper model to replace wallpaper info.
-         */
-        fun newIntent(
-            context: Context,
-            originalIntent: Intent,
-            isAssetIdPresent: Boolean,
-            isViewAsHome: Boolean = false,
-            isNewTask: Boolean = false,
-        ): Intent {
-            val data = originalIntent.data
-            val intent =
-                newIntent(
-                    context,
-                    ImageWallpaperInfo(data),
-                    isAssetIdPresent,
-                    isViewAsHome,
-                    isNewTask,
+            fun refreshCategory(shouldRefresh: Boolean) = apply {
+                this.shouldCategoryRefresh = shouldRefresh
+            }
+
+            fun hideInfoSheet(hide: Boolean) = apply { this.hideInfoSheet = hide }
+
+            fun navigateToExtendedEffects(navigate: Boolean) = apply {
+                this.shouldNavigateToExtendedWallpaperEffects = navigate
+            }
+
+            fun entryPoint(@UserEventLogger.SetWallpaperEntryPoint entryPoint: Int) = apply {
+                this.setWallpaperEntryPoint = entryPoint
+            }
+
+            /** Constructs the final [Intent] with the specified configuration. */
+            fun build(): Intent {
+                // Create ImageWallpaperInfo if the intent is from a content URI,
+                // preserving the logic from the original overloaded method.
+                // TODO(b/291761856): Use wallpaper model to replace wallpaper info.
+                val wallpaperInfo =
+                    wallpaperInfo ?: fromOriginalIntent?.data?.let { ImageWallpaperInfo(it) }
+
+                return newIntent(
+                    context = context,
+                    isAssetIdPresent = isAssetIdPresent,
+                    isViewAsHome = isViewAsHome,
+                    isNewTask = isNewTask,
+                    wallpaperInfo = wallpaperInfo,
+                    fromOriginalIntent = fromOriginalIntent,
+                    shouldCategoryRefresh = shouldCategoryRefresh,
+                    hideInfoSheet = hideInfoSheet,
+                    shouldNavigateToExtendedWallpaperEffects =
+                        shouldNavigateToExtendedWallpaperEffects,
+                    setWallpaperEntryPoint = setWallpaperEntryPoint,
                 )
-            // Both these lines are required for permission propagation
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            intent.setData(data)
-            return intent
+            }
         }
 
         private fun WallpaperModel.LiveWallpaperModel.getNewCreativeWallpaperArgs() =

@@ -77,6 +77,7 @@
     <string name="folded_device_state_description" msgid="4972608448265616264">"已折叠"</string>
     <string name="unfolded_device_state_description" msgid="3071975681472460627">"已展开"</string>
     <string name="full_preview_check_button_description" msgid="700484353763952975">"壁纸编辑完毕"</string>
+    <string name="suggestion_chip_close_button_description" msgid="7063924604587228866">"关闭主题包公告"</string>
     <string name="refreshing_daily_wallpaper_dialog_message" msgid="1975910873362855761">"正在刷新每日壁纸…"</string>
     <string name="refresh_daily_wallpaper_failed_message" msgid="4749879993812557166">"无法刷新每日壁纸。请检查您的网络连接状况，然后重试。"</string>
     <string name="on_device_wallpapers_category_title" msgid="805819102071369004">"设备上的壁纸"</string>
@@ -159,7 +160,7 @@
     <string name="zoomed_to_percent" msgid="1243039994190840132">"已缩放至 %d%%"</string>
     <string name="max_zoom_percentage" msgid="2111670558746866030">"已达到最大缩放比例"</string>
     <string name="min_zoom_percentage" msgid="5931879817379214316">"已达到最小缩放比例"</string>
-    <string name="categories_collection_label" msgid="319541962984573943">"集合"</string>
+    <string name="categories_collection_label" msgid="319541962984573943">"合集"</string>
     <string name="carousel_content_description_photos" msgid="3664564065854277456">"第 %1$d 张照片，共 %2$d 张"</string>
     <string name="carousel_content_description_default_wallpapers" msgid="2497547285129692731">"第 %1$d 张默认壁纸，共 %2$d 张"</string>
 </resources>

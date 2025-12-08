@@ -18,30 +18,12 @@
 package com.android.wallpaper.picker.common.icon.ui.viewbinder
 
 import android.widget.ImageView
-import androidx.appcompat.content.res.AppCompatResources
 import com.android.wallpaper.picker.common.icon.ui.viewmodel.Icon
-import com.android.wallpaper.picker.common.text.ui.viewmodel.Text
 
 object IconViewBinder {
-    fun bind(
-        view: ImageView,
-        viewModel: Icon,
-    ) {
-        when (viewModel) {
-            is Icon.Resource -> {
-                val drawable =
-                    AppCompatResources.getDrawable(view.context.applicationContext, viewModel.res)
-                view.setImageDrawable(drawable)
-            }
-            is Icon.Loaded -> view.setImageDrawable(viewModel.drawable)
-        }
+    fun bind(view: ImageView, viewModel: Icon) {
+        view.setImageDrawable(viewModel.getDrawable(view.context))
 
-        view.contentDescription =
-            when (viewModel.contentDescription) {
-                is Text.Resource ->
-                    view.context.getString((viewModel.contentDescription as Text.Resource).res)
-                is Text.Loaded -> (viewModel.contentDescription as Text.Loaded).text
-                null -> null
-            }
+        view.contentDescription = viewModel.contentDescription?.asString(view.context)
     }
 }

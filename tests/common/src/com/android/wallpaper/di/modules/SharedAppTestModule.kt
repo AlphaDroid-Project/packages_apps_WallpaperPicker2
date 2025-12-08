@@ -26,6 +26,7 @@ import android.os.Looper
 import android.os.Process
 import com.android.wallpaper.binder.FakeBannerProvider
 import com.android.wallpaper.module.CreativeHelper
+import com.android.wallpaper.module.ExtendedEffectsHelper
 import com.android.wallpaper.module.LargeScreenMultiPanesChecker
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.NetworkStatusNotifier
@@ -48,13 +49,18 @@ import com.android.wallpaper.picker.network.data.DefaultNetworkStatusRepository
 import com.android.wallpaper.picker.network.data.NetworkStatusRepository
 import com.android.wallpaper.picker.network.domain.DefaultNetworkStatusInteractor
 import com.android.wallpaper.picker.network.domain.NetworkStatusInteractor
+import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
+import com.android.wallpaper.picker.wallpapers.data.repository.DefaultCategoryWallpapersRepository
+import com.android.wallpaper.picker.wallpapers.domain.interactor.CategoryWallpapersInteractor
 import com.android.wallpaper.system.PowerManagerWrapper
 import com.android.wallpaper.system.UiModeManagerWrapper
 import com.android.wallpaper.testing.FakeCategoriesLoadingStatusInteractor
+import com.android.wallpaper.testing.FakeCategoryWallpapersInteractor
 import com.android.wallpaper.testing.FakeCreativeHelper
 import com.android.wallpaper.testing.FakeCreativeWallpaperInteractor
 import com.android.wallpaper.testing.FakeDefaultCategoryFactory
 import com.android.wallpaper.testing.FakeDefaultWallpaperCategoryRepository
+import com.android.wallpaper.testing.FakeExtendedEffectsHelper
 import com.android.wallpaper.testing.FakeLiveWallpaperClientImpl
 import com.android.wallpaper.testing.FakeMyPhotosInteractor
 import com.android.wallpaper.testing.FakePowerManager
@@ -109,6 +115,10 @@ internal abstract class SharedAppTestModule {
     abstract fun bindCreativeCategoryInteractor(
         impl: FakeCreativeWallpaperInteractor
     ): CreativeCategoryInteractor
+
+    @Binds
+    @Singleton
+    abstract fun bindExtendedEffectsHelper(impl: FakeExtendedEffectsHelper): ExtendedEffectsHelper
 
     @Binds
     @Singleton
@@ -170,6 +180,18 @@ internal abstract class SharedAppTestModule {
     @Binds @Singleton abstract fun bindWallpaperClient(impl: FakeWallpaperClient): WallpaperClient
 
     @Binds @Singleton abstract fun bindWallpaperParser(impl: FakeWallpaperParser): WallpaperParser
+
+    @Binds
+    @Singleton
+    abstract fun bindWallpapersInteractor(
+        impl: FakeCategoryWallpapersInteractor
+    ): CategoryWallpapersInteractor
+
+    @Binds
+    @Singleton
+    abstract fun bindWallpapersRepository(
+        impl: DefaultCategoryWallpapersRepository
+    ): CategoryWallpapersRepository
 
     companion object {
 

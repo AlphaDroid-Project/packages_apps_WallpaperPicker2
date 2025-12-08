@@ -439,6 +439,7 @@
     <dimen name="wallpaper_picker_entry_bottom_space">4dp</dimen>
     <dimen name="wallpaper_picker_entry_background_top_corner_radius">42dp</dimen>
     <dimen name="wallpaper_picker_entry_button_drawable_padding">12dp</dimen>
+    <dimen name="picker_motion_layout_bottom_padding">0dp</dimen>
 
     <!-- Dimensions for the floating tab toolbar -->
     <dimen name="floating_tab_toolbar_padding_vertical">8dp</dimen>
@@ -477,6 +478,7 @@
     <!-- Height for curated photo tile. This height is actually set on horizontal RecyclerView
      which sets it for the curated photos. -->
     <dimen name="curated_photo_height">132dp</dimen>
+    <dimen name="curated_photo_desktop_height">90dp</dimen>
     <dimen name="curated_photo_horizontal_margin">4dp</dimen>
     <dimen name="curated_photo_tile_width">172dp</dimen>
 
@@ -512,5 +514,5 @@
     <dimen name="suggested_chip_icon_padding">12dp</dimen>
     <dimen name="suggested_chip_text_size">14sp</dimen>
     <dimen name="suggested_chip_image_size">24dp</dimen>
-    <dimen name="suggested_chip_cancel_button_size">20dp</dimen>
+    <dimen name="suggested_chip_cancel_button_size">48dp</dimen>
 </resources>

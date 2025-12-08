@@ -61,6 +61,7 @@ class WallpaperModelUtils {
             actionUrl: String? = DEFAULT_ACTION_URL,
             colors: WallpaperColors = DEFAULT_COLORS,
             asset: Asset = DEFAULT_ASSET,
+            destination: Destination = Destination.NOT_APPLIED,
             imageWallpaperUri: Uri = Uri.EMPTY,
             downloadableWallpaperData: DownloadableWallpaperData? = null,
             cropHints: Map<Point, Rect> = emptyMap(),
@@ -82,7 +83,7 @@ class WallpaperModelUtils {
                         exploreActionUrl = actionUrl,
                         thumbAsset = asset,
                         placeholderColorInfo = ColorInfo(colors, placeholderColor),
-                        destination = Destination.NOT_APPLIED,
+                        destination = destination,
                     ),
                 staticWallpaperData = StaticWallpaperData(asset, cropHints),
                 imageWallpaperData = ImageWallpaperData(imageWallpaperUri),
@@ -94,6 +95,7 @@ class WallpaperModelUtils {
         fun getLiveWallpaperModel(
             wallpaperId: String,
             collectionId: String,
+            title: String = SAMPLE_TITLE2,
             placeholderColor: Int = DEFAULT_PLACEHOLDER_COLOR,
             attribution: List<String>? = emptyList(),
             actionUrl: String? = DEFAULT_ACTION_URL,
@@ -112,7 +114,7 @@ class WallpaperModelUtils {
                 commonWallpaperData =
                     CommonWallpaperData(
                         id = WallpaperId(systemWallpaperInfo.component, wallpaperId, collectionId),
-                        title = SAMPLE_TITLE2,
+                        title = title,
                         attributions = attribution,
                         exploreActionUrl = actionUrl,
                         thumbAsset = asset,

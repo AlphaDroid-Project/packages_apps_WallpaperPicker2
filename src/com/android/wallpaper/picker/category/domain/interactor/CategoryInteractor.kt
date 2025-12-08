@@ -28,6 +28,8 @@ interface CategoryInteractor {
 
     val isNetworkCategoriesNotEmpty: Flow<Boolean>
 
+    fun refreshDueToLocaleChange()
+
     fun refreshNetworkCategories()
 
     fun refreshThirdPartyLiveWallpaperCategories()

@@ -53,6 +53,10 @@ import com.android.wallpaper.picker.network.data.DefaultNetworkStatusRepository
 import com.android.wallpaper.picker.network.data.NetworkStatusRepository
 import com.android.wallpaper.picker.network.domain.DefaultNetworkStatusInteractor
 import com.android.wallpaper.picker.network.domain.NetworkStatusInteractor
+import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
+import com.android.wallpaper.picker.wallpapers.data.repository.DefaultCategoryWallpapersRepository
+import com.android.wallpaper.picker.wallpapers.domain.interactor.CategoryWallpapersInteractor
+import com.android.wallpaper.picker.wallpapers.domain.interactor.DefaultCategoryWallpapersInteractor
 import com.android.wallpaper.system.PowerManagerImpl
 import com.android.wallpaper.system.PowerManagerWrapper
 import com.android.wallpaper.system.UiModeManagerImpl
@@ -153,6 +157,18 @@ abstract class SharedAppModule {
     @Binds
     @Singleton
     abstract fun bindWallpaperRefresher(impl: DefaultWallpaperRefresher): WallpaperRefresher
+
+    @Binds
+    @Singleton
+    abstract fun bindWallpapersInteractor(
+        impl: DefaultCategoryWallpapersInteractor
+    ): CategoryWallpapersInteractor
+
+    @Binds
+    @Singleton
+    abstract fun bindWallpapersRepository(
+        impl: DefaultCategoryWallpapersRepository
+    ): CategoryWallpapersRepository
 
     companion object {
 

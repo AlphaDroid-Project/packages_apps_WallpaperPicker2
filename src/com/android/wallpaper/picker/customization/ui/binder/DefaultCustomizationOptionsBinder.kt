@@ -53,6 +53,7 @@ class DefaultCustomizationOptionsBinder @Inject constructor() : CustomizationOpt
         navigateToColorContrastSettingsActivity: () -> Unit,
         navigateToLockScreenNotificationsSettingsActivity: () -> Unit,
         navigateToPackThemeActivity: (Intent) -> Unit,
+        navigateToScreenSaverSettingsActivity: () -> Unit,
         iconStyleViewUtil: IconStyleViewUtil,
     ) {
         // Do nothing intended

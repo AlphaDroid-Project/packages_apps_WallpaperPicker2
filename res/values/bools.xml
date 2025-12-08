@@ -17,4 +17,5 @@
 <resources>
     <bool name="is_large_screen">false</bool>
     <bool name="isFragmentStatusBarLightText">false</bool>
+    <bool name="isDesktopUi">false</bool>
 </resources>

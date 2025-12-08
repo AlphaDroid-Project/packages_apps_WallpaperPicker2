@@ -27,7 +27,6 @@ import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.effects.EffectsController
 import com.android.wallpaper.model.CategoryProvider
 import com.android.wallpaper.model.InlinePreviewIntentFactory
-import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.monitor.PerformanceMonitor
 import com.android.wallpaper.network.Requester
@@ -87,15 +86,6 @@ interface Injector {
     fun getPartnerProvider(context: Context): PartnerProvider
 
     fun getPerformanceMonitor(): PerformanceMonitor?
-
-    // TODO b/242908637 Remove this method when migrating to the new wallpaper preview screen
-    fun getPreviewFragment(
-        context: Context,
-        wallpaperInfo: WallpaperInfo,
-        viewAsHome: Boolean,
-        isAssetIdPresent: Boolean,
-        isNewTask: Boolean,
-    ): Fragment
 
     fun getRequester(context: Context): Requester
 

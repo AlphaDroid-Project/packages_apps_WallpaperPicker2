@@ -32,6 +32,8 @@ interface WallpaperCategoryRepository {
     val thirdPartyLiveWallpaperCategory: StateFlow<List<CategoryModel>>
     val isDefaultCategoriesFetched: StateFlow<Boolean>
 
+    fun refreshDueToLocaleChange()
+
     fun getMyPhotosFetchedCategory(): Category?
 
     fun getOnDeviceFetchedCategories(): Category?

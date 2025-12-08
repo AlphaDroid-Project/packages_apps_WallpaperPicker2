@@ -79,6 +79,7 @@ object FullWallpaperPreviewBinder {
         savedInstanceState: Bundle?,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
+        signalConfigChange: Boolean = false,
         onStartTransition: (() -> Unit)? = null,
         onWallpaperLoaded: ((Boolean) -> Unit)? = null,
     ) {
@@ -221,6 +222,7 @@ object FullWallpaperPreviewBinder {
                         lifecycleOwner = lifecycleOwner,
                         wallpaperConnectionUtils = wallpaperConnectionUtils,
                         isFirstBindingDeferred = isFirstBindingDeferred,
+                        signalConfigChange = signalConfigChange,
                         onStartTransition = onStartTransition,
                     )
                 if (!BaseFlags.get().isNewPickerUi()) {
@@ -326,6 +328,7 @@ object FullWallpaperPreviewBinder {
         lifecycleOwner: LifecycleOwner,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
+        signalConfigChange: Boolean,
         onStartTransition: (() -> Unit)?,
     ): SurfaceViewUtils.SurfaceCallback {
         return object : SurfaceViewUtils.SurfaceCallback {
@@ -360,6 +363,7 @@ object FullWallpaperPreviewBinder {
                                     engineRenderingConfig,
                                     isFirstBindingDeferred,
                                     disconnectOnWallpaperChange = false,
+                                    signalConfigChange = signalConfigChange,
                                     onPreviewReady = { onStartTransition?.invoke() },
                                 )
                                 if (!viewModel.isAccessibilityEnabled()) {

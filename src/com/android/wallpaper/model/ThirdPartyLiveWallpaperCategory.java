@@ -81,7 +81,7 @@ public class ThirdPartyLiveWallpaperCategory extends WallpaperCategory {
     public boolean containsThirdParty(String packageName) {
         if (!supportsThirdParty()) return false;
         synchronized (mWallpapersLock) {
-            for (WallpaperInfo wallpaper : getMutableWallpapers()) {
+            for (WallpaperInfo wallpaper : getUnmodifiableWallpapers()) {
                 android.app.WallpaperInfo wallpaperComponent = wallpaper.getWallpaperComponent();
                 if (wallpaperComponent != null
                         && wallpaperComponent.getPackageName().equals(packageName)) {
@@ -90,5 +90,9 @@ public class ThirdPartyLiveWallpaperCategory extends WallpaperCategory {
             }
         }
         return super.containsThirdParty(packageName);
+    }
+
+    public Set<String> getExcludedPackages() {
+        return mExcludedPackages;
     }
 }

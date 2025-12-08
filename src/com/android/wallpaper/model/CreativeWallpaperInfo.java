@@ -15,8 +15,6 @@
  */
 package com.android.wallpaper.model;
 
-import static android.app.Flags.liveWallpaperContentHandling;
-
 import static com.android.wallpaper.model.CreativeCategory.KEY_WALLPAPER_SAVE_CREATIVE_CATEGORY_WALLPAPER;
 
 import android.annotation.Nullable;
@@ -461,17 +459,15 @@ public class CreativeWallpaperInfo extends LiveWallpaperInfo {
         WallpaperDescription descriptionContentHandling =
                 new WallpaperDescription.Builder().setComponent(
                         wallpaperInfo.getComponent()).build();
-        if (liveWallpaperContentHandling()) {
-            int descriptionContentHandlingIndex = cursor.getColumnIndex(
-                    WallpaperInfoContract.WALLPAPER_DESCRIPTION_CONTENT_HANDLING);
-            if (descriptionContentHandlingIndex >= 0) {
-                descriptionContentHandling = descriptionFromBytes(
-                    cursor.getBlob(descriptionContentHandlingIndex));
-                if (descriptionContentHandling.getComponent() == null) {
-                    descriptionContentHandling =
-                        descriptionContentHandling.toBuilder().setComponent(
-                            wallpaperInfo.getComponent()).build();
-                }
+        int descriptionContentHandlingIndex = cursor.getColumnIndex(
+                WallpaperInfoContract.WALLPAPER_DESCRIPTION_CONTENT_HANDLING);
+        if (descriptionContentHandlingIndex >= 0) {
+            descriptionContentHandling = descriptionFromBytes(
+                cursor.getBlob(descriptionContentHandlingIndex));
+            if (descriptionContentHandling.getComponent() == null) {
+                descriptionContentHandling =
+                    descriptionContentHandling.toBuilder().setComponent(
+                        wallpaperInfo.getComponent()).build();
             }
         }
         Boolean isNewCreativeWallpaper;

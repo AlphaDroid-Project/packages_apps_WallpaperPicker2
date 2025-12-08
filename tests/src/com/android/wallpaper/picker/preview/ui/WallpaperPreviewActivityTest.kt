@@ -52,13 +52,9 @@ class WallpaperPreviewActivityTest {
     private val testStaticWallpaper =
         TestStaticWallpaperInfo(TestStaticWallpaperInfo.COLOR_DEFAULT).setWallpaperAttributions()
     private val activityStartIntent =
-        WallpaperPreviewActivity.newIntent(
-            context = context,
-            wallpaperInfo = testStaticWallpaper,
-            isAssetIdPresent = false,
-            isViewAsHome = false,
-            isNewTask = false,
-        )
+        WallpaperPreviewActivity.intentBuilder(context, false)
+            .wallpaperInfo(testStaticWallpaper)
+            .build()
 
     @Before
     fun setUp() {

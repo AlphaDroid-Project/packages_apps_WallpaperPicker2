@@ -25,6 +25,8 @@ import android.service.wallpaper.WallpaperService
 import android.util.Log
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.InjectorProvider
+import com.android.wallpaper.module.ThirdPartyLiveWallpaperModelFactory
+import com.android.wallpaper.picker.data.WallpaperModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
@@ -36,7 +38,7 @@ import javax.inject.Singleton
  * Defines methods related to handling of live wallpapers.
  */
 @Singleton
-class LiveWallpapersClientImpl @Inject constructor(@ApplicationContext val context: Context):
+class LiveWallpapersClientImpl @Inject constructor(@ApplicationContext val context: Context, val thirdPartyLiveWallpaperModelFactory: ThirdPartyLiveWallpaperModelFactory):
     LiveWallpapersClient {
 
     override fun getAll(
@@ -108,6 +110,42 @@ class LiveWallpapersClientImpl @Inject constructor(@ApplicationContext val conte
         wallpaperInfos.addAll(resolveInfos)
 
         return wallpaperInfos
+    }
+
+    /**
+     *
+     * This function gets a list of all available live wallpaper services,
+     * filters out any that cannot be properly parsed, and then excludes
+     * those whose package names are specified in the provided set.
+     * Finally, it converts the remaining valid wallpapers into a list of [WallpaperModel] objects.
+     *
+     * @param excludedPackageNames An optional [Set] of package names to be excluded from the results.
+     * @return A [List] of [WallpaperModel] representing the valid live wallpapers.
+     * The list will be empty if no wallpapers are found or if all are filtered out.
+     */
+    override fun getAllWallpapers(
+        excludedPackageNames: Set<String?>?
+    ): List<WallpaperModel> {
+        val resolveInfos = getAllOnDevice()
+
+        return resolveInfos
+                .mapNotNull { resolveInfo ->
+                    try {
+                        android.app.WallpaperInfo(context, resolveInfo)
+                    } catch (e: Exception) {
+                        // mapNotNull filters out the null values
+                        Log.w(TAG, "Skipping wallpaper " + resolveInfo.serviceInfo, e)
+                        null
+                    }
+                }
+                .filter { wallpaperInfo ->
+                    excludedPackageNames?.let {
+                        !it.contains(wallpaperInfo.packageName)
+                    } ?: true
+                }
+                .mapNotNull { wallpaperInfo ->
+                    thirdPartyLiveWallpaperModelFactory.getLiveWallpaperModel(wallpaperInfo)
+                }
     }
 
     private fun isSystemApp(appInfo: ApplicationInfo): Boolean {

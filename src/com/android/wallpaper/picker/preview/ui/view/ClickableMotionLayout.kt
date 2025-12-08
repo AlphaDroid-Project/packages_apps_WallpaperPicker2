@@ -19,6 +19,7 @@ package com.android.wallpaper.picker.preview.ui.view
 import android.content.Context
 import android.graphics.Rect
 import android.util.AttributeSet
+import android.util.Log
 import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
@@ -28,12 +29,211 @@ import androidx.annotation.IdRes
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.core.view.ancestors
 import androidx.core.view.children
+import com.android.wallpaper.R
 
-/** A [MotionLayout] that performs click on one of its child if it is the recipient. */
 class ClickableMotionLayout(context: Context, attrs: AttributeSet?) : MotionLayout(context, attrs) {
 
     /** True for this view to intercept all motion events. */
     var shouldInterceptTouch = true
+
+    // Needed for dragging feedback
+    private var isDragging = false
+
+    /** lambda to run after the completion of a motion layout transition */
+    private var onTransitionCompleted: ((currentId: Int) -> Unit)? = null
+
+    // we start at the home screen (right boundary)
+    private var isAtLeftBoundary = false
+    private var isAtRightBoundary = true
+
+    private var startX = 0f
+    private var lastX = 0f
+
+    private val TAG = "ClickableMotionLayout"
+    private val DEBUG = false
+
+    /** This variable is to track whether an edge transition is in progress */
+    private var edgeTransitionInProgress = false
+
+    fun setOnTransitionCompleted(listener: (currentId: Int) -> Unit) {
+        onTransitionCompleted = listener
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+
+        setupMotionLayoutListener()
+    }
+
+    private fun setupMotionLayoutListener() {
+        setTransitionListener(
+            object : MotionLayout.TransitionListener {
+                override fun onTransitionStarted(
+                    motionLayout: MotionLayout?,
+                    startId: Int,
+                    endId: Int,
+                ) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onTransitionStarted - startId: $startId, endId: $endId")
+                    }
+                }
+
+                override fun onTransitionChange(
+                    motionLayout: MotionLayout?,
+                    startId: Int,
+                    endId: Int,
+                    progress: Float,
+                ) {
+                    if (DEBUG) {
+                        Log.v(
+                            TAG,
+                            "onTransitionChange - startId: $startId, endId: $endId, progress: $progress",
+                        )
+                    }
+
+                    when (endId) {
+                        R.id.home_preview_selected,
+                        R.id.lock_preview_selected -> {
+                            // Update boundary states during normal preview transition
+                            updateBoundaryStates(progress)
+                        }
+                    }
+                }
+
+                override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onTransitionCompleted - currentId: $currentId")
+                    }
+                    when (currentId) {
+                        R.id.leftEdgeActive,
+                        R.id.rightEdgeActive -> {
+                            if (DEBUG) {
+                                Log.d(TAG, "Edge effect completed, returning to preview state")
+                            }
+                            // trigger a transition to the appropriate preview after the edge effect
+                            // transition state has completed
+                            postDelayed(
+                                {
+                                    if (currentId == R.id.leftEdgeActive) {
+                                        transitionToState(R.id.lock_preview_selected)
+                                    } else {
+                                        transitionToState(R.id.home_preview_selected)
+                                    }
+                                },
+                                100,
+                            )
+                        }
+                    }
+                    onTransitionCompleted?.invoke(currentId)
+                }
+
+                override fun onTransitionTrigger(
+                    motionLayout: MotionLayout?,
+                    triggerId: Int,
+                    positive: Boolean,
+                    progress: Float,
+                ) {
+                    if (DEBUG) {
+                        Log.d(
+                            TAG,
+                            "onTransitionTrigger - triggerId: $triggerId, positive: $positive, progress: $progress",
+                        )
+                    }
+                }
+            }
+        )
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        super.onTouchEvent(event)
+
+        singleTapDetector.onTouchEvent(event)
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                // resent tracking variables
+                startX = event.x
+                lastX = event.x
+                isDragging = false
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                val deltaX = event.x - lastX
+                lastX = event.x
+
+                isDragging = true
+
+                if (!edgeTransitionInProgress) {
+                    // Check for edge overscroll attempts
+                    if (isAtLeftBoundary && deltaX > 0) {
+                        // Swiping right when already at left boundary (lock preview)
+                        if (currentState == R.id.lock_preview_selected) {
+                            post {
+                                val leftEdgeTransition = getTransition(R.id.leftEdgeTransition)
+                                if (leftEdgeTransition != null) {
+                                    setTransition(R.id.leftEdgeTransition)
+                                    transitionToEnd()
+                                    edgeTransitionInProgress = true
+                                }
+                            }
+                            return true
+                        } else {
+                            if (DEBUG) {
+                                Log.d(
+                                    TAG,
+                                    "Current state is NOT lock_preview_selected: $currentState",
+                                )
+                            }
+                        }
+                    } else if (isAtRightBoundary && deltaX < 0) {
+                        // Swiping left when already at right boundary (home preview)
+                        if (currentState == R.id.home_preview_selected) {
+                            post {
+                                val rightEdgeTransition = getTransition(R.id.rightEdgeTransition)
+                                if (rightEdgeTransition != null) {
+                                    setTransition(R.id.rightEdgeTransition)
+                                    transitionToEnd()
+                                    edgeTransitionInProgress = true
+                                }
+                            }
+                            return true
+                        } else {
+                            if (DEBUG) {
+                                Log.d(
+                                    TAG,
+                                    "Current state is NOT home_preview_selected: $currentState",
+                                )
+                            }
+                        }
+                    }
+                    return true
+                }
+            }
+            MotionEvent.ACTION_CANCEL,
+            MotionEvent.ACTION_UP -> {
+                edgeTransitionInProgress = false
+            }
+        }
+
+        return true
+    }
+
+    private fun updateBoundaryStates(progress: Float) {
+        val wasAtLeftBoundary = isAtLeftBoundary
+        val wasAtRightBoundary = isAtRightBoundary
+
+        isAtLeftBoundary = progress <= 0.1f // At lock preview
+        isAtRightBoundary = progress >= 0.9f // At home preview
+
+        if (wasAtLeftBoundary != isAtLeftBoundary || wasAtRightBoundary != isAtRightBoundary) {
+            if (DEBUG) {
+                Log.d(
+                    TAG,
+                    "Boundary states changed - isAtLeftBoundary: $isAtLeftBoundary," +
+                        " isAtRightBoundary: $isAtRightBoundary, progress: $progress",
+                )
+            }
+        }
+    }
 
     private val clickableViewIds = mutableSetOf<Int>()
     private val singleTapDetector =
@@ -95,15 +295,6 @@ class ClickableMotionLayout(context: Context, attrs: AttributeSet?) : MotionLayo
         // various gesture, returns true to intercept all event so they are forwarded into
         // onTouchEvent.
         return shouldInterceptTouch
-    }
-
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        super.onTouchEvent(event)
-
-        // Handle single tap
-        singleTapDetector.onTouchEvent(event)
-
-        return true
     }
 
     fun setClickableViewIds(ids: List<Int>) {

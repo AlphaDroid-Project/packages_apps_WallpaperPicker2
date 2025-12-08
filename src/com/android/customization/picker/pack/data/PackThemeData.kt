@@ -20,6 +20,7 @@ package com.android.customization.picker.pack.data
 data class PackThemeData(
     val showPackThemeBanner: Boolean = false,
     val showPackThemeChipButton: Boolean = false,
+    val isEnabled: Boolean = false,
     val launchingDetailActivityClass: String = "",
     val launchingPackageName: String = "",
     val suggestedChipThemePackInfo: ThemePackInfo = ThemePackInfo(),

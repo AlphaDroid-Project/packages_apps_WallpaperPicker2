@@ -63,6 +63,11 @@ public class TestPartnerProvider implements PartnerProvider {
     }
 
     @Override
+    public void refreshResourcesDueToLocaleChange() {
+        // Do nothing
+    }
+
+    @Override
     public String getPackageName() {
         return mPackageName;
     }

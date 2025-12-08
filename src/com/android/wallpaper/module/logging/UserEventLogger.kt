@@ -128,8 +128,8 @@ interface UserEventLogger {
     annotation class EffectStatus
 
     /**
-     * Possible actions for cinematic effect. These actions would be used for effect apply, effect
-     * probe, effect download.
+     * Possible actions for setting a wallpaper. These actions denote the source from where
+     * wallpaper is applied.
      */
     @IntDef(
         StyleEnums.SET_WALLPAPER_ENTRY_POINT_UNSPECIFIED,
@@ -139,6 +139,8 @@ interface UserEventLogger {
         StyleEnums.SET_WALLPAPER_ENTRY_POINT_ROTATION_WALLPAPER,
         StyleEnums.SET_WALLPAPER_ENTRY_POINT_RESET,
         StyleEnums.SET_WALLPAPER_ENTRY_POINT_RESTORE,
+        StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW_SUGGESTED_PHOTOS_HOME_SCREEN,
+        StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW_SUGGESTED_PHOTOS_CATEGORY_SCREEN,
     )
     @Retention(AnnotationRetention.SOURCE)
     annotation class SetWallpaperEntryPoint
@@ -162,10 +164,6 @@ interface UserEventLogger {
     )
     @Retention(AnnotationRetention.SOURCE)
     annotation class CustomizationPickerScreen
-
-    @IntDef(StyleEnums.APP_ICON_STYLE_UNSPECIFIED, StyleEnums.APP_ICON_STYLE_THEMED)
-    @Retention(AnnotationRetention.SOURCE)
-    annotation class AppIconStyle
 
     companion object {
         @WallpaperDestination

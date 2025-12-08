@@ -18,9 +18,7 @@ package com.android.customization.picker.icon.shared.model
 
 interface IconStyle {
     val nameResId: Int
+    val loggingId: Int
 
     fun getIsThemedIcon(): Boolean
-
-    /** Check if the IconStyle option should navigate to an external link. */
-    fun getIsExternalLink(): Boolean
 }

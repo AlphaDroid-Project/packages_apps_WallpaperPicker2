@@ -16,15 +16,18 @@
 
 package com.android.wallpaper.picker.customization.ui.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
 import com.android.wallpaper.picker.common.preview.ui.viewmodel.BasePreviewViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +42,7 @@ import kotlinx.coroutines.flow.shareIn
 class CustomizationPickerViewModel2
 @Inject
 constructor(
+    @ApplicationContext private val context: Context,
     customizationOptionsViewModelFactory: CustomizationOptionsViewModelFactory,
     basePreviewViewModelFactory: BasePreviewViewModel.Factory,
     savedStateHandle: SavedStateHandle,
@@ -60,7 +64,10 @@ constructor(
         CUSTOMIZATION_OPTION,
     }
 
-    private val _selectedPreviewScreen = MutableStateFlow(LOCK_SCREEN)
+    private val _selectedPreviewScreen =
+        MutableStateFlow(
+            if (BaseFlags.get().shouldShowDesktopUi(context)) HOME_SCREEN else LOCK_SCREEN
+        )
     val selectedPreviewScreen = _selectedPreviewScreen.asStateFlow()
 
     fun selectPreviewScreen(screen: Screen) {

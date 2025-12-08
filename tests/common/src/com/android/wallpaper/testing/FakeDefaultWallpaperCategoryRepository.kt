@@ -52,6 +52,10 @@ class FakeDefaultWallpaperCategoryRepository @Inject constructor() : WallpaperCa
     override val isDefaultCategoriesFetched: StateFlow<Boolean> =
         _isDefaultCategoriesFetched.asStateFlow()
 
+    override fun refreshDueToLocaleChange() {
+        // Do nothing here
+    }
+
     override fun getMyPhotosFetchedCategory(): Category {
         return ImageCategory("MyPhotos", "MyPhotosCollectionId", 4)
     }

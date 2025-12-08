@@ -27,7 +27,6 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -453,7 +452,7 @@ public class ImagePreviewFragment extends PreviewFragment {
         // WallpaperManager. WallpaperManager expects a crop that is not yet rescaled to match
         // the screen size (as opposed to BitmapCropper which is used in the single crop case).
         // TODO(b/270726737, b/281648899) clean that comment and that part of the code
-        if (WallpaperManager.isMultiCropEnabled()) result.scale(1f / mFullResImageView.getScale());
+        result.scale(1f / mFullResImageView.getScale());
         return result;
     }
 

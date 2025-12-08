@@ -16,7 +16,6 @@
 
 package com.android.wallpaper.picker.preview.ui.viewmodel
 
-import android.app.Flags.liveWallpaperContentHandling
 import android.content.ClipData
 import android.content.ComponentName
 import android.content.Context
@@ -29,6 +28,7 @@ import androidx.activity.result.ActivityResultLauncher
 import com.android.wallpaper.R
 import com.android.wallpaper.effects.Effect
 import com.android.wallpaper.effects.EffectsController.EffectEnumInterface
+import com.android.wallpaper.module.ExtendedEffectsHelper
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.picker.data.CreativeWallpaperData
 import com.android.wallpaper.picker.data.LiveWallpaperData
@@ -48,7 +48,6 @@ import com.android.wallpaper.picker.preview.domain.interactor.PreviewActionsInte
 import com.android.wallpaper.picker.preview.domain.interactor.WallpaperPreviewInteractor
 import com.android.wallpaper.picker.preview.shared.model.DownloadStatus
 import com.android.wallpaper.picker.preview.shared.model.ImageEffectsModel
-import com.android.wallpaper.picker.preview.ui.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.picker.preview.ui.util.LiveWallpaperDeleteUtil
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.CUSTOMIZE
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.DELETE
@@ -62,6 +61,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.Customize
 import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.ImageEffectFloatingSheetViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.InformationFloatingSheetViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.PreviewFloatingSheetViewModel
+import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import com.android.wallpaper.widget.floatingsheetcontent.WallpaperEffectsView2.EffectDownloadClickListener
 import com.android.wallpaper.widget.floatingsheetcontent.WallpaperEffectsView2.EffectSwitchListener
@@ -92,14 +92,11 @@ constructor(
     private val wallpaperConnectionUtils: WallpaperConnectionUtils,
     wallpaperPreviewInteractor: WallpaperPreviewInteractor,
     liveWallpaperDeleteUtil: LiveWallpaperDeleteUtil,
+    extendedEffectsHelper: ExtendedEffectsHelper,
     @ApplicationContext private val context: Context,
     @MainDispatcher private val mainScope: CoroutineScope,
 ) {
     private val flags = InjectorProvider.getInjector().getFlags()
-    private val extendedWallpaperEffectPkgName =
-        context.getString(R.string.extended_wallpaper_effects_package)
-    private val extendedWallpaperEffectActivityName =
-        context.getString(R.string.extended_wallpaper_effects_activity)
     val hideInformationFloatingSheet = MutableStateFlow(false)
 
     /** [INFORMATION] */
@@ -443,11 +440,7 @@ constructor(
     private val _isEffectsChecked: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isEffectsChecked: Flow<Boolean> = _isEffectsChecked.asStateFlow()
 
-    private val extendedWallpaperIntent =
-        Intent().apply {
-            component =
-                ComponentName(extendedWallpaperEffectPkgName, extendedWallpaperEffectActivityName)
-        }
+    private val extendedWallpaperIntent = extendedEffectsHelper.getExtendedEffectIntent()
 
     private val isExtendedEffectAvailable: Flow<Boolean> =
         wallpaperPreviewInteractor.wallpaperModel.map {
@@ -623,7 +616,7 @@ constructor(
         flags.isExtendedWallpaperEnabled() &&
             model is LiveWallpaperModel &&
             model.liveWallpaperData.isEffectWallpaper &&
-            WallpaperConnectionUtils.isExtendedEffectWallpaper(
+            ExtendedWallpaperEffectsUtils.isExtendedEffectWallpaper(
                 context,
                 model.liveWallpaperData.systemWallpaperInfo.component,
             )
@@ -645,8 +638,7 @@ constructor(
             val attributions = commonWallpaperData.attributions
             val description = (this as? LiveWallpaperModel)?.liveWallpaperData?.description
             val hasDescription =
-                liveWallpaperContentHandling() &&
-                    description != null &&
+                description != null &&
                     (description.description.isNotEmpty() ||
                         !description.title.isNullOrEmpty() ||
                         description.contextUri != null)

@@ -21,7 +21,6 @@ import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import android.net.Uri
 import android.os.Parcel
-import android.os.RemoteException
 import android.util.Log
 import android.util.Pair
 import androidx.annotation.VisibleForTesting
@@ -113,7 +112,7 @@ class DefaultCreativeHelper @Inject constructor() : CreativeHelper {
                                 }
                             } while (cursor.moveToNext())
                         }
-                    } catch (e: RemoteException) {
+                    } catch (e: Exception) {
                         Log.w(TAG, "Error retrieving current creative asset id: ", e)
                     }
                 }

@@ -57,6 +57,10 @@ constructor(
 
     override val isNetworkCategoriesNotEmpty: Flow<Boolean> = emptyFlow()
 
+    override fun refreshDueToLocaleChange() {
+        defaultWallpaperCategoryRepository.refreshDueToLocaleChange()
+    }
+
     override fun refreshNetworkCategories() {}
 
     override fun refreshThirdPartyLiveWallpaperCategories() {

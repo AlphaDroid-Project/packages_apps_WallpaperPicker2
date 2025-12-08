@@ -43,11 +43,6 @@ public class TestWallpaperCategory extends WallpaperCategory {
         return (mIsRotationEnabled) ? mWallpaperRotationInitializer : null;
     }
 
-    @Override
-    public List<WallpaperInfo> getMutableWallpapers() {
-        return super.getMutableWallpapers();
-    }
-
     /** Sets whether rotation is enabled on this category. */
     public void setIsRotationEnabled(boolean isRotationEnabled) {
         mIsRotationEnabled = isRotationEnabled;

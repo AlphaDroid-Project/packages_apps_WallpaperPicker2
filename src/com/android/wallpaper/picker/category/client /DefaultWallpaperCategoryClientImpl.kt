@@ -59,6 +59,11 @@ constructor(
 
     private var systemCategories: List<Category>? = null
 
+    override fun resetResources() {
+        systemCategories = null
+        partnerProvider.refreshResourcesDueToLocaleChange()
+    }
+
     /** This method is used for fetching and creating the MyPhotos category tile. */
     override suspend fun getMyPhotosCategory(): Category {
         val imageCategory = ImageCategory(
@@ -174,6 +179,7 @@ constructor(
     /** This method is used for fetching the system categories. */
     override suspend fun getSystemCategories(): List<Category> {
         systemCategories?.let { return it }
+
         val partnerRes = partnerProvider.resources
         val packageName = partnerProvider.packageName
         if (partnerRes == null || packageName == null) {

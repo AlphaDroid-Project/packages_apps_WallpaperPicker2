@@ -76,6 +76,11 @@ public interface PartnerProvider {
     @Nullable String getPackageName();
 
     /**
+     * Refresh the resources due to Locale change.
+     */
+    void refreshResourcesDueToLocaleChange();
+
+    /**
      * Returns whether the OEM has specified that the built-in system default wallpaper should be
      * hidden (because OEM has provided their own wallpaper). If no partner customization exists on
      * the device, returns false.

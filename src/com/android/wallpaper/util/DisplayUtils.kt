@@ -241,8 +241,8 @@ constructor(
 
     fun convertCropHints(cropHints: SparseArray<Rect>): Map<Point, Rect> {
         return getInternalDisplaySizes(allDimensions = true)
-            .map { size ->
-                cropHints[WallpaperManager.getOrientation(size)].let { crop -> size to crop }
+            .mapNotNull { size ->
+                cropHints[WallpaperManager.getOrientation(size)]?.let { crop -> size to crop }
             }
             .toMap()
     }

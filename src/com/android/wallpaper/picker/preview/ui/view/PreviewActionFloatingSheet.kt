@@ -15,7 +15,6 @@
  */
 package com.android.wallpaper.picker.preview.ui.view
 
-import android.app.Flags.liveWallpaperContentHandling
 import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import android.net.Uri
@@ -129,7 +128,7 @@ class PreviewActionFloatingSheet(context: Context, attrs: AttributeSet?) :
         val exploreButton: Button = view.requireViewById(R.id.wallpaper_info_explore_button)
 
         val combinedAttributions = attributions?.toMutableList() ?: mutableListOf()
-        if (liveWallpaperContentHandling() && description != null) {
+        if (description != null) {
             description.title.let {
                 if (!it.isNullOrEmpty()) {
                     combinedAttributions[0] = it.toString()

@@ -59,7 +59,7 @@
     <string name="settings_button_label" msgid="8724734130079207955">"सेटिङहरू"</string>
     <string name="explore" msgid="7468719504199497281">"अन्वेषण गर्नुहोस्"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"अर्को वालपेपर"</string>
-    <string name="wallpaper_disabled_message" msgid="7309484130562148185">"यस यन्त्रमा वालपेपर सेट गर्ने सुविधालाई असक्षम पारिएको छ"</string>
+    <string name="wallpaper_disabled_message" msgid="7309484130562148185">"यस यन्त्रमा वालपेपर सेट गर्ने सुविधालाई अफ गरिएको छ"</string>
     <string name="wallpaper_disabled_by_administrator_message" msgid="1551430406714747884">"तपाईंको डिभाइसको प्रशासकले वालपेपर सेट गर्ने सुविधालाई असक्षम पार्नुभएको छ"</string>
     <string name="wallpaper_set_successfully_message" msgid="2958998799111688578">"वालपेपर सफलतापूर्वक सेट गरियो"</string>
     <string name="wallpapers_unavailable_offline_message" msgid="8136405438621689532">"वालपेपरहरू हेर्न तपाईंसँग इन्टरनेट जडान हुनु आवश्यक हुन्छ। कृपया जडान गरेर फेरि प्रयास गर्नुहोस।"</string>
@@ -77,6 +77,7 @@
     <string name="folded_device_state_description" msgid="4972608448265616264">"फोल्ड गरिएको"</string>
     <string name="unfolded_device_state_description" msgid="3071975681472460627">"अनफोल्ड गरिएको"</string>
     <string name="full_preview_check_button_description" msgid="700484353763952975">"वालपेपर सम्पादन गर्ने कार्य पूरा भयो"</string>
+    <string name="suggestion_chip_close_button_description" msgid="7063924604587228866">"थिम प्याकका बारेमा दिइने सूचना बन्द गर्नुहोस्"</string>
     <string name="refreshing_daily_wallpaper_dialog_message" msgid="1975910873362855761">"दैनिक वालपेपर पुनः ताजा गर्दै…"</string>
     <string name="refresh_daily_wallpaper_failed_message" msgid="4749879993812557166">"दैनिक वालपेपर पुनः ताजा गर्न सकिएन। कृपया आफ्नो नेटवर्कको जडान जाँच गरी फेरि प्रयास गर्नुहोस्।"</string>
     <string name="on_device_wallpapers_category_title" msgid="805819102071369004">"यन्त्रमा रहेका वालपेपरहरू"</string>
@@ -106,7 +107,7 @@
     <string name="download_effects" msgid="2772742927165716701">"इफेक्टहरू डाउनलोड गर्नुहोस्"</string>
     <string name="bottom_action_bar_slideshow_wallpaper" msgid="509770525179533154">"स्लाइड सो वालपेपर"</string>
     <string name="bottom_action_bar_apply" msgid="2983308349819178932">"लागू गर्नुहोस्"</string>
-    <string name="accessibility_preview_pager" msgid="1839869637405028575">"<xliff:g id="ID_2">%2$d</xliff:g> मध्ये पृष्ठ <xliff:g id="ID_1">%1$d</xliff:g>"</string>
+    <string name="accessibility_preview_pager" msgid="1839869637405028575">"पेज <xliff:g id="ID_2">%2$d</xliff:g> मध्ये <xliff:g id="ID_1">%1$d</xliff:g>"</string>
     <string name="next_page_content_description" msgid="6268461446679584152">"अर्को"</string>
     <string name="previous_page_content_description" msgid="1138597031571078429">"अघिल्लो"</string>
     <string name="wallpaper_title" msgid="6754214682228331092">"वालपेपर"</string>

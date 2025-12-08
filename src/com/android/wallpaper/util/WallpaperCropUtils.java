@@ -195,7 +195,6 @@ public final class WallpaperCropUtils {
             Point defaultCropSurfaceSize, Point targetHostSize, int scrollX, int scrollY,
             boolean cropExtraWidth) {
         BaseFlags flags = InjectorProvider.getInjector().getFlags();
-        boolean isMultiCropEnabled = flags.isMultiCropEnabled();
         // Calculate Rect of wallpaper in physical pixel terms (i.e., scaled to current zoom).
         int scaledWallpaperWidth = Math.round(wallpaperSize.x * wallpaperZoom);
         int scaledWallpaperHeight = Math.round(wallpaperSize.y * wallpaperZoom);
@@ -227,14 +226,12 @@ public final class WallpaperCropUtils {
         int availableExtraHeightBottom = Math.min(
                 scaledWallpaperRect.bottom,
                 cropRect.bottom + extraHeightTopAndBottom) - cropRect.bottom;
-        if (isMultiCropEnabled) {
             // availableExtraHeightBottom shouldn't be negative, but it could happen if wallpaper
             // zoom < 1, in that case it should be zero. Safe guard availableExtraHeightTop as well.
             // Looks like a bug, but we always have > 1 zoom for existing preview, so flag guard
             // this block.
             availableExtraHeightTop = Math.max(availableExtraHeightTop, 0);
             availableExtraHeightBottom = Math.max(availableExtraHeightBottom, 0);
-        }
 
         int availableExtraHeightTopAndBottom =
                 Math.min(availableExtraHeightTop, availableExtraHeightBottom);

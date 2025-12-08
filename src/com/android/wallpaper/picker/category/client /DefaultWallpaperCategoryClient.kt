@@ -22,6 +22,11 @@ import com.android.wallpaper.model.Category
 interface DefaultWallpaperCategoryClient {
 
     /**
+     * Reset previously fetched resources
+     */
+    fun resetResources()
+
+    /**
      * This method is used for fetching the system categories.
      */
     suspend fun getSystemCategories(): List<Category>

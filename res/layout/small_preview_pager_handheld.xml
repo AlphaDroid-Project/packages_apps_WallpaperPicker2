@@ -20,6 +20,8 @@
     android:id="@+id/preview_pager"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     app:layoutDescription="@xml/preview_pager_motion_scene_handheld">
 
     <LinearLayout
@@ -42,6 +44,7 @@
             android:id="@+id/apply_wallpaper_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall" />
     </LinearLayout>
 

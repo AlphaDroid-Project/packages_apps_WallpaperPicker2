@@ -30,9 +30,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.android.wallpaper.R;
-import com.android.wallpaper.config.BaseFlags;
-import com.android.wallpaper.model.ImageWallpaperInfo;
-import com.android.wallpaper.module.InjectorProvider;
 import com.android.wallpaper.picker.AppbarFragment.AppbarFragmentHost;
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity;
 
@@ -140,25 +137,14 @@ public class StandalonePreviewActivity extends BasePreviewActivity implements Ap
      * activity's fragment container so that it's shown to the user.
      */
     private void loadPreviewFragment() {
-        BaseFlags flags = InjectorProvider.getInjector().getFlags();
         Intent intent = getIntent();
-        if (flags.isMultiCropEnabled()) {
-            Intent wallpaperIntent = WallpaperPreviewActivity.Companion.newIntent(
-                    this.getApplicationContext(), intent, /* isAssetIdPresent= */ false,
-                    /* isViewAsHome= */ true, /* isNewTask= */ false);
-            startActivity(wallpaperIntent);
-            finish();
-            return;
-        }
-        Fragment fragment = InjectorProvider.getInjector().getPreviewFragment(
-                /* context */ this,
-                new ImageWallpaperInfo(intent.getData()),
-                /* viewAsHome= */ true,
-                /* isAssetIdPresent= */ false,
-                /* isNewTask= */ false);
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragment_container, fragment)
-                .commit();
+        Intent wallpaperIntent =
+                WallpaperPreviewActivity.intentBuilder(this.getApplicationContext(), false)
+                        .fromOriginalIntent(intent)
+                        .viewAsHome(true)
+                        .build();
+        startActivity(wallpaperIntent);
+        finish();
     }
 
     /**

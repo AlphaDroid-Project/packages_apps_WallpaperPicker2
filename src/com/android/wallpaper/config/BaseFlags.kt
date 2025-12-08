@@ -18,8 +18,6 @@ package com.android.wallpaper.config
 import android.app.Flags.updateRecentsFromSystem
 import android.app.WallpaperManager
 import android.content.Context
-import android.content.pm.PackageManager
-import com.android.settings.accessibility.Flags.enableColorContrastControl
 import com.android.systemui.shared.Flags.clockReactiveVariants
 import com.android.systemui.shared.Flags.extendedWallpaperEffects
 import com.android.systemui.shared.Flags.extendibleThemeManager
@@ -28,13 +26,18 @@ import com.android.systemui.shared.Flags.newCustomizationPickerUi
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClient
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClientImpl
 import com.android.systemui.shared.customization.data.content.CustomizationProviderContract as Contract
+import com.android.wallpaper.Flags.adaptiveWallpaperFlag
+import com.android.wallpaper.Flags.colorPickerUpdateFlag
 import com.android.wallpaper.Flags.composeRefactorFlag
 import com.android.wallpaper.Flags.creativeWallpaperFieldCollectionWallpaper
 import com.android.wallpaper.Flags.desktopUiFlag
+import com.android.wallpaper.Flags.enablePackThemeEntry
 import com.android.wallpaper.Flags.fullscreenPreviewFlag
 import com.android.wallpaper.Flags.newCreativeWallpaperCategory
-import com.android.wallpaper.Flags.refactorWallpaperCategoryFlag
+import com.android.wallpaper.Flags.refactorIndividualPickerFlag
+import com.android.wallpaper.Flags.refactorWallpaperPreviewScreenFlag
 import com.android.wallpaper.Flags.wallpaperRestorerFlag
+import com.android.wallpaper.R
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import kotlinx.coroutines.Dispatchers
@@ -49,24 +52,21 @@ abstract class BaseFlags {
 
     open fun isStagingBackdropContentEnabled() = false
 
-    open fun isWallpaperEffectEnabled() = false
-
-    open fun isPackThemeEnabled() = false
+    open fun isPackThemeEnabled() = enablePackThemeEntry()
 
     open fun isWallpaperEffectModelDownloadEnabled() = true
 
     open fun isInterruptModelDownloadEnabled() = false
 
-    open fun isWallpaperRestorerEnabled() = wallpaperRestorerFlag()
+    // local flag to enable the refactored version of IPF2
+    open fun isWallpapersFragmentEnabled() = refactorIndividualPickerFlag()
 
-    open fun isWallpaperCategoryRefactoringEnabled() = refactorWallpaperCategoryFlag()
+    open fun isWallpaperRestorerEnabled() = wallpaperRestorerFlag()
 
     open fun isNewCreativeWallpaperCategoryEnabled() = newCreativeWallpaperCategory()
 
     open fun isCreativeWallpaperCollectionFieldEnabled() =
         creativeWallpaperFieldCollectionWallpaper()
-
-    open fun isColorContrastControlEnabled() = enableColorContrastControl()
 
     open fun isExtendedWallpaperEnabled() = extendedWallpaperEffects()
 
@@ -76,9 +76,16 @@ abstract class BaseFlags {
 
     open fun isClockReactiveVariantsEnabled() = clockReactiveVariants()
 
-    open fun isMultiCropEnabled() = WallpaperManager.isMultiCropEnabled()
-
     open fun isComposeRefactorEnabled() = composeRefactorFlag()
+
+    open fun isColorPickerUpdateEnabled() = colorPickerUpdateFlag()
+
+    // Local flag to gate Compose UI under the colorPickerUpdateFlag
+    open fun isColorPickerComposeEnabled() = false
+
+    open fun isAdaptiveWallpaperEnabled() = adaptiveWallpaperFlag()
+
+    open fun isRefactorWallpaperPreviewScreenEnabled() = refactorWallpaperPreviewScreenFlag()
 
     // This is just a local flag in order to ensure right behaviour in case
     // something goes wrong with PhotoPicker integration.
@@ -100,20 +107,6 @@ abstract class BaseFlags {
                     flag.name == Contract.FlagsTable.FLAG_NAME_CUSTOM_CLOCKS_ENABLED
                 }
                 ?.value == true
-    }
-
-    open fun isMonochromaticThemeEnabled(context: Context): Boolean {
-        return getCachedFlags(context)
-            .firstOrNull { flag -> flag.name == Contract.FlagsTable.FLAG_NAME_MONOCHROMATIC_THEME }
-            ?.value == true
-    }
-
-    open fun isAIWallpaperEnabled(context: Context): Boolean {
-        return getCachedFlags(context)
-            .firstOrNull { flag ->
-                flag.name == Contract.FlagsTable.FLAG_NAME_WALLPAPER_PICKER_UI_FOR_AIWP
-            }
-            ?.value == true
     }
 
     /**
@@ -177,10 +170,10 @@ abstract class BaseFlags {
     }
 
     open fun shouldShowDesktopUi(context: Context): Boolean {
-        // TODO: b/416024080 use a better solution than FEATURE_PC.
+        // TODO: b/416024080 use a better solution than a config boolean to show desktop UI.
         return desktopUiFlag() &&
             isNewPickerUi() &&
-            context.packageManager.hasSystemFeature(PackageManager.FEATURE_PC)
+            context.resources.getBoolean(R.bool.isDesktopUi)
     }
 
     companion object {

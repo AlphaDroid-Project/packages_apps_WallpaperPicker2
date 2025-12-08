@@ -22,6 +22,7 @@ import com.android.wallpaper.model.ImageCategory
 import com.android.wallpaper.model.ThirdPartyLiveWallpaperCategory
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.InjectorProvider
+import com.android.wallpaper.picker.category.client.LiveWallpapersClient
 import com.android.wallpaper.picker.category.data.repository.DefaultWallpaperCategoryRepository
 import com.android.wallpaper.testing.FakeDefaultCategoryFactory
 import com.android.wallpaper.testing.FakeDefaultWallpaperCategoryClient
@@ -53,6 +54,7 @@ class DefaultWallpaperCategoryRepositoryTest {
     @Inject @ApplicationContext lateinit var context: Context
     @Inject lateinit var defaultCategoryFactory: FakeDefaultCategoryFactory
     @Inject lateinit var defaultWallpaperCategoryClient: FakeDefaultWallpaperCategoryClient
+    @Inject lateinit var liveWallpapersClient: LiveWallpapersClient
     @Inject lateinit var testScope: TestScope
     @Inject lateinit var testInjector: TestInjector
 
@@ -69,9 +71,9 @@ class DefaultWallpaperCategoryRepositoryTest {
         runTest {
             val category1: Category =
                 ImageCategory(
-                    "My photos" /* title */,
-                    "image_wallpapers" /* collection */,
-                    0, /* priority */
+                    /* title */ "My photos",
+                    /* collection */ "image_wallpapers",
+                    /* priority */ 0,
                 )
 
             val wallpapers = ArrayList<WallpaperInfo>()
@@ -79,18 +81,18 @@ class DefaultWallpaperCategoryRepositoryTest {
             wallpapers.add(wallpaperInfo)
             val category2: Category =
                 TestWallpaperCategory(
-                    "Test category",
-                    "init_collection",
+                    /* title */ "Test category",
+                    /* collection */ "init_collection",
                     wallpapers,
-                    1, /* priority */
+                    /* priority */ 1,
                 )
 
             val thirdPartyLiveWallpaperCategory: Category =
                 ThirdPartyLiveWallpaperCategory(
-                    "Third_Party_Title",
-                    "Third_Party_CollectionId",
+                    /* title */ "Third_Party_Title",
+                    /* collection */ "Third_Party_CollectionId",
                     wallpapers,
-                    1,
+                    /* priority */ 1,
                     emptySet(),
                 )
 
@@ -108,13 +110,46 @@ class DefaultWallpaperCategoryRepositoryTest {
                     context,
                     defaultWallpaperCategoryClient,
                     defaultCategoryFactory,
+                    liveWallpapersClient,
                     testScope,
                 )
             testScope.advanceUntilIdle()
             assertThat(repository.isDefaultCategoriesFetched.value).isTrue()
-            assertThat(repository.systemCategories).isNotNull()
-            assertThat(repository.thirdPartyLiveWallpaperCategory).isNotNull()
+            assertThat(repository.systemCategories.value.size).isEqualTo(2)
+            assertThat(repository.thirdPartyLiveWallpaperCategory.value.size).isEqualTo(1)
         }
+
+    @Test
+    fun refresh_localeChange_update() = runTest {
+        val category1: Category =
+            ImageCategory(
+                /* title */ "My photos",
+                /* collection */ "image_wallpapers",
+                /* priority */ 0,
+            )
+
+        val mCategories = ArrayList<Category>()
+        mCategories.add(category1)
+
+        repository =
+            DefaultWallpaperCategoryRepository(
+                context,
+                defaultWallpaperCategoryClient,
+                defaultCategoryFactory,
+                liveWallpapersClient,
+                testScope,
+            )
+        testScope.advanceUntilIdle()
+        assertThat(repository.isDefaultCategoriesFetched.value).isTrue()
+        assertThat(repository.systemCategories.value.size).isEqualTo(0)
+
+        defaultWallpaperCategoryClient.setSystemCategories(mCategories)
+        repository.refreshDueToLocaleChange()
+        testScope.advanceUntilIdle()
+
+        assertThat(repository.isDefaultCategoriesFetched.value).isTrue()
+        assertThat(repository.systemCategories.value.size).isEqualTo(1)
+    }
 
     @Test
     fun initialStateShouldBeEmpty() = runTest {
@@ -123,6 +158,7 @@ class DefaultWallpaperCategoryRepositoryTest {
                 context,
                 defaultWallpaperCategoryClient,
                 defaultCategoryFactory,
+                liveWallpapersClient,
                 testScope,
             )
         assertThat(repository.systemCategories.value).isEmpty()
@@ -136,6 +172,7 @@ class DefaultWallpaperCategoryRepositoryTest {
                 context,
                 defaultWallpaperCategoryClient,
                 defaultCategoryFactory,
+                liveWallpapersClient,
                 testScope,
             )
 
@@ -153,6 +190,7 @@ class DefaultWallpaperCategoryRepositoryTest {
                 context,
                 defaultWallpaperCategoryClient,
                 defaultCategoryFactory,
+                liveWallpapersClient,
                 testScope,
             )
 

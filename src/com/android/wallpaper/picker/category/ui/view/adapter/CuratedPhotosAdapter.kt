@@ -31,7 +31,6 @@ class CuratedPhotosAdapter(
     val items: List<TileViewModel>,
     val curatedPhotosTimeUtil: CuratedPhotosTimeUtil,
     val userEventLogger: UserEventLogger,
-    val shouldShowDesktopUi: Boolean = false,
 ) : RecyclerView.Adapter<CuratedPhotoHolder>() {
     private var visiblePosition = -1 // Track the position of the visible TextView
 
@@ -54,13 +53,7 @@ class CuratedPhotosAdapter(
 
     private fun createIndividualHolder(parent: ViewGroup): CuratedPhotoHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
-        val layoutResource =
-            if (shouldShowDesktopUi) {
-                R.layout.curated_photo_tile_desktop
-            } else {
-                R.layout.curated_photo_tile
-            }
-        val view: View = layoutInflater.inflate(layoutResource, parent, false)
+        val view: View = layoutInflater.inflate(R.layout.curated_photo_tile, parent, false)
         return CuratedPhotoHolder(view, curatedPhotosTimeUtil, userEventLogger)
     }
 

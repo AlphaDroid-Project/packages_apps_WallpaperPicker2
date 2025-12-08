@@ -275,6 +275,9 @@
          edit. [CHAR LIMIT=none] -->
     <string name="full_preview_check_button_description">Done editing wallpaper</string>
 
+    <!-- Content description for a suggestion chip. [CHAR LIMIT=none] -->
+    <string name="suggestion_chip_close_button_description">Close theme pack announcement</string>
+
     <!-- Message shown to user in a progress dialog when the app is in the process of refreshing the
          daily wallpaper. [CHAR LIMIT=none] -->
     <string name="refreshing_daily_wallpaper_dialog_message">

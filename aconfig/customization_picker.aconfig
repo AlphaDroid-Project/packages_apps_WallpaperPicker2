@@ -9,10 +9,10 @@ flag {
 }
 
 flag {
-    name: "refactor_wallpaper_category_flag"
+    name: "enable_pack_theme_entry"
     namespace: "customization_picker"
-    description: "Enables wallpaper category selection according to recommended architecture when flag is turned on."
-    bug: "290840060"
+    description: "Enable the entry of the theme."
+    bug: "372344184"
 }
 
 flag {
@@ -37,6 +37,13 @@ flag {
 }
 
 flag {
+   name: "color_picker_update_flag"
+   namespace: "customization_picker"
+   description: "Update color picker with new UI and functionality, and integrate with ThemeService"
+   bug: "391927276"
+}
+
+flag {
     name: "fullscreen_preview_flag"
     namespace: "customization_picker"
     description: "Enables full screen wallpaper preview"
@@ -51,4 +58,28 @@ flag {
     metadata {
         purpose: PURPOSE_FEATURE
     }
+}
+
+flag {
+    name: "adaptive_wallpaper_flag"
+    namespace: "customization_picker"
+    description: "Add wallpapers that change based on the system's theme"
+    bug: "350781760"
+    metadata {
+        purpose: PURPOSE_FEATURE
+    }
+}
+
+flag {
+    name: "refactor_individual_picker_flag"
+    namespace: "customization_picker"
+    description: "Migrates the individual picker screen to use the recommended architecture, Compose WallpaperModel and CategoryModel "
+    bug: "433284926"
+}
+
+flag {
+    name: "refactor_wallpaper_preview_screen_flag"
+    namespace: "customization_picker"
+    description: "Refactor the wallpaper preview screen into Compose."
+    bug: "423956081"
 }

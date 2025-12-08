@@ -77,6 +77,7 @@
     <string name="folded_device_state_description" msgid="4972608448265616264">"مطوي"</string>
     <string name="unfolded_device_state_description" msgid="3071975681472460627">"غير مطوي"</string>
     <string name="full_preview_check_button_description" msgid="700484353763952975">"تم تعديل الخلفية"</string>
+    <string name="suggestion_chip_close_button_description" msgid="7063924604587228866">"إغلاق إشعار حزمة المظاهر"</string>
     <string name="refreshing_daily_wallpaper_dialog_message" msgid="1975910873362855761">"تجري إعادة تحميل الخلفية اليومية…"</string>
     <string name="refresh_daily_wallpaper_failed_message" msgid="4749879993812557166">"تعذّرت إعادة تحميل الخلفية اليومية. يُرجى التحقق من اتصالك بالشبكة وإعادة المحاولة."</string>
     <string name="on_device_wallpapers_category_title" msgid="805819102071369004">"خلفيات على الجهاز"</string>
@@ -107,7 +108,7 @@
     <string name="bottom_action_bar_slideshow_wallpaper" msgid="509770525179533154">"خلفية عرض الشرائح"</string>
     <string name="bottom_action_bar_apply" msgid="2983308349819178932">"تطبيق"</string>
     <string name="accessibility_preview_pager" msgid="1839869637405028575">"الصفحة <xliff:g id="ID_1">%1$d</xliff:g> من <xliff:g id="ID_2">%2$d</xliff:g>"</string>
-    <string name="next_page_content_description" msgid="6268461446679584152">"الصفحة التالية"</string>
+    <string name="next_page_content_description" msgid="6268461446679584152">"التالي"</string>
     <string name="previous_page_content_description" msgid="1138597031571078429">"الصفحة السابقة"</string>
     <string name="wallpaper_title" msgid="6754214682228331092">"الخلفية"</string>
     <string name="wallpaper_preview_card_content_description" msgid="6049261033541034584">"معاينة عرض الشرائح"</string>

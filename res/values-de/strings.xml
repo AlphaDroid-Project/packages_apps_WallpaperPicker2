@@ -33,7 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"Hintergrund auswählen"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"Vorgeschlagene Fotos"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"Hintergrund erstellen"</string>
-    <string name="wallpaper_studio_title" msgid="4521517442580329214">"Wallpaper Studio"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"Hintergrund-Designer"</string>
     <string name="home_screen_message" msgid="106444102822522813">"Startbildschirm"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"Sperrbildschirm"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"Startbildschirm &amp; Sperrbildschirm"</string>
@@ -77,6 +77,7 @@
     <string name="folded_device_state_description" msgid="4972608448265616264">"Zugeklappt"</string>
     <string name="unfolded_device_state_description" msgid="3071975681472460627">"Aufgeklappt"</string>
     <string name="full_preview_check_button_description" msgid="700484353763952975">"Bearbeitung des Hintergrunds abgeschlossen"</string>
+    <string name="suggestion_chip_close_button_description" msgid="7063924604587228866">"Benachrichtigung zum Designpaket schließen"</string>
     <string name="refreshing_daily_wallpaper_dialog_message" msgid="1975910873362855761">"Täglicher Hintergrund wird aktualisiert…"</string>
     <string name="refresh_daily_wallpaper_failed_message" msgid="4749879993812557166">"Aktualisierung des täglichen Hintergrunds fehlgeschlagen. Prüfe die Netzwerkverbindung und versuche es noch einmal."</string>
     <string name="on_device_wallpapers_category_title" msgid="805819102071369004">"Hintergründe auf dem Gerät"</string>

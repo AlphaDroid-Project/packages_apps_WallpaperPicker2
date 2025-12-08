@@ -77,6 +77,7 @@
     <string name="folded_device_state_description" msgid="4972608448265616264">"ફોલ્ડ કરેલું"</string>
     <string name="unfolded_device_state_description" msgid="3071975681472460627">"અનફોલ્ડ કરેલું"</string>
     <string name="full_preview_check_button_description" msgid="700484353763952975">"વૉલપેપરમાં ફેરફાર કરવાનું કામ પૂરું થયું"</string>
+    <string name="suggestion_chip_close_button_description" msgid="7063924604587228866">"થીમના પૅકની ઘોષણા બંધ કરો"</string>
     <string name="refreshing_daily_wallpaper_dialog_message" msgid="1975910873362855761">"દૈનિક વૉલપેપર રિફ્રેશ કરી રહ્યાં છીએ…"</string>
     <string name="refresh_daily_wallpaper_failed_message" msgid="4749879993812557166">"દૈનિક વૉલપેપર રિફ્રેશ કરવામાં નિષ્ફળ રહ્યાં. કૃપા કરીને તમારું નેટવર્ક કનેક્શન ચેક કરો અને ફરી પ્રયાસ કરો."</string>
     <string name="on_device_wallpapers_category_title" msgid="805819102071369004">"ઉપકરણ પરના વૉલપેપર"</string>

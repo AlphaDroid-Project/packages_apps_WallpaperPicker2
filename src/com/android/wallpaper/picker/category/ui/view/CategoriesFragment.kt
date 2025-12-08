@@ -25,6 +25,7 @@ import android.content.pm.ResolveInfo
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.stats.style.StyleEnums
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,6 +45,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.ImageWallpaperInfo
+import com.android.wallpaper.model.Screen
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
@@ -58,7 +60,8 @@ import com.android.wallpaper.picker.customization.shared.model.CategoryType
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.data.WallpaperModel
-import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
+import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
+import com.android.wallpaper.picker.wallpapers.ui.view.CategoryWallpapersFragment
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.CuratedPhotosTimeUtil
 import com.android.wallpaper.util.SizeCalculator
@@ -81,6 +84,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
     @Inject lateinit var bannerProvider: BannerProvider
     @Inject lateinit var curatedPhotosTimeUtil: CuratedPhotosTimeUtil
     @Inject lateinit var userEventLogger: UserEventLogger
+    @Inject lateinit var categoryWallpapersRepository: CategoryWallpapersRepository
     private lateinit var photoPickerLauncher: ActivityResultLauncher<Intent>
     private lateinit var extendedWallpaperEffectsLauncher: ActivityResultLauncher<Intent>
 
@@ -101,7 +105,12 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                 val context = context ?: return@registerForActivityResult
                 val wallpaperModel =
                     wallpaperModelFactory.getWallpaperModel(context, imageWallpaperInfo)
-                startWallpaperPreviewActivity(wallpaperModel, false, false)
+                startPreviewActivity(
+                    wallpaperModel = wallpaperModel,
+                    isCreativeCategories = false,
+                    shouldNavigateToExtendedWallpaperEffects = false,
+                    setWallpaperEntryPoint = StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
+                )
             }
 
         extendedWallpaperEffectsLauncher =
@@ -116,7 +125,12 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
 
                 val wallpaperModel =
                     extractWallpaperModelFromResult(result.data!!, requireContext())
-                startWallpaperPreviewActivity(wallpaperModel, false, true)
+                startPreviewActivity(
+                    wallpaperModel = wallpaperModel,
+                    isCreativeCategories = false,
+                    shouldNavigateToExtendedWallpaperEffects = true,
+                    setWallpaperEntryPoint = StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
+                )
             }
     }
 
@@ -185,12 +199,23 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         ) { navigationEvent, callback ->
             when (navigationEvent) {
                 is CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection -> {
-                    switchFragment(
-                        individualPickerFactory.getIndividualPickerInstance(
-                            navigationEvent.categoryId,
-                            navigationEvent.categoryType,
+                    if (BaseFlags.get().isWallpapersFragmentEnabled()) {
+                        categoryWallpapersRepository.setSelectedCategory(
+                            navigationEvent.categoryModel
                         )
-                    )
+                        switchFragment(CategoryWallpapersFragment())
+                    } else {
+                        val screen: Screen? =
+                            arguments?.getSerializable(DESTINATION_SCREEN, Screen::class.java)
+
+                        switchFragment(
+                            individualPickerFactory.getIndividualPickerInstance(
+                                navigationEvent.categoryModel.commonCategoryData.collectionId,
+                                navigationEvent.categoryType,
+                                screen,
+                            )
+                        )
+                    }
                 }
                 is CategoriesViewModel.NavigationEvent.NavigateToPhotosPicker -> {
                     startPhotoPicker(shouldNavigateToExtendedWallpaperEffects = false, callback)
@@ -203,10 +228,12 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                     )
                 }
                 is CategoriesViewModel.NavigationEvent.NavigateToPreviewScreen -> {
-                    startWallpaperPreviewActivity(
-                        navigationEvent.wallpaperModel,
-                        navigationEvent.categoryType == CategoryType.CreativeCategories,
-                        false,
+                    startPreviewActivity(
+                        wallpaperModel = navigationEvent.wallpaperModel,
+                        isCreativeCategories =
+                            navigationEvent.categoryType == CategoryType.CreativeCategories,
+                        shouldNavigateToExtendedWallpaperEffects = false,
+                        setWallpaperEntryPoint = navigationEvent.entryPoint,
                     )
                 }
                 is CategoriesViewModel.NavigationEvent.NavigateToExtendedWallpaperEffects -> {
@@ -215,6 +242,27 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
             }
         }
         return view
+    }
+
+    private fun startPreviewActivity(
+        wallpaperModel: WallpaperModel,
+        isCreativeCategories: Boolean,
+        shouldNavigateToExtendedWallpaperEffects: Boolean,
+        @UserEventLogger.SetWallpaperEntryPoint setWallpaperEntryPoint: Int,
+    ) {
+        val screen = arguments?.getSerializable(DESTINATION_SCREEN, Screen::class.java)
+        val isDestinationHome = screen?.let { it == Screen.HOME_SCREEN } ?: true
+        persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
+        // TODO (b/432260350): Provide correct request code
+        ActivityUtils.startWallpaperPreviewActivity(
+            activity = requireActivity(),
+            isCreativeCategories = isCreativeCategories,
+            shouldNavigateToExtendedWallpaperEffects = shouldNavigateToExtendedWallpaperEffects,
+            isViewAsHome = isDestinationHome,
+            requestCode = VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+            isMultiPanesEnabled = multiPanesChecker.isMultiPanesEnabled(requireContext()),
+            setWallpaperEntryPoint = setWallpaperEntryPoint,
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -274,31 +322,6 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         }
     }
 
-    private fun startWallpaperPreviewActivity(
-        wallpaperModel: WallpaperModel,
-        isCreativeCategories: Boolean,
-        shouldNavigateToExtendedWallpaperEffects: Boolean,
-    ) {
-        val appContext = requireContext()
-        val activity = requireActivity()
-        persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
-        val isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext)
-        val previewIntent =
-            WallpaperPreviewActivity.newIntent(
-                context = appContext,
-                isAssetIdPresent = true,
-                isViewAsHome = true,
-                isNewTask = isMultiPanel,
-                shouldCategoryRefresh = isCreativeCategories,
-                shouldNavigateToExtendedWallpaperEffects = shouldNavigateToExtendedWallpaperEffects,
-            )
-        ActivityUtils.startActivityForResultSafely(
-            activity,
-            previewIntent,
-            VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE, // TODO: provide correct request code
-        )
-    }
-
     private fun showPermissionSnackbar() {
         val snackbar =
             Snackbar.make(
@@ -337,6 +360,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         val itemComponentName =
             ComponentName(resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name)
         val launchIntent = Intent(Intent.ACTION_SET_WALLPAPER)
+        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         launchIntent.component = itemComponentName
         ActivityUtils.startActivityForResultSafely(srcActivity, launchIntent, requestCode)
     }
@@ -354,5 +378,14 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         const val SHOW_CATEGORY_REQUEST_CODE = 0
         const val SETTINGS_APP_INFO_REQUEST_CODE = 1
         const val READ_IMAGE_PERMISSION: String = Manifest.permission.READ_MEDIA_IMAGES
+
+        private const val DESTINATION_SCREEN = "destination_screen"
+
+        fun newInstance(destinationScreen: Screen): CategoriesFragment {
+            return CategoriesFragment().apply {
+                arguments =
+                    Bundle().apply { putSerializable(DESTINATION_SCREEN, destinationScreen) }
+            }
+        }
     }
 }

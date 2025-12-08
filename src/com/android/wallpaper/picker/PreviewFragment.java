@@ -95,6 +95,8 @@ import kotlinx.coroutines.Dispatchers;
 
 /**
  * Base Fragment to display the UI for previewing an individual wallpaper.
+ *
+ * <p>TODO (b/438989445): Remove fragment and associated dependencies
  */
 public abstract class PreviewFragment extends Fragment implements WallpaperColorThemePreview {
 

@@ -20,6 +20,8 @@
     android:id="@+id/preview_pager"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     app:layoutDescription="@xml/preview_pager_motion_scene_foldable">
 
     <LinearLayout
@@ -42,6 +44,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/foldable_apply_wallpaper_preview_sub_title_margin_top"
+            android:gravity="center"
             android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall" />
     </LinearLayout>
 
@@ -50,7 +53,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <include layout="@layout/small_preview_foldable_card_view2"
             android:id="@+id/lock_preview"
@@ -75,7 +80,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <include layout="@layout/small_preview_foldable_card_view2"
             android:id="@+id/home_preview"

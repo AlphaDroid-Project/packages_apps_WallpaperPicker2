@@ -255,7 +255,7 @@ public class LiveWallpaperInfo extends WallpaperInfo {
         for (int i = 0; i < resolveInfos.size(); i++) {
             ResolveInfo resolveInfo = resolveInfos.get(i);
             if (resolveInfo == null) {
-                Log.e(TAG, "Found a null resolve info");
+                Log.w(TAG, "Found a null resolve info");
                 continue;
             }
 

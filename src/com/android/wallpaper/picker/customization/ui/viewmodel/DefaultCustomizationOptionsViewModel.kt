@@ -97,6 +97,8 @@ constructor(
 
     override fun onTransitionToSecondaryScreenComplete() {}
 
+    override fun refetchThemeInfo() {}
+
     fun selectOption(option: CustomizationOption) {
         _selectedOptionState.value = option
     }

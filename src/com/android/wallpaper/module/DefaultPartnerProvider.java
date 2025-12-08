@@ -41,12 +41,15 @@ import javax.inject.Singleton;
 @Singleton
 public class DefaultPartnerProvider implements PartnerProvider {
 
-    private final String mPackageName;
-    private final Resources mResources;
+    private final Context mContext;
+
+    private String mPackageName;
+    private Resources mResources;
 
     @Inject
     public DefaultPartnerProvider(@ApplicationContext Context ctx) {
-        Pair<String, Resources> apkInfo = findSystemApk(ctx.getPackageManager());
+        mContext = ctx;
+        Pair<String, Resources> apkInfo = findSystemApk(mContext.getPackageManager());
         if (apkInfo != null) {
             mPackageName = apkInfo.first;
             mResources = apkInfo.second;
@@ -79,6 +82,18 @@ public class DefaultPartnerProvider implements PartnerProvider {
             }
         }
         return null;
+    }
+
+    @Override
+    public void refreshResourcesDueToLocaleChange() {
+        Pair<String, Resources> apkInfo = findSystemApk(mContext.getPackageManager());
+        if (apkInfo != null) {
+            mPackageName = apkInfo.first;
+            mResources = apkInfo.second;
+        } else {
+            mPackageName = null;
+            mResources = null;
+        }
     }
 
     @Override

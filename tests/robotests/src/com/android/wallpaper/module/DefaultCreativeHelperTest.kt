@@ -60,6 +60,10 @@ class DefaultCreativeHelperTest {
             "com.example.fake",
             CurrentWallpapersContentProvider(),
         )
+        ShadowContentResolver.registerProviderInternal(
+            "com.example.failing",
+            ExceptionThrowingContentProvider(),
+        )
     }
 
     @Test
@@ -136,9 +140,32 @@ class DefaultCreativeHelperTest {
         assertThat(description).isEqualTo(expectedDescription)
     }
 
+    @Test
+    fun getCurrentCreativeData_providerThrowsException_returnsNull() {
+        // Setup: Create metadata pointing to a content provider that will throw an exception.
+        val metaData =
+            Bundle().apply {
+                putString(
+                    CreativeCategory.KEY_WALLPAPER_SAVE_CREATIVE_WALLPAPER_CURRENT,
+                    "content://com.example.failing/somepath",
+                )
+            }
+        val info = createWallpaperInfo(context, metaData = metaData)
+
+        // Action & Verification: Call the public methods and assert they return null.
+        // This verifies that the try-catch block correctly handles the exception and returns the
+        // default null values without crashing.
+        val uri = creativeHelper.getCreativePreviewUri(context, info, WallpaperDestination.HOME)
+        val description =
+            creativeHelper.getCreativeDescription(context, info, WallpaperDestination.HOME)
+
+        assertThat(uri).isNull()
+        assertThat(description).isNull()
+    }
+
     private class CurrentWallpapersContentProvider : ContentProvider() {
         override fun onCreate(): Boolean {
-            TODO("Not yet implemented")
+            return true
         }
 
         override fun query(
@@ -170,11 +197,11 @@ class DefaultCreativeHelperTest {
         }
 
         override fun getType(uri: Uri): String? {
-            TODO("Not yet implemented")
+            return null
         }
 
         override fun insert(uri: Uri, values: ContentValues?): Uri? {
-            TODO("Not yet implemented")
+            return null
         }
 
         override fun update(
@@ -183,11 +210,11 @@ class DefaultCreativeHelperTest {
             selection: String?,
             selectionArgs: Array<out String>?,
         ): Int {
-            TODO("Not yet implemented")
+            return 0
         }
 
         override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int {
-            TODO("Not yet implemented")
+            return 0
         }
 
         companion object {
@@ -204,5 +231,33 @@ class DefaultCreativeHelperTest {
                 return bytes
             }
         }
+    }
+
+    private class ExceptionThrowingContentProvider : ContentProvider() {
+        override fun onCreate(): Boolean = true
+
+        override fun query(
+            uri: Uri,
+            projection: Array<out String>?,
+            selection: String?,
+            selectionArgs: Array<out String>?,
+            sortOrder: String?,
+        ): Cursor {
+            throw RuntimeException("Test Exception")
+        }
+
+        override fun getType(uri: Uri): String? = null
+
+        override fun insert(uri: Uri, values: ContentValues?): Uri? = null
+
+        override fun update(
+            uri: Uri,
+            values: ContentValues?,
+            selection: String?,
+            selectionArgs: Array<out String>?,
+        ): Int = 0
+
+        override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int =
+            0
     }
 }

@@ -18,8 +18,8 @@ package com.android.customization.picker.clock.ui.view
 
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
-import com.android.systemui.plugins.clocks.ClockAxisStyle
-import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
 import javax.inject.Inject
 
 class DefaultClockViewFactory @Inject constructor() : ClockViewFactory {

@@ -16,7 +16,6 @@
 
 package com.android.wallpaper.picker.preview.domain.interactor
 
-import android.app.Flags.liveWallpaperContentHandling
 import android.app.WallpaperColors
 import android.content.Context
 import android.graphics.Bitmap
@@ -129,41 +128,39 @@ constructor(
         wallpaperModel: LiveWallpaperModel,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
     ): LiveWallpaperModel? {
-        if (liveWallpaperContentHandling()) {
-            try {
-                wallpaperConnectionUtils.applyWallpaper(destination, wallpaperModel)?.let {
-                    val description =
-                        if (it.component != null) {
-                            it
-                        } else {
-                            it.toBuilder()
-                                .setComponent(
-                                    wallpaperModel.liveWallpaperData.systemWallpaperInfo.component
-                                )
-                                .build()
-                        }
-                    val sourceLiveData = wallpaperModel.liveWallpaperData
-                    val updatedLiveData =
-                        LiveWallpaperData(
-                            sourceLiveData.groupName,
-                            sourceLiveData.systemWallpaperInfo,
-                            sourceLiveData.isTitleVisible,
-                            sourceLiveData.isApplied,
-                            sourceLiveData.isEffectWallpaper,
-                            sourceLiveData.effectNames,
-                            sourceLiveData.contextDescription,
-                            description,
-                        )
-                    return LiveWallpaperModel(
-                        wallpaperModel.commonWallpaperData,
-                        updatedLiveData,
-                        wallpaperModel.creativeWallpaperData,
-                        wallpaperModel.internalLiveWallpaperData,
+        try {
+            wallpaperConnectionUtils.applyWallpaper(destination, wallpaperModel)?.let {
+                val description =
+                    if (it.component != null) {
+                        it
+                    } else {
+                        it.toBuilder()
+                            .setComponent(
+                                wallpaperModel.liveWallpaperData.systemWallpaperInfo.component
+                            )
+                            .build()
+                    }
+                val sourceLiveData = wallpaperModel.liveWallpaperData
+                val updatedLiveData =
+                    LiveWallpaperData(
+                        sourceLiveData.groupName,
+                        sourceLiveData.systemWallpaperInfo,
+                        sourceLiveData.isTitleVisible,
+                        sourceLiveData.isApplied,
+                        sourceLiveData.isEffectWallpaper,
+                        sourceLiveData.effectNames,
+                        sourceLiveData.contextDescription,
+                        description,
                     )
-                }
-            } catch (e: NoSuchMethodException) {
-                // Deliberate no-op, this means the apply function was not found
+                return LiveWallpaperModel(
+                    wallpaperModel.commonWallpaperData,
+                    updatedLiveData,
+                    wallpaperModel.creativeWallpaperData,
+                    wallpaperModel.internalLiveWallpaperData,
+                )
             }
+        } catch (e: NoSuchMethodException) {
+            // Deliberate no-op, this means the apply function was not found
         }
 
         return wallpaperModel.creativeWallpaperData?.let {

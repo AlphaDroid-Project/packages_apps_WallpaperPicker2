@@ -132,7 +132,6 @@ object ScreenPreviewBinder {
 
         val flags = BaseFlags.get()
         val isPageTransitionsFeatureEnabled = flags.isPageTransitionsFeatureEnabled(activity)
-        val isMultiCropEnabled = flags.isMultiCropEnabled()
 
         val showLoadingAnimation =
             flags.isPreviewLoadingAnimationEnabled(activity.applicationContext)
@@ -310,8 +309,7 @@ object ScreenPreviewBinder {
                                     activity = activity,
                                     wallpaperInfo = wallpaperInfo,
                                     surfaceCallback = wallpaperSurfaceCallback,
-                                    offsetToStart =
-                                        if (isMultiCropEnabled) false else offsetToStart,
+                                    offsetToStart = offsetToStart,
                                     onSurfaceViewsReady = surfaceViewsReady,
                                     thumbnailRequested = thumbnailRequested,
                                 )
@@ -467,7 +465,7 @@ object ScreenPreviewBinder {
                                 activity = activity,
                                 wallpaperInfo = wallpaperInfo,
                                 surfaceCallback = wallpaperSurfaceCallback,
-                                offsetToStart = if (isMultiCropEnabled) false else offsetToStart,
+                                offsetToStart = offsetToStart,
                                 onSurfaceViewsReady = surfaceViewsReady,
                                 thumbnailRequested = thumbnailRequested,
                             )

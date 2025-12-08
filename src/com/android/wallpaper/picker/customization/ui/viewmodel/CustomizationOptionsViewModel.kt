@@ -49,6 +49,9 @@ interface CustomizationOptionsViewModel {
 
     /** When the transition to a secondary customization option screen completes. */
     fun onTransitionToSecondaryScreenComplete()
+
+    /** Re-fetch the theme information. */
+    fun refetchThemeInfo()
 }
 
 interface CustomizationOptionsViewModelFactory {

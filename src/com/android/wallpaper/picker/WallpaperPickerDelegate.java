@@ -97,7 +97,6 @@ public class WallpaperPickerDelegate implements MyPhotosStarter {
     }
 
     public void initialize(boolean forceCategoryRefresh) {
-        if (!mFlags.isWallpaperCategoryRefactoringEnabled()) {
             populateCategories(forceCategoryRefresh);
             mLiveWallpaperStatusListener = this::updateLiveWallpapersCategories;
             mThirdPartyStatusListener = this::updateThirdPartyCategories;
@@ -115,13 +114,11 @@ public class WallpaperPickerDelegate implements MyPhotosStarter {
                 mPackageStatusNotifier.addListener(
                         mDownloadableWallpaperStatusListener, mDownloadableIntentAction);
             }
-        }
     }
 
     @Override
     public void requestCustomPhotoPicker(PermissionChangedListener listener) {
         //TODO (b/282073506): Figure out a better way to have better photos experience
-        if (mFlags.isWallpaperCategoryRefactoringEnabled()) {
             if (!isReadExternalStoragePermissionGranted()) {
                 PermissionChangedListener wrappedListener = new PermissionChangedListener() {
                     @Override
@@ -139,7 +136,6 @@ public class WallpaperPickerDelegate implements MyPhotosStarter {
 
                 return;
             }
-        }
 
         showCustomPhotoPicker();
     }

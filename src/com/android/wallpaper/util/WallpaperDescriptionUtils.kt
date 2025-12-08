@@ -105,7 +105,7 @@ fun StaticWallpaperModel.toDescription(
         )
     val attribs = commonWallpaperData.attributions
     val title = attribs?.getOrNull(0)
-    val desc = attribs?.subList(1, attribs.size).orEmpty()
+    val desc = attribs?.slice(1 until attribs.size).orEmpty()
     return WallpaperDescription.Builder()
         .setId(id)
         .setTitle(title)

@@ -32,8 +32,11 @@ import com.android.wallpaper.picker.individual.MarginItemDecoration
  * wallpaper picker grid. This helps us create a different view for the creative category tiles in
  * the individual picker.
  */
-class CreativeCategoryHolder(private val activity: Activity, itemView: View) :
-    RecyclerView.ViewHolder(itemView) {
+class CreativeCategoryHolder(
+    private val activity: Activity,
+    itemView: View,
+    private val viewAsHome: Boolean,
+) : RecyclerView.ViewHolder(itemView) {
 
     private val persister = InjectorProvider.getInjector().getWallpaperPersister(activity)
 
@@ -70,9 +73,12 @@ class CreativeCategoryHolder(private val activity: Activity, itemView: View) :
 
     private fun showPreview(wallpaperInfo: WallpaperInfo) {
         persister.setWallpaperInfoInPreview(wallpaperInfo)
+
         wallpaperInfo.showPreview(
             activity,
-            InjectorProvider.getInjector().getPreviewActivityIntentFactory(),
+            InjectorProvider.getInjector().getPreviewActivityIntentFactory().also {
+                it.setViewAsHome(viewAsHome)
+            },
             if (wallpaperInfo is LiveWallpaperInfo)
                 WallpaperPickerDelegate.PREVIEW_LIVE_WALLPAPER_REQUEST_CODE
             else WallpaperPickerDelegate.PREVIEW_WALLPAPER_REQUEST_CODE,

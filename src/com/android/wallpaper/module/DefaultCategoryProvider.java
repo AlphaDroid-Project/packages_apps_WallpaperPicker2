@@ -67,8 +67,7 @@ public class DefaultCategoryProvider implements CategoryProvider {
      * Relative category priorities. Lower numbers correspond to higher priorities (i.e., should
      * appear higher in the categories list).
      */
-    public static final int PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_DISABLED = 1;
-    private static final int PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_ENABLED = 51;
+    public static final int PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_ENABLED = 51;
     private static final int PRIORITY_SYSTEM = 100;
     private static final int PRIORITY_ON_DEVICE = 200;
     private static final int PRIORITY_LIVE = 300;
@@ -154,28 +153,13 @@ public class DefaultCategoryProvider implements CategoryProvider {
     }
 
     /**
-     * This function returns the value of priority of MyPhotos depending on whether
-     * the CreativeWallpaperFlag is enabled or not
-     * @param context
-     * @return the value of priority of MyPhotos
-     */
-    public static int getPriorityMyPhotos(Context context) {
-        boolean isCreativeWallpaperFlagEnabled = InjectorProvider.getInjector().getFlags()
-                .isAIWallpaperEnabled(context);
-        if (isCreativeWallpaperFlagEnabled) {
-            return PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_ENABLED;
-        } else
-            return PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_DISABLED;
-    }
-
-    /**
      * Returns an appropriate "my photos" custom photo category for the given device form factor.
      */
     private static Category getMyPhotosCategory(Context context) {
         return new ImageCategory(
                 context.getString(R.string.my_photos_category_title),
                 context.getString(R.string.image_wallpaper_collection_id),
-                getPriorityMyPhotos(context),
+                PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_ENABLED,
                 R.drawable.wallpaperpicker_emptystate /* overlayIconResId */);
     }
 

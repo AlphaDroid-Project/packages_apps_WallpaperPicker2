@@ -43,6 +43,10 @@ class FakeCreativeWallpaperInteractor @Inject constructor() : CreativeCategoryIn
         // empty
     }
 
+    override fun updatePackThemeCategory() {
+        // empty
+    }
+
     companion object {
         val dataListLessThanMinimum =
             listOf(

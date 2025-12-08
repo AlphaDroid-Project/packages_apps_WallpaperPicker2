@@ -27,7 +27,7 @@
     <string name="select_a_photo" msgid="7273925950262860696">"Selecteer een foto"</string>
     <string name="set_wallpaper_error_message" msgid="6819986999041085130">"Kan achtergrond niet instellen."</string>
     <string name="load_wallpaper_error_message" msgid="7913278480467707374">"Kan achtergrond niet laden. De afbeelding is beschadigd of is niet beschikbaar."</string>
-    <string name="static_wallpaper_presentation_mode_message" msgid="417940227049360906">"Momenteel ingesteld"</string>
+    <string name="static_wallpaper_presentation_mode_message" msgid="417940227049360906">"Nu ingesteld"</string>
     <string name="rotating_wallpaper_presentation_mode_message" msgid="3361676041605733288">"Dagelijkse achtergrond"</string>
     <string name="wallpaper_destination_both" msgid="1124197176741944063">"Start- en vergrendelscherm"</string>
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"Een achtergrond kiezen"</string>
@@ -77,6 +77,7 @@
     <string name="folded_device_state_description" msgid="4972608448265616264">"Dichtgevouwen modus"</string>
     <string name="unfolded_device_state_description" msgid="3071975681472460627">"Opengevouwen modus"</string>
     <string name="full_preview_check_button_description" msgid="700484353763952975">"Klaar met bewerken van achtergrond"</string>
+    <string name="suggestion_chip_close_button_description" msgid="7063924604587228866">"Aankondiging van themapakket sluiten"</string>
     <string name="refreshing_daily_wallpaper_dialog_message" msgid="1975910873362855761">"Dagelijkse achtergrond vernieuwen…"</string>
     <string name="refresh_daily_wallpaper_failed_message" msgid="4749879993812557166">"Dagelijkse achtergrond kan niet worden vernieuwd. Controleer je netwerkverbinding en probeer het opnieuw."</string>
     <string name="on_device_wallpapers_category_title" msgid="805819102071369004">"Achtergronden op apparaat"</string>
@@ -145,7 +146,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"Wijzigingen resetten?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"Je wijzigingen worden niet opgeslagen"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"Meer achtergronden"</string>
-    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nAlle bekijken"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nAlles bekijken"</string>
     <string name="wallpapers" msgid="7133442512006469886">"Achtergronden"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"Achtergrond"</string>

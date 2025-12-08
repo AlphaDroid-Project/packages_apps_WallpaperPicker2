@@ -23,6 +23,7 @@ import android.content.pm.ResolveInfo
 import android.content.pm.ServiceInfo
 import android.service.wallpaper.WallpaperService
 import com.android.wallpaper.module.InjectorProvider
+import com.android.wallpaper.module.ThirdPartyLiveWallpaperModelFactory
 import com.android.wallpaper.picker.category.client.LiveWallpapersClientImpl
 import com.android.wallpaper.testing.TestInjector
 import com.google.common.truth.Truth.assertThat
@@ -44,13 +45,18 @@ class LiveWallpapersClientImplTest {
     @get:Rule var hiltRule = HiltAndroidRule(this)
     @Inject @ApplicationContext lateinit var context: Context
     @Inject lateinit var testInjector: TestInjector
+    @Inject lateinit var thirdPartyLiveWallpaperModelFactory: ThirdPartyLiveWallpaperModelFactory
 
     private lateinit var liveWallpapersClientImpl: LiveWallpapersClientImpl
 
     @Before
     fun setup() {
         hiltRule.inject()
-        liveWallpapersClientImpl = LiveWallpapersClientImpl(context)
+        liveWallpapersClientImpl =
+            LiveWallpapersClientImpl(
+                context = context,
+                thirdPartyLiveWallpaperModelFactory = thirdPartyLiveWallpaperModelFactory,
+            )
         InjectorProvider.setInjector(testInjector)
     }
 
@@ -64,12 +70,12 @@ class LiveWallpapersClientImplTest {
 
         shadowPackageManager.addResolveInfoForIntent(
             Intent(WallpaperService.SERVICE_INTERFACE),
-            systemWallpaperResolveInfo
+            systemWallpaperResolveInfo,
         )
 
         shadowPackageManager.addResolveInfoForIntent(
             Intent(WallpaperService.SERVICE_INTERFACE),
-            nonSystemWallpaperResolveInfo
+            nonSystemWallpaperResolveInfo,
         )
 
         val result = liveWallpapersClientImpl.getAllOnDevice()
@@ -91,16 +97,42 @@ class LiveWallpapersClientImplTest {
 
         shadowPackageManager.addResolveInfoForIntent(
             Intent(WallpaperService.SERVICE_INTERFACE),
-            systemWallpaperResolveInfo
+            systemWallpaperResolveInfo,
         )
 
         shadowPackageManager.addResolveInfoForIntent(
             Intent(WallpaperService.SERVICE_INTERFACE),
-            nonSystemWallpaperResolveInfo
+            nonSystemWallpaperResolveInfo,
         )
 
         val result =
             liveWallpapersClientImpl.getAll(
+                setOf("com.system.wallpaper", "com.non.system.wallpaper")
+            )
+
+        assertThat(result.size).isEqualTo(0)
+    }
+
+    @Test
+    fun `test getAllWallpapers returns wallpaper models excluding package names`() {
+        val systemWallpaperResolveInfo =
+            createFakeResolveInfo("com.system.wallpaper", "System Wallpaper")
+        val nonSystemWallpaperResolveInfo =
+            createFakeResolveInfo("com.non.system.wallpaper", "Non-System Wallpaper")
+        val shadowPackageManager = shadowOf(context.packageManager)
+
+        shadowPackageManager.addResolveInfoForIntent(
+            Intent(WallpaperService.SERVICE_INTERFACE),
+            systemWallpaperResolveInfo,
+        )
+
+        shadowPackageManager.addResolveInfoForIntent(
+            Intent(WallpaperService.SERVICE_INTERFACE),
+            nonSystemWallpaperResolveInfo,
+        )
+
+        val result =
+            liveWallpapersClientImpl.getAllWallpapers(
                 setOf("com.system.wallpaper", "com.non.system.wallpaper")
             )
 

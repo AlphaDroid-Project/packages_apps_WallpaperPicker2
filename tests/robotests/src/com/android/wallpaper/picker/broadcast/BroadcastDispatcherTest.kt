@@ -34,6 +34,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -127,19 +128,23 @@ class BroadcastDispatcherTest {
         assertThat(isUnregistered).isEqualTo(true)
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun testFilterMustNotContainDataType() {
         val testFilter = IntentFilter(TEST_ACTION).apply { addDataType(TEST_TYPE) }
 
-        broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        assertThrows(IllegalArgumentException::class.java) {
+            broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun testFilterMustNotSetPriority() {
         val testFilter =
             IntentFilter(TEST_ACTION).apply { priority = IntentFilter.SYSTEM_HIGH_PRIORITY }
 
-        broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        assertThrows(IllegalArgumentException::class.java) {
+            broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        }
     }
 
     companion object {

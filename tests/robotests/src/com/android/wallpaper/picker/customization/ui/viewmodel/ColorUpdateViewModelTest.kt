@@ -17,12 +17,12 @@
 package com.android.wallpaper.picker.customization.ui.viewmodel
 
 import android.content.Context
+import android.content.theming.ThemeStyle
 import android.util.SparseIntArray
 import android.widget.RemoteViews.ColorResources
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.customization.picker.mode.data.repository.DarkModeStateRepository
-import com.android.systemui.monet.Style
 import com.android.wallpaper.system.UiModeManagerWrapper
 import com.android.wallpaper.testing.collectLastValue
 import com.google.common.truth.Truth.assertThat
@@ -111,7 +111,7 @@ class ColorUpdateViewModelTest {
             underTest.updateColors()
 
             underTest.setPreviewEnabled(true)
-            underTest.previewColors(54321, Style.VIBRANT, isDarkMode = false)
+            underTest.previewColors(54321, ThemeStyle.VIBRANT, isDarkMode = false)
 
             assertThat(colorPrimary()).isNotEqualTo(12345)
         }
@@ -131,7 +131,7 @@ class ColorUpdateViewModelTest {
             underTest.updateColors()
 
             underTest.setPreviewEnabled(false)
-            underTest.previewColors(54321, Style.VIBRANT, isDarkMode = false)
+            underTest.previewColors(54321, ThemeStyle.VIBRANT, isDarkMode = false)
 
             assertThat(colorPrimary()).isEqualTo(12345)
         }
@@ -151,7 +151,7 @@ class ColorUpdateViewModelTest {
             underTest.updateColors()
             assertThat(colorPrimary()).isEqualTo(12345)
 
-            underTest.previewColors(54321, Style.VIBRANT, isDarkMode = false)
+            underTest.previewColors(54321, ThemeStyle.VIBRANT, isDarkMode = false)
             underTest.resetPreview()
 
             assertThat(colorPrimary()).isEqualTo(12345)

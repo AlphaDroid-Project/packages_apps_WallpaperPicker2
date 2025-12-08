@@ -34,6 +34,7 @@ import android.util.Log;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
 
 import com.android.wallpaper.module.DrawableLayerResolver;
@@ -73,7 +74,8 @@ public class LiveWallpaperThumbAsset extends Asset {
     protected final android.app.WallpaperInfo mInfo;
     protected final DrawableLayerResolver mLayerResolver;
     // The content Uri of thumbnail
-    protected Uri mUri;
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public Uri mUri;
     protected boolean mShouldCacheThumbnail;
     private Drawable mCachedThumbnail;
 
@@ -319,20 +321,14 @@ public class LiveWallpaperThumbAsset extends Asset {
      */
     @WorkerThread
     protected Drawable getThumbnailDrawable() {
-        if (!mShouldCacheThumbnail) {
-            return loadThumbnailFromUri();
-        }
+        if (mShouldCacheThumbnail && mCachedThumbnail != null) return mCachedThumbnail;
 
-        if (mCachedThumbnail != null) {
-            return mCachedThumbnail;
-        }
+        Drawable fromUri = loadThumbnailFromUri();
+        Drawable thumb = (fromUri != null) ? fromUri : loadThumbnailFromInfo();
 
-        mCachedThumbnail = loadThumbnailFromUri();
-        if (mCachedThumbnail == null) {
-            mCachedThumbnail = loadThumbnailFromInfo();
-        }
+        if (mShouldCacheThumbnail) mCachedThumbnail = thumb;
 
-        return mCachedThumbnail;
+        return thumb;
     }
 
     private Drawable loadThumbnailFromUri() {
@@ -344,7 +340,7 @@ public class LiveWallpaperThumbAsset extends Asset {
                             BitmapFactory.decodeStream(assetFileDescriptor.createInputStream()));
                 }
             } catch (IOException e) {
-                Log.w(TAG, "Not found thumbnail from URI.");
+                Log.w(TAG, "Not found thumbnail from URI.", e);
             }
         }
         return null;

@@ -22,6 +22,7 @@ import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 
+import com.android.wallpaper.model.InlinePreviewIntentFactory;
 import com.android.wallpaper.model.LiveWallpaperInfo;
 import com.android.wallpaper.model.WallpaperInfo;
 import com.android.wallpaper.module.InjectorProvider;
@@ -37,13 +38,15 @@ class PreviewIndividualHolder extends IndividualHolder implements View.OnClickLi
 
     private WallpaperPersister mWallpaperPersister;
     CategoryType mCategoryType;
+    boolean mViewAsHome = true;
 
     public PreviewIndividualHolder(
             Activity hostActivity, int tileHeightPx, View itemView,
-            CategoryType categoryType) {
+            CategoryType categoryType, boolean viewAsHome) {
         super(hostActivity, tileHeightPx, tileHeightPx, itemView);
         mTileLayout.setOnClickListener(this);
         mCategoryType = categoryType;
+        mViewAsHome = viewAsHome;
         mWallpaperPersister = InjectorProvider.getInjector().getWallpaperPersister(hostActivity);
     }
 
@@ -61,9 +64,11 @@ class PreviewIndividualHolder extends IndividualHolder implements View.OnClickLi
      */
     private void showPreview(WallpaperInfo wallpaperInfo) {
         mWallpaperPersister.setWallpaperInfoInPreview(wallpaperInfo);
-
+        InlinePreviewIntentFactory previewIntentFactory = InjectorProvider.getInjector()
+                .getPreviewActivityIntentFactory();
+        previewIntentFactory.setViewAsHome(mViewAsHome);
         wallpaperInfo.showPreview(mActivity,
-                InjectorProvider.getInjector().getPreviewActivityIntentFactory(),
+                previewIntentFactory,
                 wallpaperInfo instanceof LiveWallpaperInfo ? PREVIEW_LIVE_WALLPAPER_REQUEST_CODE
                         : PREVIEW_WALLPAPER_REQUEST_CODE, true,
                 (mCategoryType == CategoryType.CreativeCategories));

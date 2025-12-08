@@ -46,6 +46,10 @@ class FakeDefaultWallpaperCategoryClient @Inject constructor() : DefaultWallpape
         fakeThirdPartyAppCategories = categories
     }
 
+    override fun resetResources() {
+        // Do nothing
+    }
+
     override suspend fun getMyPhotosCategory(): Category {
         return ImageCategory(
             "Fake My Photos",

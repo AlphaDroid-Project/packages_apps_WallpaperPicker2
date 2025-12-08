@@ -17,83 +17,18 @@ package com.android.wallpaper.picker;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-
-import com.android.wallpaper.R;
-import com.android.wallpaper.config.BaseFlags;
 import com.android.wallpaper.model.InlinePreviewIntentFactory;
 import com.android.wallpaper.model.WallpaperInfo;
-import com.android.wallpaper.module.InjectorProvider;
 import com.android.wallpaper.module.LargeScreenMultiPanesChecker;
-import com.android.wallpaper.picker.AppbarFragment.AppbarFragmentHost;
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity;
-import com.android.wallpaper.util.ActivityUtils;
 
 /**
  * Activity that displays a view-only preview of a specific wallpaper.
  *
- * <p>TODO(b/298037335): Maybe reuse PreviewActivity and remove ViewOnlyPreviewActivity.
+ * <p>TODO (b/442864280): Remove when cleaning up new picker UI flag
  */
-public class ViewOnlyPreviewActivity extends BasePreviewActivity implements AppbarFragmentHost {
-
-    /**
-     * Returns a new Intent with the provided WallpaperInfo instance put as an extra.
-     */
-    public static Intent newIntent(Context context, WallpaperInfo wallpaper) {
-        return new Intent(context, ViewOnlyPreviewActivity.class)
-                .putExtra(EXTRA_WALLPAPER_INFO, wallpaper);
-    }
-
-    /**
-     * Returns a new Intent with extra to start this activity.
-     *
-     * @param isVewAsHome true to preview home screen, otherwise preview lock screen.
-     */
-    public static Intent newIntent(Context context, WallpaperInfo wallpaper,
-            boolean isVewAsHome, boolean isAssetIdPresent) {
-        return newIntent(context, wallpaper).putExtra(EXTRA_VIEW_AS_HOME, isVewAsHome)
-                .putExtra(IS_ASSET_ID_PRESENT, isAssetIdPresent);
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_preview);
-
-        enableFullScreen();
-
-        FragmentManager fm = getSupportFragmentManager();
-        Fragment fragment = fm.findFragmentById(R.id.fragment_container);
-
-        if (fragment == null) {
-            Intent intent = getIntent();
-            WallpaperInfo wallpaper = intent.getParcelableExtra(EXTRA_WALLPAPER_INFO);
-            boolean viewAsHome = intent.getBooleanExtra(EXTRA_VIEW_AS_HOME, true);
-            boolean isAssetIdPresent = intent.getBooleanExtra(IS_ASSET_ID_PRESENT, true);
-            fragment = InjectorProvider.getInjector().getPreviewFragment(
-                    /* context */ this,
-                    wallpaper,
-                    viewAsHome,
-                    isAssetIdPresent,
-                    /* isNewTask= */ false);
-            fm.beginTransaction()
-                    .add(R.id.fragment_container, fragment)
-                    .commit();
-        }
-    }
-
-    @Override
-    public void onUpArrowPressed() {
-        onBackPressed();
-    }
-
-    @Override
-    public boolean isUpArrowSupported() {
-        return !ActivityUtils.isSUWMode(getBaseContext());
-    }
+public class ViewOnlyPreviewActivity {
 
     /**
      * Implementation that provides an intent to start a PreviewActivity.
@@ -109,21 +44,12 @@ public class ViewOnlyPreviewActivity extends BasePreviewActivity implements Appb
             Context appContext = context.getApplicationContext();
             LargeScreenMultiPanesChecker multiPanesChecker = new LargeScreenMultiPanesChecker();
             final boolean isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext);
-            final BaseFlags flags = InjectorProvider.getInjector().getFlags();
-            if (flags.isMultiCropEnabled()) {
-                return WallpaperPreviewActivity.Companion.newIntent(appContext, wallpaper,
-                        isAssetIdPresent, mIsViewAsHome, /* isNewTask= */ isMultiPanel,
-                        shouldRefreshCategory);
-            }
-
-            // Launch a full preview activity for devices supporting multipanel mode
-            if (isMultiPanel) {
-                return FullPreviewActivity.newIntent(appContext, wallpaper, mIsViewAsHome,
-                        isAssetIdPresent);
-            }
-
-            return ViewOnlyPreviewActivity.newIntent(appContext, wallpaper, mIsViewAsHome,
-                    isAssetIdPresent);
+            return WallpaperPreviewActivity.intentBuilder(appContext, isAssetIdPresent)
+                    .wallpaperInfo(wallpaper)
+                    .viewAsHome(mIsViewAsHome)
+                    .newTask(isMultiPanel)
+                    .refreshCategory(shouldRefreshCategory)
+                    .build();
         }
 
         @Override

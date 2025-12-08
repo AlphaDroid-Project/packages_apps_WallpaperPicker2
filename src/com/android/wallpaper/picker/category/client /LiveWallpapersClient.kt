@@ -19,6 +19,7 @@ package com.android.wallpaper.picker.category.client
 import android.content.pm.ApplicationInfo
 import android.content.pm.ResolveInfo
 import com.android.wallpaper.model.WallpaperInfo
+import com.android.wallpaper.picker.data.WallpaperModel
 
 /**
  * This class is used for handling all operations related to live wallpapers. This is meant to
@@ -31,4 +32,10 @@ interface LiveWallpapersClient {
      * excluding those whose package names are specified in the provided set.
      */
     fun getAll(excludedPackageNames: Set<String?>?): List<WallpaperInfo>
+
+    /**
+     * Retrieves all live wallpapers installed on the device, as [WallpaperModel],
+     * excluding those whose package names are specified in the provided set.
+     */
+    fun getAllWallpapers(excludedPackageNames: Set<String?>?): List<WallpaperModel>
 }

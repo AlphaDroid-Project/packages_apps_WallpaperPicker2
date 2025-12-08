@@ -227,15 +227,12 @@ class PhotoPickerFragment : Hilt_PhotoPickerFragment() {
         persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
         val isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext)
         val previewIntent =
-            WallpaperPreviewActivity.newIntent(
-                context = appContext,
-                isAssetIdPresent = true,
-                isViewAsHome = true,
-                isNewTask = isMultiPanel,
-                shouldCategoryRefresh = isCreativeCategories,
-                shouldNavigateToExtendedWallpaperEffects =
-                    navigateToExtendedWallpaperEffects ?: false,
-            )
+            WallpaperPreviewActivity.intentBuilder(appContext, isAssetIdPresent = true)
+                .viewAsHome(true)
+                .newTask(isMultiPanel)
+                .refreshCategory(isCreativeCategories)
+                .navigateToExtendedEffects(navigateToExtendedWallpaperEffects ?: false)
+                .build()
         ActivityUtils.startActivityForResultSafely(
             activity,
             previewIntent,

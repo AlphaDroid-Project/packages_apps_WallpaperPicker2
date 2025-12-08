@@ -19,4 +19,7 @@
     <integer name="category_max_column_count">3</integer>
     <integer name="individual_min_column_count">3</integer>
     <integer name="individual_max_column_count">3</integer>
+    <integer name="suggested_wallpapers_desktop_min_column_count">3</integer>
+    <integer name="suggested_wallpapers_desktop_max_column_count">5</integer>
+    <integer name="wallpaper_carousel_items_min_count">3</integer>
 </resources>

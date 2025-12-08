@@ -51,6 +51,7 @@ interface CustomizationOptionsBinder {
         navigateToColorContrastSettingsActivity: () -> Unit,
         navigateToLockScreenNotificationsSettingsActivity: () -> Unit,
         navigateToPackThemeActivity: (Intent) -> Unit,
+        navigateToScreenSaverSettingsActivity: () -> Unit,
         iconStyleViewUtil: IconStyleViewUtil,
     )
 

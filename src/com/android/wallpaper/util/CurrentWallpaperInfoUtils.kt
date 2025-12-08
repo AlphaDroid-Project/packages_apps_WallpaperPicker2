@@ -18,6 +18,8 @@ package com.android.wallpaper.util
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.CurrentWallpaperInfo
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.WallpaperInfo
@@ -47,7 +49,10 @@ object CurrentWallpaperInfoUtils {
             _ ->
             val preferences = injector.getPreferences(context)
             val hw =
-                if (homeWallpaper is CurrentWallpaperInfo) {
+                if (
+                    !BaseFlags.get().isRecentWallpapersFromSystemEnabled(context) &&
+                        homeWallpaper is CurrentWallpaperInfo
+                ) {
                     homeWallpaper.augmentByRecent(
                         context,
                         Screen.HOME_SCREEN,
@@ -56,25 +61,26 @@ object CurrentWallpaperInfoUtils {
                         onFetchUri.invoke(homeWallpaper, Screen.HOME_SCREEN),
                     )
                 } else {
+                    Log.i("ABCD", "I am in else condition for home")
                     homeWallpaper
                 }
             val lw =
-                when (lockWallpaper) {
-                    null -> {
-                        hw
-                    }
-                    is CurrentWallpaperInfo -> {
-                        lockWallpaper.augmentByRecent(
-                            context,
-                            Screen.LOCK_SCREEN,
-                            preferences.getLockWallpaperRecentsKey(),
-                            updateRecents,
-                            onFetchUri.invoke(lockWallpaper, Screen.LOCK_SCREEN),
-                        )
-                    }
-                    else -> {
-                        lockWallpaper
-                    }
+                if (lockWallpaper == null) {
+                    hw
+                } else if (
+                    !BaseFlags.get().isRecentWallpapersFromSystemEnabled(context) &&
+                        lockWallpaper is CurrentWallpaperInfo
+                ) {
+                    lockWallpaper.augmentByRecent(
+                        context,
+                        Screen.LOCK_SCREEN,
+                        preferences.getLockWallpaperRecentsKey(),
+                        updateRecents,
+                        onFetchUri.invoke(lockWallpaper, Screen.LOCK_SCREEN),
+                    )
+                } else {
+                    Log.i("ABCD", "I am in else condition for lock")
+                    lockWallpaper
                 }
 
             if (updateRecents) {
@@ -94,13 +100,7 @@ object CurrentWallpaperInfoUtils {
         updateRecents: Boolean,
         sharableUri: Uri?,
     ): CurrentWallpaperInfo {
-        val cropHints =
-            if (InjectorProvider.getInjector().getFlags().isMultiCropEnabled()) {
-                wallpaperCropHints
-            } else {
-                null
-            }
-
+        val cropHints = wallpaperCropHints
         return object :
                 CurrentWallpaperInfo(
                     getAttributions(context),

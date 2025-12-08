@@ -15,7 +15,6 @@
  */
 package com.android.wallpaper.util;
 
-import static android.app.Flags.liveWallpaperContentHandling;
 import static android.graphics.Matrix.MSCALE_X;
 import static android.graphics.Matrix.MSCALE_Y;
 import static android.graphics.Matrix.MSKEW_X;
@@ -433,10 +432,8 @@ public class WallpaperConnection extends IWallpaperConnection.Stub implements Se
                     mContainerView.getWidth(), mContainerView.getHeight(), new Rect(0, 0, 0, 0),
                     displayId);
             Log.d(TAG, "Using pre-U version of IWallpaperService#attach");
-            if (liveWallpaperContentHandling()) {
-                Log.w(TAG,
-                        "live wallpaper content handling enabled, but pre-U attach method called");
-            }
+            Log.w(TAG,
+                    "live wallpaper content handling enabled, but pre-U attach method called");
             return true;
         } catch (NoSuchMethodException | NoSuchMethodError | InvocationTargetException
                  | IllegalAccessException e) {
@@ -456,10 +453,8 @@ public class WallpaperConnection extends IWallpaperConnection.Stub implements Se
             preBMethod.invoke(mService, this, mToken, LayoutParams.TYPE_APPLICATION_MEDIA, true,
                     mContainerView.getWidth(), mContainerView.getHeight(), new Rect(0, 0, 0, 0),
                     displayId, mDestinationFlag, null);
-            if (liveWallpaperContentHandling()) {
-                Log.w(TAG,
-                        "live wallpaper content handling enabled, but pre-B attach method called");
-            }
+            Log.w(TAG,
+                    "live wallpaper content handling enabled, but pre-B attach method called");
             return true;
         } catch (NoSuchMethodException | NoSuchMethodError | InvocationTargetException
                  | IllegalAccessException e) {

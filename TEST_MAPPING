@@ -9,5 +9,10 @@
         }
       ]
     }
+  ],
+  "desktop-postsubmit": [
+    {
+      "name": "WallpaperPickerGoogleTests"
+    }
   ]
 }

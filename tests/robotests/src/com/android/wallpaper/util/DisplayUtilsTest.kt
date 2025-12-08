@@ -316,4 +316,14 @@ class DisplayUtilsTest {
         assertThat(cropHintsOut[squarePortrait]).isEqualTo(rect3)
         assertThat(cropHintsOut[squareLandscape]).isEqualTo(rect4)
     }
+
+    @Test
+    fun convertCropHints_noCrops_succeeds() {
+        val displays = listOf(HANDHELD)
+        displaysProvider.setDisplays(displays)
+
+        val cropHintsOut = displayUtils.convertCropHints(SparseArray<Rect>())
+
+        assertThat(cropHintsOut).isEmpty()
+    }
 }

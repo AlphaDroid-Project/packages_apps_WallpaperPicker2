@@ -15,8 +15,6 @@
  */
 package com.android.wallpaper.module;
 
-import static android.app.Flags.liveWallpaperContentHandling;
-
 import android.app.WallpaperManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -67,7 +65,6 @@ public class DefaultCurrentWallpaperInfoFactory implements CurrentWallpaperInfoF
             WallpaperInfoCallback callback) {
 
         BaseFlags flags = InjectorProvider.getInjector().getFlags();
-        final boolean isMultiCropEnabled = flags.isMultiCropEnabled();
 
         boolean isHomeWallpaperSynced  = homeWallpaperSynced(context);
         boolean isLockWallpaperSynced  = lockWallpaperSynced(context);
@@ -76,37 +73,32 @@ public class DefaultCurrentWallpaperInfoFactory implements CurrentWallpaperInfoF
             // Update wallpaper crop hints for static wallpaper even if home & lock wallpaper are
             // considered synced because wallpaper info are considered synced as long as both are
             // static
-            if (isMultiCropEnabled) {
-                DisplayUtils displayUtils = InjectorProvider.getInjector().getDisplayUtils(context);
-                WallpaperClient wallpaperClient = InjectorProvider.getInjector().getWallpaperClient(
-                        context);
-                List<Point> displaySizes = displayUtils
-                        .getInternalDisplaySizes(/* allDimensions= */ true);
-                if (mHomeWallpaper != null) {
-                    boolean isHomeWallpaperStatic = mHomeWallpaper.getWallpaperComponent() == null
-                            || mHomeWallpaper.getWallpaperComponent().getComponent() == null;
-                    if (isHomeWallpaperStatic) {
-                        mHomeWallpaper.setWallpaperCropHints(
-                                wallpaperClient.getCurrentCropHints(displaySizes,
-                                        WallpaperManager.FLAG_SYSTEM));
-                    } else {
-                        mHomeWallpaper.setWallpaperCropHints(new HashMap<>());
-                    }
+            DisplayUtils displayUtils = InjectorProvider.getInjector().getDisplayUtils(context);
+            WallpaperClient wallpaperClient = InjectorProvider.getInjector().getWallpaperClient(
+                    context);
+            List<Point> displaySizes =
+                    displayUtils.getInternalDisplaySizes(/* allDimensions= */ true);
+            if (mHomeWallpaper != null) {
+                boolean isHomeWallpaperStatic = mHomeWallpaper.getWallpaperComponent() == null
+                        || mHomeWallpaper.getWallpaperComponent().getComponent() == null;
+                if (isHomeWallpaperStatic) {
+                    mHomeWallpaper.setWallpaperCropHints(
+                            wallpaperClient.getCurrentCropHints(displaySizes,
+                                    WallpaperManager.FLAG_SYSTEM));
+                } else {
+                    mHomeWallpaper.setWallpaperCropHints(new HashMap<>());
                 }
-                if (mLockWallpaper != null) {
-                    boolean isLockWallpaperStatic = mLockWallpaper.getWallpaperComponent() == null
-                            || mLockWallpaper.getWallpaperComponent().getComponent() == null;
-                    if (isLockWallpaperStatic) {
-                        mLockWallpaper.setWallpaperCropHints(
-                                wallpaperClient.getCurrentCropHints(displaySizes,
-                                        WallpaperManager.FLAG_LOCK));
-                    } else {
-                        mLockWallpaper.setWallpaperCropHints(new HashMap<>());
-                    }
+            }
+            if (mLockWallpaper != null) {
+                boolean isLockWallpaperStatic = mLockWallpaper.getWallpaperComponent() == null
+                        || mLockWallpaper.getWallpaperComponent().getComponent() == null;
+                if (isLockWallpaperStatic) {
+                    mLockWallpaper.setWallpaperCropHints(
+                            wallpaperClient.getCurrentCropHints(displaySizes,
+                                    WallpaperManager.FLAG_LOCK));
+                } else {
+                    mLockWallpaper.setWallpaperCropHints(new HashMap<>());
                 }
-            } else {
-                if (mHomeWallpaper != null) mHomeWallpaper.setWallpaperCropHints(null);
-                if (mLockWallpaper != null) mLockWallpaper.setWallpaperCropHints(null);
             }
             callback.onWallpaperInfoCreated(mHomeWallpaper, mLockWallpaper, mPresentationMode);
             return;
@@ -125,11 +117,9 @@ public class DefaultCurrentWallpaperInfoFactory implements CurrentWallpaperInfoF
                     if (homeWallpaperMetadata instanceof LiveWallpaperMetadata) {
                         homeWallpaper = mLiveWallpaperInfoFactory.getLiveWallpaperInfo(
                                 homeWallpaperMetadata.getWallpaperComponent());
-                        if (liveWallpaperContentHandling()) {
-                            ((LiveWallpaperInfo) homeWallpaper).setWallpaperDescription(
-                                    ((LiveWallpaperMetadata) homeWallpaperMetadata)
-                                            .getDescription());
-                        }
+                        ((LiveWallpaperInfo) homeWallpaper).setWallpaperDescription(
+                                ((LiveWallpaperMetadata) homeWallpaperMetadata)
+                                        .getDescription());
                         updateIfCreative(homeWallpaper, homeWallpaperMetadata);
                     } else {
                         Uri imageUri = homeWallpaperMetadata.getWallpaperImageUri();
@@ -140,10 +130,8 @@ public class DefaultCurrentWallpaperInfoFactory implements CurrentWallpaperInfoF
                                 WallpaperManager.FLAG_SYSTEM,
                                 imageUri,
                                 homeWallpaperMetadata.getId());
-                        if (isMultiCropEnabled) {
-                            homeWallpaper.setWallpaperCropHints(
-                                    homeWallpaperMetadata.getWallpaperCropHints());
-                        }
+                        homeWallpaper.setWallpaperCropHints(
+                                homeWallpaperMetadata.getWallpaperCropHints());
                     }
 
                     WallpaperInfo lockWallpaper = null;
@@ -153,11 +141,9 @@ public class DefaultCurrentWallpaperInfoFactory implements CurrentWallpaperInfoF
                         if (lockWallpaperMetadata instanceof LiveWallpaperMetadata) {
                             lockWallpaper = mLiveWallpaperInfoFactory.getLiveWallpaperInfo(
                                     lockWallpaperMetadata.getWallpaperComponent());
-                            if (liveWallpaperContentHandling()) {
-                                ((LiveWallpaperInfo) lockWallpaper).setWallpaperDescription(
-                                        ((LiveWallpaperMetadata) lockWallpaperMetadata)
-                                                .getDescription());
-                            }
+                            ((LiveWallpaperInfo) lockWallpaper).setWallpaperDescription(
+                                    ((LiveWallpaperMetadata) lockWallpaperMetadata)
+                                            .getDescription());
                             updateIfCreative(lockWallpaper, lockWallpaperMetadata);
                         } else {
                             if (isLockWallpaperBuiltIn(context)) {
@@ -173,10 +159,8 @@ public class DefaultCurrentWallpaperInfoFactory implements CurrentWallpaperInfoF
                                         lockWallpaperMetadata.getId());
                             }
 
-                            if (isMultiCropEnabled) {
-                                lockWallpaper.setWallpaperCropHints(
-                                        lockWallpaperMetadata.getWallpaperCropHints());
-                            }
+                            lockWallpaper.setWallpaperCropHints(
+                                    lockWallpaperMetadata.getWallpaperCropHints());
                         }
                     }
 

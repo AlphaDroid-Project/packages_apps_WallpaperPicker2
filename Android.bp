@@ -79,11 +79,11 @@ android_library {
         "grpc-java-core-internal",
         "grpc-java-stub",
         "grpc-java-binder",
+        "PlatformComposeSceneTransitionLayout",
     ],
 
     resource_dirs: [
         "res",
-        "res_override",
     ],
 
     srcs: [

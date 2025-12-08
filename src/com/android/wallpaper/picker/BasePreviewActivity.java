@@ -42,6 +42,10 @@ public abstract class BasePreviewActivity extends BaseActivity {
     public static final String SHOULD_CATEGORY_REFRESH =
             "com.android.wallpaper.picker.should_category_refresh";
 
+    // To be used for logging
+    public static final String WALLPAPER_ENTRYPOINT =
+            "com.android.wallpaper.picker.wallpaper_entrypoint";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

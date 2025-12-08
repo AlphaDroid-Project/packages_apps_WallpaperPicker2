@@ -34,4 +34,6 @@ class CreativeCategoryInteractorImpl @Inject constructor() : CreativeCategoryInt
     override fun updateCreativeCategories() {
         // nothing to update in aosp
     }
+
+    override fun updatePackThemeCategory() {}
 }

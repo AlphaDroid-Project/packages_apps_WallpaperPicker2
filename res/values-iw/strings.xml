@@ -77,6 +77,7 @@
     <string name="folded_device_state_description" msgid="4972608448265616264">"מצב מקופל"</string>
     <string name="unfolded_device_state_description" msgid="3071975681472460627">"מצב לא מקופל"</string>
     <string name="full_preview_check_button_description" msgid="700484353763952975">"סיימתי לערוך את הטפט"</string>
+    <string name="suggestion_chip_close_button_description" msgid="7063924604587228866">"סגירת ההודעה על ערכת העיצוב"</string>
     <string name="refreshing_daily_wallpaper_dialog_message" msgid="1975910873362855761">"מרענן את הטפט היומי..."</string>
     <string name="refresh_daily_wallpaper_failed_message" msgid="4749879993812557166">"רענון הטפט היומי נכשל. יש לבדוק את החיבור לרשת ולנסות שוב."</string>
     <string name="on_device_wallpapers_category_title" msgid="805819102071369004">"טפטים במכשיר"</string>
@@ -145,7 +146,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"לאפס את השינויים?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"השינויים שביצעת לא יישמרו"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"עוד טפטים"</string>
-    <string name="view_all_wallpapers" msgid="1555854274767599522">"‏‫&gt;\nלהצגת כל הפריטים"</string>
+    <string name="view_all_wallpapers" msgid="1555854274767599522">"‏‫&gt;\nהצגת הכל"</string>
     <string name="wallpapers" msgid="7133442512006469886">"טפטים"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"‏%1$s‏, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"טפט"</string>

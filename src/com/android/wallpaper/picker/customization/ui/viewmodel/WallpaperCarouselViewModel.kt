@@ -17,9 +17,12 @@
 package com.android.wallpaper.picker.customization.ui.viewmodel
 
 import android.content.Context
+import android.stats.style.StyleEnums
+import android.stats.style.StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW_SUGGESTED_PHOTOS_HOME_SCREEN
 import com.android.wallpaper.R
 import com.android.wallpaper.asset.ContentUriAsset
 import com.android.wallpaper.config.BaseFlags
+import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.category.domain.interactor.CreativeCategoryInteractor
 import com.android.wallpaper.picker.category.domain.interactor.CuratedPhotosInteractor
 import com.android.wallpaper.picker.category.domain.interactor.OnDeviceWallpapersInteractor
@@ -51,7 +54,8 @@ constructor(
     onDeviceWallpapersInteractor: OnDeviceWallpapersInteractor,
     @Assisted private val viewModelScope: CoroutineScope,
 ) {
-
+    private val carouselItemsMinCount =
+        context.resources.getInteger(R.integer.wallpaper_carousel_items_min_count)
     private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
     val navigationEvents = _navigationEvents.asSharedFlow()
 
@@ -82,6 +86,7 @@ constructor(
                         navigateToPreviewScreen(
                             wallpaperModelWithIndex.value,
                             CategoryType.CuratedPhotos,
+                            SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW_SUGGESTED_PHOTOS_HOME_SCREEN,
                         )
                     }
                 } ?: emptyList()
@@ -189,12 +194,12 @@ constructor(
                     creatives
                 }
             // if more than 3 curated photos return only curated photos
-            if (curatedPhotos.size > CAROUSEL_ITEMS_THRESHOLD) {
+            if (curatedPhotos.size > carouselItemsMinCount) {
                 return@combine curatedPhotos
-            } else if (creativeCategories.size >= CAROUSEL_ITEMS_THRESHOLD) {
+            } else if (creativeCategories.size >= carouselItemsMinCount) {
                 // if creatives more or equal to 3 than return only creatives
                 return@combine creativeCategories
-            } else if (defaultWallpapers.size >= CAROUSEL_ITEMS_THRESHOLD) {
+            } else if (defaultWallpapers.size >= carouselItemsMinCount) {
                 // otherwise just return on-device wallpapers
                 return@combine defaultWallpapers
             } else {
@@ -208,16 +213,22 @@ constructor(
      */
     val shouldShowSuggestedPhotosLabel: Flow<Boolean> =
         curatedPhotoCarouselItems.map { curatedPhotos: List<TileViewModel> ->
-            return@map curatedPhotos.size > CAROUSEL_ITEMS_THRESHOLD
+            return@map curatedPhotos.size > carouselItemsMinCount
         }
 
     private fun navigateToPreviewScreen(
         wallpaperModel: WallpaperModel,
         categoryType: CategoryType,
+        @UserEventLogger.SetWallpaperEntryPoint
+        setWallpaperEntryPoint: Int = StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
     ) {
         viewModelScope.launch {
             _navigationEvents.emit(
-                NavigationEvent.NavigateToPreviewScreen(wallpaperModel, categoryType)
+                NavigationEvent.NavigateToPreviewScreen(
+                    wallpaperModel = wallpaperModel,
+                    categoryType = categoryType,
+                    entryPoint = setWallpaperEntryPoint,
+                )
             )
         }
     }
@@ -246,6 +257,7 @@ constructor(
         data class NavigateToPreviewScreen(
             val wallpaperModel: WallpaperModel,
             val categoryType: CategoryType,
+            val entryPoint: Int,
         ) : NavigationEvent()
 
         data class NavigateToWallpaperCollection(
@@ -255,9 +267,5 @@ constructor(
 
         data class NavigateToExtendedWallpaperEffects(val wallpaperModel: WallpaperModel?) :
             NavigationEvent()
-    }
-
-    companion object {
-        const val CAROUSEL_ITEMS_THRESHOLD = 3
     }
 }

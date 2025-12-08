@@ -15,10 +15,6 @@
  */
 package com.android.wallpaper.picker;
 
-import static com.android.wallpaper.util.ActivityUtils.isSUWMode;
-import static com.android.wallpaper.util.ActivityUtils.isWallpaperOnlyMode;
-import static com.android.wallpaper.util.ActivityUtils.startActivityForResultSafely;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
@@ -38,7 +34,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.android.wallpaper.R;
-import com.android.wallpaper.config.BaseFlags;
 import com.android.wallpaper.model.Category;
 import com.android.wallpaper.model.CustomizationSectionController.CustomizationSectionNavigationController;
 import com.android.wallpaper.model.PermissionRequester;
@@ -99,11 +94,7 @@ public class CustomizationPickerActivity extends Hilt_CustomizationPickerActivit
         mNetworkStatus = mNetworkStatusNotifier.getNetworkStatus();
         mDisplayUtils = injector.getDisplayUtils(this);
         enforcePortraitForHandheldAndFoldedDisplay();
-
-        BaseFlags flags = injector.getFlags();
-        if (flags.isMultiCropEnabled()) {
-            getWindow().requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
-        }
+        getWindow().requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
 
         // Restore this Activity's state before restoring contained Fragments state.
         super.onCreate(savedInstanceState);
@@ -114,7 +105,7 @@ public class CustomizationPickerActivity extends Hilt_CustomizationPickerActivit
             Intent intent = getIntent();
             if (!ActivityUtils.isLaunchedFromSettingsTrampoline(intent)
                     && !ActivityUtils.isLaunchedFromSettingsRelated(intent)) {
-                startActivityForResultSafely(this,
+                ActivityUtils.startActivityForResultSafely(this,
                         mMultiPanesChecker.getMultiPanesIntent(intent), /* requestCode= */ 0);
                 finish();
                 return;
@@ -125,7 +116,7 @@ public class CustomizationPickerActivity extends Hilt_CustomizationPickerActivit
         mBottomActionBar = findViewById(R.id.bottom_actionbar);
 
         // See go/pdr-edge-to-edge-guide.
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), isSUWMode(this));
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), ActivityUtils.isSUWMode(this));
 
         final boolean startFromLockScreen = getIntent() == null
                 || !ActivityUtils.isLaunchedFromLauncher(getIntent());
@@ -140,19 +131,13 @@ public class CustomizationPickerActivity extends Hilt_CustomizationPickerActivit
             DailyLoggingAlarmScheduler.setAlarm(getApplicationContext());
 
             // Switch to the target fragment.
-            switchFragment(isWallpaperOnlyMode(getIntent())
+            switchFragment(ActivityUtils.isWallpaperOnlyMode(getIntent())
                     ? WallpaperOnlyFragment.newInstance()
                     : CustomizationPickerFragment.newInstance(startFromLockScreen));
 
-
-            if (flags.isWallpaperCategoryRefactoringEnabled()) {
-                // initializing the dependency graph for categories
-                mCategoriesViewModel = new ViewModelProvider(this).get(CategoriesViewModel.class);
-                mCategoriesViewModel.initialize();
-            } else {
-                // Cache the categories, but only if we're not restoring state (b/276767415).
-                mDelegate.prefetchCategories();
-            }
+            // initializing the dependency graph for categories
+            mCategoriesViewModel = new ViewModelProvider(this).get(CategoriesViewModel.class);
+            mCategoriesViewModel.initialize();
         }
 
         if (savedInstanceState == null) {
@@ -334,7 +319,7 @@ public class CustomizationPickerActivity extends Hilt_CustomizationPickerActivit
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (mDelegate.handleActivityResult(requestCode, resultCode, data)) {
-            if (isSUWMode(this)) {
+            if (ActivityUtils.isSUWMode(this)) {
                 finishActivityForSUW();
             } else {
                 // We don't finish in the revamped UI to let the user have a chance to reset the
@@ -383,7 +368,7 @@ public class CustomizationPickerActivity extends Hilt_CustomizationPickerActivit
 
     @Override
     public boolean isUpArrowSupported() {
-        return !isSUWMode(this);
+        return !ActivityUtils.isSUWMode(this);
     }
 
     @Override

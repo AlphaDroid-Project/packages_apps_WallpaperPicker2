@@ -35,4 +35,7 @@ interface CreativeCategoryInteractor {
     val standaloneCategories: Flow<List<CategoryModel>>
 
     fun updateCreativeCategories()
+
+    /** Updates the pack theme category. */
+    fun updatePackThemeCategory()
 }

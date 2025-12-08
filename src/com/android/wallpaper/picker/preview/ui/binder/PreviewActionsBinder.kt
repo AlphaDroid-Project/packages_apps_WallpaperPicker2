@@ -16,7 +16,6 @@
 package com.android.wallpaper.picker.preview.ui.binder
 
 import android.app.AlertDialog
-import android.app.Flags.liveWallpaperContentHandling
 import android.content.Intent
 import android.net.Uri
 import android.view.View
@@ -33,7 +32,6 @@ import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.module.logging.UserEventLogger
-import com.android.wallpaper.picker.preview.ui.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.picker.preview.ui.util.ImageEffectDialogUtil
 import com.android.wallpaper.picker.preview.ui.view.ImageEffectDialog
 import com.android.wallpaper.picker.preview.ui.view.PreviewActionFloatingSheet
@@ -47,6 +45,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.Action.INFORMATION
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.SHARE
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.widget.floatingsheetcontent.WallpaperActionsToggleAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
@@ -381,48 +380,26 @@ object PreviewActionsBinder {
                             ) = floatingSheetViewModel
                             when {
                                 informationViewModel != null -> {
-                                    if (liveWallpaperContentHandling()) {
-                                        floatingSheet.setInformationContent(
-                                            description = informationViewModel.description,
-                                            attributions = informationViewModel.attributions,
-                                            onExploreButtonClickListener =
-                                                (informationViewModel.description?.contextUri
-                                                        ?: informationViewModel.actionUrl?.let {
-                                                            Uri.parse(it)
-                                                        })
-                                                    ?.let { uri ->
-                                                        {
-                                                            logger
-                                                                .logWallpaperExploreButtonClicked()
-                                                            floatingSheet.context.startActivity(
-                                                                Intent(Intent.ACTION_VIEW, uri)
-                                                            )
-                                                        }
-                                                    },
-                                            actionButtonTitle =
-                                                informationViewModel.description?.contextDescription
-                                                    ?: informationViewModel.actionButtonTitle,
-                                        )
-                                    } else {
-                                        floatingSheet.setInformationContent(
-                                            description = null,
-                                            attributions = informationViewModel.attributions,
-                                            onExploreButtonClickListener =
-                                                informationViewModel.actionUrl?.let { url ->
+                                    floatingSheet.setInformationContent(
+                                        description = informationViewModel.description,
+                                        attributions = informationViewModel.attributions,
+                                        onExploreButtonClickListener =
+                                            (informationViewModel.description?.contextUri
+                                                    ?: informationViewModel.actionUrl?.let {
+                                                        Uri.parse(it)
+                                                    })
+                                                ?.let { uri ->
                                                     {
                                                         logger.logWallpaperExploreButtonClicked()
                                                         floatingSheet.context.startActivity(
-                                                            Intent(
-                                                                Intent.ACTION_VIEW,
-                                                                Uri.parse(url),
-                                                            )
+                                                            Intent(Intent.ACTION_VIEW, uri)
                                                         )
                                                     }
                                                 },
-                                            actionButtonTitle =
-                                                informationViewModel.actionButtonTitle,
-                                        )
-                                    }
+                                        actionButtonTitle =
+                                            informationViewModel.description?.contextDescription
+                                                ?: informationViewModel.actionButtonTitle,
+                                    )
                                 }
                                 imageEffectViewModel != null ->
                                     floatingSheet.setImageEffectContent(

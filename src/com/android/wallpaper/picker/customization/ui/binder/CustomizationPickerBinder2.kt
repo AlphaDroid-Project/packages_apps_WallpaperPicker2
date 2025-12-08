@@ -19,7 +19,6 @@ package com.android.wallpaper.picker.customization.ui.binder
 import android.content.Intent
 import android.view.View
 import android.widget.LinearLayout
-import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.core.view.isInvisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -27,7 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.customization.picker.icon.ui.util.IconStyleViewUtil
 import com.android.wallpaper.R
-import com.android.wallpaper.config.BaseFlags.Companion.get
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
@@ -35,7 +34,6 @@ import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
 import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
-import com.android.wallpaper.picker.customization.ui.util.EmptyTransitionListener
 import com.android.wallpaper.picker.customization.ui.view.PackThemeSuggestedChip
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationOptionsData
@@ -69,8 +67,10 @@ object CustomizationPickerBinder2 {
         navigateToMoreLockScreenSettingsActivity: () -> Unit,
         navigateToColorContrastSettingsActivity: () -> Unit,
         navigateToLockScreenNotificationsSettingsActivity: () -> Unit,
-        navigateToPreviewScreen: ((wallpaperModel: WallpaperModel) -> Unit)?,
+        navigateToPreviewScreen:
+            ((wallpaperModel: WallpaperModel, setWallpaperEntryPoint: Int) -> Unit)?,
         navigateToPackThemeActivity: (Intent) -> Unit,
+        navigateToScreenSaverSettingsActivity: () -> Unit,
         navigateToWallpaperCollectionScreen:
             ((collectionId: String, categoryType: CategoryType) -> Unit)?,
         navigateToExtendedWallpaperEffects: (() -> Unit)?,
@@ -85,20 +85,16 @@ object CustomizationPickerBinder2 {
         val homeCustomizationOptionContainer: LinearLayout =
             view.requireViewById(R.id.home_customization_option_container)
         val previewPager: ClickableMotionLayout = view.requireViewById(R.id.preview_pager)
-        previewPager.setTransitionListener(
-            object : EmptyTransitionListener {
 
-                override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
-                    val screen =
-                        when (currentId) {
-                            R.id.lock_preview_selected -> LOCK_SCREEN
-                            R.id.home_preview_selected -> HOME_SCREEN
-                            else -> return
-                        }
-                    viewModel.selectPreviewScreen(screen)
+        previewPager.setOnTransitionCompleted { currentId ->
+            val screen =
+                when (currentId) {
+                    R.id.lock_preview_selected -> LOCK_SCREEN
+                    R.id.home_preview_selected -> HOME_SCREEN
+                    else -> return@setOnTransitionCompleted
                 }
-            }
-        )
+            viewModel.selectPreviewScreen(screen)
+        }
 
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -114,6 +110,16 @@ object CustomizationPickerBinder2 {
                                 val homePreviewLabel: View =
                                     previewPager.requireViewById(R.id.home_preview_label)
                                 homePreviewLabel.visibility = View.VISIBLE
+                                if (BaseFlags.get().shouldShowDesktopUi(view.context)) {
+                                    previewPager.addClickableViewId(R.id.home_preview_label)
+                                    previewPager.addClickableViewId(R.id.lock_preview_label)
+                                    lockPreviewLabel.setOnClickListener {
+                                        viewModel.selectPreviewScreen(LOCK_SCREEN)
+                                    }
+                                    homePreviewLabel.setOnClickListener {
+                                        viewModel.selectPreviewScreen(HOME_SCREEN)
+                                    }
+                                }
                             }
                             CUSTOMIZATION_OPTION -> {
                                 val lockPreviewLabel: View =
@@ -123,6 +129,12 @@ object CustomizationPickerBinder2 {
                                 val homePreviewLabel: View =
                                     previewPager.requireViewById(R.id.home_preview_label)
                                 homePreviewLabel.visibility = View.GONE
+                                if (BaseFlags.get().shouldShowDesktopUi(view.context)) {
+                                    previewPager.removeClickableViewId(R.id.home_preview_label)
+                                    previewPager.removeClickableViewId(R.id.lock_preview_label)
+                                    lockPreviewLabel.setOnClickListener(null)
+                                    homePreviewLabel.setOnClickListener(null)
+                                }
                                 option?.let(navigateToSecondary)
                             }
                         }
@@ -152,7 +164,7 @@ object CustomizationPickerBinder2 {
             }
         }
 
-        if (get().isPackThemeEnabled()) {
+        if (BaseFlags.get().isPackThemeEnabled()) {
             packThemeSuggestedChip?.let {
                 packThemeSuggestedEntryBinder.bind(
                     view = it,
@@ -190,6 +202,7 @@ object CustomizationPickerBinder2 {
             navigateToColorContrastSettingsActivity,
             navigateToLockScreenNotificationsSettingsActivity,
             navigateToPackThemeActivity,
+            navigateToScreenSaverSettingsActivity,
             iconStyleViewUtil,
         )
     }
