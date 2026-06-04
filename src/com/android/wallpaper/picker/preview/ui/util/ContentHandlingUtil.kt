@@ -173,7 +173,16 @@ object ContentHandlingUtil {
                     effectNames = effectNames,
                     description =
                         description
-                            ?: WallpaperDescription.Builder().setComponent(componentName).build(),
+                            ?: WallpaperDescription.Builder()
+                                .setComponent(componentName)
+                                .setId(assetId)
+                                .setContent(
+                                    android.os.PersistableBundle().apply {
+                                        if (assetId != null) putString("AssetId", assetId)
+                                        if (effectNames != null) putString("EffectType", effectNames)
+                                    }
+                                )
+                                .build(),
                     supportsMultipleEngines = true,
                 )
             return LiveWallpaperModel(
